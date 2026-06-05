@@ -43,7 +43,8 @@ async function fetchWithTimeout(url: string, signal?: AbortSignal): Promise<Resp
  * NWIS returns HTTP 400 with an HTML body for invalid inputs.
  */
 function looksLikeHtml(text: string): boolean {
-  return text.trimStart().startsWith('<!') || text.trimStart().startsWith('<html');
+  const t = text.trimStart();
+  return t.startsWith('<!') || t.startsWith('<html');
 }
 
 /** Extract a human-readable message from an HTML error page. */
@@ -138,6 +139,22 @@ function parseFloat_(s: string | undefined): number | null {
 
 // ── Site service ──────────────────────────────────────────────────────────────
 
+/** Map a single RDB row from the NWIS site service to an NwisSite. */
+function mapSiteRow(r: Record<string, string>, fallbackSiteNo?: string): NwisSite {
+  return {
+    siteNumber: r['site_no'] ?? fallbackSiteNo ?? '',
+    siteName: r['station_nm'] ?? '',
+    siteType: r['site_tp_cd'] ?? '',
+    latitude: parseFloat_(r['dec_lat_va']) ?? 0,
+    longitude: parseFloat_(r['dec_long_va']) ?? 0,
+    stateCd: r['state_cd'] ?? '',
+    countyCd: r['county_cd'] ?? '',
+    hucCd: r['huc_cd'] ?? '',
+    dataTypes: r['data_type_cd'] ? r['data_type_cd'].split(',').map((s) => s.trim()) : [],
+    parameterCds: r['parm_cd'] ? [r['parm_cd']] : [],
+  };
+}
+
 export interface FindSitesParams {
   bbox?: string;
   countyCd?: string;
@@ -176,20 +193,7 @@ export async function findSites(
   });
 
   const rows = parseRdb(text);
-  return rows.map(
-    (r): NwisSite => ({
-      siteNumber: r['site_no'] ?? '',
-      siteName: r['station_nm'] ?? '',
-      siteType: r['site_tp_cd'] ?? '',
-      latitude: parseFloat_(r['dec_lat_va']) ?? 0,
-      longitude: parseFloat_(r['dec_long_va']) ?? 0,
-      stateCd: r['state_cd'] ?? '',
-      countyCd: r['county_cd'] ?? '',
-      hucCd: r['huc_cd'] ?? '',
-      dataTypes: r['data_type_cd'] ? r['data_type_cd'].split(',').map((s) => s.trim()) : [],
-      parameterCds: r['parm_cd'] ? [r['parm_cd']] : [],
-    }),
-  );
+  return rows.map((r) => mapSiteRow(r));
 }
 
 /** Get metadata for a single site. */
@@ -209,19 +213,7 @@ export async function getSiteInfo(
   const rows = parseRdb(text);
   if (rows.length === 0) return null;
   // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-  const r = rows[0]!;
-  return {
-    siteNumber: r['site_no'] ?? siteNumber,
-    siteName: r['station_nm'] ?? '',
-    siteType: r['site_tp_cd'] ?? '',
-    latitude: parseFloat_(r['dec_lat_va']) ?? 0,
-    longitude: parseFloat_(r['dec_long_va']) ?? 0,
-    stateCd: r['state_cd'] ?? '',
-    countyCd: r['county_cd'] ?? '',
-    hucCd: r['huc_cd'] ?? '',
-    dataTypes: r['data_type_cd'] ? r['data_type_cd'].split(',').map((s) => s.trim()) : [],
-    parameterCds: r['parm_cd'] ? [r['parm_cd']] : [],
-  };
+  return mapSiteRow(rows[0]!, siteNumber);
 }
 
 // ── HTML entity decoder ───────────────────────────────────────────────────────

@@ -116,9 +116,11 @@ export const waterGetReadings = tool('water_get_readings', {
 
     let series: Awaited<ReturnType<typeof getReadings>>;
     try {
-      const readingsParams: Parameters<typeof getReadings>[0] = { sites: input.sites };
+      const readingsParams: Parameters<typeof getReadings>[0] = {
+        sites: input.sites,
+        period: input.period,
+      };
       if (input.parameterCd?.length) readingsParams.parameterCds = input.parameterCd;
-      if (input.period) readingsParams.period = input.period;
       series = await getReadings(readingsParams, ctx.signal);
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : String(err);
