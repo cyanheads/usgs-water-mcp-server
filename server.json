@@ -1,9 +1,9 @@
 {
   "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
-  "name": "usgs-water-mcp-server",
-  "description": "",
+  "name": "cyanheads/usgs-water-mcp-server",
+  "description": "Access real-time and historical water data from ~8,000 USGS stream gages and groundwater wells via the NWIS API. Find sites, get readings, query time series, and check hydrologic conditions against historical percentiles.",
   "repository": {
-    "url": "",
+    "url": "https://github.com/cyanheads/usgs-water-mcp-server",
     "source": "github"
   },
   "version": "0.1.0",
