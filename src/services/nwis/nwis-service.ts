@@ -72,8 +72,15 @@ async function fetchText(url: string, signal?: AbortSignal): Promise<string> {
 
   const text = await resp.text();
 
-  // 400-class with HTML body → ValidationError (not retryable)
+  // 400-class errors
   if (!resp.ok) {
+    // NWIS returns HTTP 404 with empty body when no data matches the query (valid filters, zero
+    // results). Treat this as empty content so callers can surface the appropriate "not found"
+    // contract error rather than a misleading ValidationError.
+    if (resp.status === 404 && text.trim() === '') {
+      return '';
+    }
+    // HTML body → ValidationError with extracted message (not retryable)
     if (looksLikeHtml(text)) {
       const msg = extractHtmlError(text);
       throw validationError(`NWIS rejected the request: ${msg}`, { url, httpStatus: resp.status });
@@ -217,6 +224,15 @@ export async function getSiteInfo(
   };
 }
 
+// ── HTML entity decoder ───────────────────────────────────────────────────────
+
+/** Decode common HTML numeric entities in NWIS JSON string fields (e.g. &#179; → ³). */
+function decodeHtmlEntities(s: string): string {
+  return s.replace(/&#(\d+);/g, (_, code: string) =>
+    String.fromCodePoint(Number.parseInt(code, 10)),
+  );
+}
+
 // ── WaterML-JSON IV/DV parser ─────────────────────────────────────────────────
 
 interface WatermlResponse {
@@ -248,8 +264,8 @@ function parseWaterml(json: WatermlResponse): NwisTimeSeries[] {
     const siteNumber = ts.sourceInfo?.siteCode?.[0]?.value ?? '';
     const siteName = ts.sourceInfo?.siteName ?? '';
     const parameterCd = ts.variable?.variableCode?.[0]?.value ?? '';
-    const parameterName = ts.variable?.variableName ?? '';
-    const unitCode = ts.variable?.unit?.unitCode ?? '';
+    const parameterName = decodeHtmlEntities(ts.variable?.variableName ?? '');
+    const unitCode = decodeHtmlEntities(ts.variable?.unit?.unitCode ?? '');
     const rawValues = ts.values?.[0]?.value ?? [];
     const values: NwisValueRecord[] = rawValues.map((v) => ({
       dateTime: v.dateTime ?? '',

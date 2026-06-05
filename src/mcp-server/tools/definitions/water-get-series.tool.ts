@@ -195,7 +195,14 @@ export const waterGetSeries = tool('water_get_series', {
     }
 
     if (seriesList.length === 0) {
-      throw ctx.fail('site_not_found', `No time series returned for site ${input.site}.`);
+      // NWIS returns an empty timeSeries array for both unknown sites and date ranges with no
+      // data — both map here. Use no_data_for_range when the site is plausible but the range
+      // may be the issue; callers can retry with a narrower range.
+      throw ctx.fail(
+        'no_data_for_range',
+        `No data returned for site ${input.site} parameter ${input.parameterCd} — ` +
+          `site may not exist, or no data in the requested date range (${input.startDate} to ${input.endDate}).`,
+      );
     }
 
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion

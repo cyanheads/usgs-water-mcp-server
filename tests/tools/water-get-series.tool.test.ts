@@ -174,7 +174,9 @@ describe('waterGetSeries', () => {
     });
   });
 
-  it('throws site_not_found when service returns empty array', async () => {
+  it('throws no_data_for_range when service returns empty array', async () => {
+    // NWIS returns timeSeries:[] for both unknown sites and out-of-range dates;
+    // no_data_for_range is the more actionable error (callers can retry with a narrower range).
     mockGetSeries.mockResolvedValue([]);
     const ctx = createMockContext({ errors: waterGetSeries.errors });
     const input = waterGetSeries.input.parse({
@@ -185,7 +187,7 @@ describe('waterGetSeries', () => {
     });
     await expect(waterGetSeries.handler(input, ctx)).rejects.toMatchObject({
       code: JsonRpcErrorCode.NotFound,
-      data: { reason: 'site_not_found' },
+      data: { reason: 'no_data_for_range' },
     });
   });
 
