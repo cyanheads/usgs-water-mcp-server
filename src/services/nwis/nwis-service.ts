@@ -57,21 +57,24 @@ function extractHtmlError(html: string): string {
   return 'NWIS returned an HTML error page with no extractable message.';
 }
 
+/** Maximum bytes consumed from an upstream error response body. */
+const MAX_ERROR_BODY_BYTES = 4_096;
+
 /** Fetch text from a URL, throwing on HTTP/network errors. */
 async function fetchText(url: string, signal?: AbortSignal): Promise<string> {
   const resp = await fetchWithTimeout(url, signal);
 
   // 5xx → ServiceUnavailable (retryable)
   if (resp.status >= 500) {
-    const body = await resp.text().catch(() => '');
     throw serviceUnavailable(`NWIS returned HTTP ${resp.status}: ${resp.statusText}`, {
-      url,
       status: resp.status,
-      body: body.slice(0, 200),
     });
   }
 
-  const text = await resp.text();
+  // Cap body reads for error responses to bound memory usage during HTML/text parsing.
+  const text = resp.ok
+    ? await resp.text()
+    : (await resp.text().catch(() => '')).slice(0, MAX_ERROR_BODY_BYTES);
 
   // 400-class errors
   if (!resp.ok) {
@@ -84,10 +87,9 @@ async function fetchText(url: string, signal?: AbortSignal): Promise<string> {
     // HTML body → ValidationError with extracted message (not retryable)
     if (looksLikeHtml(text)) {
       const msg = extractHtmlError(text);
-      throw validationError(`NWIS rejected the request: ${msg}`, { url, httpStatus: resp.status });
+      throw validationError(`NWIS rejected the request: ${msg}`, { httpStatus: resp.status });
     }
     throw validationError(`NWIS returned HTTP ${resp.status}: ${text.slice(0, 200)}`, {
-      url,
       httpStatus: resp.status,
     });
   }
