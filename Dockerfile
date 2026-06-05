@@ -43,7 +43,8 @@ ENV NODE_ENV=production
 
 # OCI image metadata (https://github.com/opencontainers/image-spec/blob/main/annotations.md)
 LABEL org.opencontainers.image.title="usgs-water-mcp-server"
-LABEL org.opencontainers.image.description=""
+LABEL org.opencontainers.image.description="Query real-time and historical water data from ~8,000 USGS stream gages and groundwater wells via MCP. STDIO or Streamable HTTP."
+LABEL org.opencontainers.image.source="https://github.com/cyanheads/usgs-water-mcp-server"
 LABEL org.opencontainers.image.licenses="Apache-2.0"
 
 # Copy dependency manifests
