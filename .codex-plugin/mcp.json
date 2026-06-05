@@ -1,0 +1,9 @@
+{
+  "usgs-water-mcp-server": {
+    "command": "npx",
+    "args": ["-y", "usgs-water-mcp-server"],
+    "env": {
+      "MCP_TRANSPORT_TYPE": "stdio"
+    }
+  }
+}
