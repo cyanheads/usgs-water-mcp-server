@@ -6,14 +6,20 @@
     "url": "https://github.com/cyanheads/usgs-water-mcp-server",
     "source": "github"
   },
-  "version": "0.1.1",
+  "version": "0.1.2",
+  "remotes": [
+    {
+      "type": "streamable-http",
+      "url": "https://usgs-water.caseyjhand.com/mcp"
+    }
+  ],
   "packages": [
     {
       "registryType": "npm",
       "registryBaseUrl": "https://registry.npmjs.org",
       "identifier": "@cyanheads/usgs-water-mcp-server",
       "runtimeHint": "bun",
-      "version": "0.1.1",
+      "version": "0.1.2",
       "packageArguments": [
         {
           "type": "positional",
@@ -55,7 +61,7 @@
       "registryBaseUrl": "https://registry.npmjs.org",
       "identifier": "@cyanheads/usgs-water-mcp-server",
       "runtimeHint": "bun",
-      "version": "0.1.1",
+      "version": "0.1.2",
       "packageArguments": [
         {
           "type": "positional",
