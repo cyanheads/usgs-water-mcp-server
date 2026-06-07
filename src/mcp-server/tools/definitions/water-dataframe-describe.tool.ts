@@ -14,7 +14,7 @@ export const waterDataframeDescribe = tool('water_dataframe_describe', {
     'List tables and columns staged on a DataCanvas by water_get_series. ' +
     'Call this after water_get_series returns a canvas_id to discover the exact table name and column ' +
     'types before writing a query. Then pass the table name to water_dataframe_query. ' +
-    'Requires CANVAS_PROVIDER_TYPE=duckdb to be set in the server environment.',
+    'Requires DataCanvas to be enabled on this server instance. Returns an error if DataCanvas is not available.',
   annotations: { readOnlyHint: true, idempotentHint: true, openWorldHint: false },
   input: z.object({
     canvas_id: z

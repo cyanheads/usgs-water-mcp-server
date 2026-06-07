@@ -5,7 +5,7 @@
  */
 
 import { JsonRpcErrorCode } from '@cyanheads/mcp-ts-core/errors';
-import { createMockContext } from '@cyanheads/mcp-ts-core/testing';
+import { createMockContext, getEnrichment } from '@cyanheads/mcp-ts-core/testing';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { waterGetReadings } from '@/mcp-server/tools/definitions/water-get-readings.tool.js';
 import type { NwisTimeSeries } from '@/services/nwis/types.js';
@@ -53,13 +53,13 @@ describe('waterGetReadings', () => {
     expect(result.readings[0]?.values[0]?.qualifiers).toContain('P');
   });
 
-  it('throws site_not_found when service returns empty array', async () => {
+  it('throws no_data_for_parameter when service returns empty array (ambiguous: site not found or no data)', async () => {
     mockGetReadings.mockResolvedValue([]);
     const ctx = createMockContext({ errors: waterGetReadings.errors });
     const input = waterGetReadings.input.parse({ sites: ['99999999'] });
     await expect(waterGetReadings.handler(input, ctx)).rejects.toMatchObject({
       code: JsonRpcErrorCode.NotFound,
-      data: { reason: 'site_not_found' },
+      data: { reason: 'no_data_for_parameter' },
     });
   });
 
@@ -114,5 +114,24 @@ describe('waterGetReadings', () => {
     const input = waterGetReadings.input.parse({ sites: ['01646500', '14211720'] });
     const result = await waterGetReadings.handler(input, ctx);
     expect(result.total).toBe(2);
+  });
+
+  it('populates query enrichment on successful result', async () => {
+    mockGetReadings.mockResolvedValue(MOCK_SERIES);
+    const ctx = createMockContext({ errors: waterGetReadings.errors });
+    const input = waterGetReadings.input.parse({
+      sites: ['01646500'],
+      parameterCd: ['00060'],
+      period: 'P1D',
+    });
+    await waterGetReadings.handler(input, ctx);
+    const enrichment = getEnrichment(ctx);
+    expect(enrichment).toMatchObject({
+      query: expect.objectContaining({
+        sites: ['01646500'],
+        parameterCd: ['00060'],
+        period: 'P1D',
+      }),
+    });
   });
 });

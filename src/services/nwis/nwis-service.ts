@@ -149,8 +149,9 @@ function mapSiteRow(r: Record<string, string>, fallbackSiteNo?: string): NwisSit
     siteType: r['site_tp_cd'] ?? '',
     latitude: parseFloat_(r['dec_lat_va']) ?? 0,
     longitude: parseFloat_(r['dec_long_va']) ?? 0,
-    stateCd: r['state_cd'] ?? '',
-    countyCd: r['county_cd'] ?? '',
+    // state_cd and county_cd are only present in siteOutput=expanded; omit rather than ''
+    ...(r['state_cd'] !== undefined && r['state_cd'] !== '' ? { stateCd: r['state_cd'] } : {}),
+    ...(r['county_cd'] !== undefined && r['county_cd'] !== '' ? { countyCd: r['county_cd'] } : {}),
     hucCd: r['huc_cd'] ?? '',
     dataTypes: r['data_type_cd'] ? r['data_type_cd'].split(',').map((s) => s.trim()) : [],
     parameterCds: r['parm_cd'] ? [r['parm_cd']] : [],

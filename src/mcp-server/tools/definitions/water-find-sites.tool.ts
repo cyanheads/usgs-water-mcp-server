@@ -98,10 +98,20 @@ export const waterFindSites = tool('water_find_sites', {
               ),
             latitude: z.number().describe('Decimal latitude in WGS 84.'),
             longitude: z.number().describe('Decimal longitude in WGS 84.'),
-            stateCd: z.string().describe('2-digit FIPS state code (e.g. "51" for Virginia).'),
+            stateCd: z
+              .string()
+              .optional()
+              .describe(
+                '2-digit FIPS state code (e.g. "51" for Virginia). ' +
+                  'Populated only when siteOutput="expanded"; absent in basic mode.',
+              ),
             countyCd: z
               .string()
-              .describe('3-digit FIPS county code within the state (zero-padded, e.g. "013").'),
+              .optional()
+              .describe(
+                '3-digit FIPS county code within the state (zero-padded, e.g. "013"). ' +
+                  'Populated only when siteOutput="expanded"; absent in basic mode.',
+              ),
             hucCd: z
               .string()
               .describe(
@@ -124,6 +134,38 @@ export const waterFindSites = tool('water_find_sites', {
       .describe('Matching USGS monitoring sites.'),
     total: z.number().int().describe('Total number of sites returned in this response.'),
   }),
+
+  enrichment: {
+    filters: z
+      .object({
+        stateCd: z.string().optional().describe('State filter applied, if any.'),
+        siteType: z.string().optional().describe('Site type filter applied, if any.'),
+        parameterCd: z.string().optional().describe('Parameter code filter applied, if any.'),
+        bbox: z.string().optional().describe('Bounding box filter applied, if any.'),
+        huc: z.string().optional().describe('HUC watershed filter applied, if any.'),
+        hasDataTypeCd: z.string().optional().describe('Data type filter applied, if any.'),
+        siteOutput: z
+          .enum(['basic', 'expanded'])
+          .describe('Site output mode used (basic or expanded).'),
+      })
+      .describe('Filters applied to this query.'),
+  },
+
+  enrichmentTrailer: {
+    filters: {
+      render(v) {
+        const parts: string[] = [];
+        if (v.stateCd) parts.push(`state=${v.stateCd}`);
+        if (v.siteType) parts.push(`siteType=${v.siteType}`);
+        if (v.parameterCd) parts.push(`parameterCd=${v.parameterCd}`);
+        if (v.bbox) parts.push(`bbox=${v.bbox}`);
+        if (v.huc) parts.push(`huc=${v.huc}`);
+        if (v.hasDataTypeCd) parts.push(`hasDataTypeCd=${v.hasDataTypeCd}`);
+        parts.push(`siteOutput=${v.siteOutput}`);
+        return `**Filters applied:** ${parts.join(', ')}`;
+      },
+    },
+  },
 
   errors: [
     {
@@ -194,6 +236,18 @@ export const waterFindSites = tool('water_find_sites', {
       throw ctx.fail('no_sites_found', 'No USGS sites match the specified filters.');
     }
 
+    ctx.enrich({
+      filters: {
+        stateCd: input.stateCd,
+        siteType: input.siteType,
+        parameterCd: input.parameterCd,
+        bbox: input.bbox,
+        huc: input.huc,
+        hasDataTypeCd: input.hasDataTypeCd,
+        siteOutput: input.siteOutput,
+      },
+    });
+
     ctx.log.info('Sites found', { count: sites.length });
     return { sites, total: sites.length };
   },
@@ -204,7 +258,7 @@ export const waterFindSites = tool('water_find_sites', {
       lines.push(
         `### ${s.siteName} (${s.siteNumber})`,
         `**Type:** ${s.siteType} | **Lat/Lon:** ${s.latitude}, ${s.longitude}`,
-        `**HUC:** ${s.hucCd} | **State:** ${s.stateCd} | **County:** ${s.countyCd}`,
+        `**HUC:** ${s.hucCd}${s.stateCd ? ` | **State:** ${s.stateCd}` : ''}${s.countyCd ? ` | **County:** ${s.countyCd}` : ''}`,
       );
       if (s.dataTypes.length > 0) lines.push(`**Data types:** ${s.dataTypes.join(', ')}`);
       if (s.parameterCds.length > 0) lines.push(`**Parameters:** ${s.parameterCds.join(', ')}`);

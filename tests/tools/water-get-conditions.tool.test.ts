@@ -144,7 +144,7 @@ describe('waterGetConditions', () => {
     expect(result.historicalContext).toBeNull();
   });
 
-  it('throws site_not_found when IV returns empty', async () => {
+  it('throws no_data_for_parameter when IV returns empty (ambiguous: site not found or no data)', async () => {
     mockGetReadings.mockResolvedValue([]);
     mockGetStats.mockResolvedValue(MOCK_STAT);
 
@@ -152,7 +152,7 @@ describe('waterGetConditions', () => {
     const input = waterGetConditions.input.parse({ site: '99999999', parameterCd: '00060' });
     await expect(waterGetConditions.handler(input, ctx)).rejects.toMatchObject({
       code: JsonRpcErrorCode.NotFound,
-      data: { reason: 'site_not_found' },
+      data: { reason: 'no_data_for_parameter' },
     });
   });
 

@@ -5,8 +5,8 @@
 
 /** A single USGS monitoring site returned from the site service. */
 export interface NwisSite {
-  /** County FIPS code (3 digits). */
-  countyCd: string;
+  /** County FIPS code (3 digits). Present only when fetched with siteOutput=expanded. */
+  countyCd?: string;
   /** Available data types (iv, dv, etc.) when present. */
   dataTypes: string[];
   /** 8-digit HUC. */
@@ -23,8 +23,8 @@ export interface NwisSite {
   siteNumber: string;
   /** Site type code (e.g. ST, GW, LK). */
   siteType: string;
-  /** State FIPS code (2 digits). */
-  stateCd: string;
+  /** State FIPS code (2 digits). Present only when fetched with siteOutput=expanded. */
+  stateCd?: string;
 }
 
 /** A single time-series value record. */

@@ -144,16 +144,11 @@ export const waterGetConditions = tool('water_get_conditions', {
 
   errors: [
     {
-      reason: 'site_not_found',
-      code: JsonRpcErrorCode.NotFound,
-      when: 'The site number returned no IV data.',
-      recovery: 'Verify the site number using water_find_sites.',
-    },
-    {
       reason: 'no_data_for_parameter',
       code: JsonRpcErrorCode.NotFound,
-      when: 'The site has no current reading for the requested parameter code.',
-      recovery: 'Check parameter availability via water_find_sites with parameterCd filter.',
+      when: 'NWIS returned no IV data — the site may not exist, or may not measure the requested parameter. NWIS returns the same empty response for both cases.',
+      recovery:
+        'Use water_find_sites with a parameterCd filter to verify the site exists and measures the parameter.',
     },
     {
       reason: 'upstream_error',
@@ -191,7 +186,15 @@ export const waterGetConditions = tool('water_get_conditions', {
     }
 
     if (ivResult.length === 0) {
-      throw ctx.fail('site_not_found', `No IV data returned for site ${input.site}.`);
+      // NWIS returns an empty timeSeries array for both unknown sites and valid sites that have no
+      // data for the requested parameter — the two cases are indistinguishable without a separate
+      // site-existence check.
+      throw ctx.fail(
+        'no_data_for_parameter',
+        `No data returned for site ${input.site} parameter ${input.parameterCd} — ` +
+          'the site may not exist, or may not measure this parameter. ' +
+          'Use water_find_sites with a parameterCd filter to verify parameter availability.',
+      );
     }
 
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion

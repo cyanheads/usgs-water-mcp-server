@@ -5,7 +5,7 @@
  */
 
 import { JsonRpcErrorCode } from '@cyanheads/mcp-ts-core/errors';
-import { createMockContext } from '@cyanheads/mcp-ts-core/testing';
+import { createMockContext, getEnrichment } from '@cyanheads/mcp-ts-core/testing';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { waterFindSites } from '@/mcp-server/tools/definitions/water-find-sites.tool.js';
 import type { NwisSite } from '@/services/nwis/types.js';
@@ -90,6 +90,40 @@ describe('waterFindSites', () => {
     expect(text).toContain('38.9495');
     expect(text).toContain('02070008');
     expect(text).toContain('iv');
+    // stateCd and countyCd are populated in this mock (expanded mode)
+    expect(text).toContain('24');
+    expect(text).toContain('031');
+  });
+
+  it('formats sites without state/county when absent (basic mode)', () => {
+    const basicSite = { ...MOCK_SITES[0]!, stateCd: undefined, countyCd: undefined };
+    const result = { sites: [basicSite], total: 1 };
+    const blocks = waterFindSites.format!(result);
+    const text = blocks[0]?.text ?? '';
+    expect(text).toContain('01646500');
+    // Should not show empty state/county labels
+    expect(text).not.toContain('State: undefined');
+    expect(text).not.toContain('County: undefined');
+  });
+
+  it('populates filter enrichment on successful result', async () => {
+    mockFindSites.mockResolvedValue(MOCK_SITES);
+    const ctx = createMockContext({ errors: waterFindSites.errors });
+    const input = waterFindSites.input.parse({
+      stateCd: 'MD',
+      siteType: 'ST',
+      parameterCd: '00060',
+    });
+    await waterFindSites.handler(input, ctx);
+    const enrichment = getEnrichment(ctx);
+    expect(enrichment).toMatchObject({
+      filters: expect.objectContaining({
+        stateCd: 'MD',
+        siteType: 'ST',
+        parameterCd: '00060',
+        siteOutput: 'basic',
+      }),
+    });
   });
 
   it('passes through optional filters to findSites', async () => {

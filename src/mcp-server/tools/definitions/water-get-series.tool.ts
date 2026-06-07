@@ -34,9 +34,9 @@ export const waterGetSeries = tool('water_get_series', {
   description:
     'Get a time series of daily or instantaneous values for a USGS site and parameter over a date ' +
     'range. Returns siteNumber, parameterCd, and time-ordered value records. ' +
-    'For large date ranges (>500 records), results spill to DataCanvas when CANVAS_PROVIDER_TYPE=duckdb ' +
-    'is set — the response includes canvas_id and table_name for follow-up SQL via water_dataframe_query. ' +
-    'Without DataCanvas, returns the most recent 500 records with a truncated flag. ' +
+    'When the server has DataCanvas enabled, large result sets (>500 records) spill to a canvas — ' +
+    'the response includes canvas_id and table_name for SQL analysis via water_dataframe_query. ' +
+    'Without DataCanvas, returns the most recent 500 records with truncated=true. ' +
     'Use water_find_sites to discover valid site numbers. Use water_list_parameters for parameter codes.',
   annotations: { readOnlyHint: true, idempotentHint: true, openWorldHint: true },
   input: z.object({
@@ -116,6 +116,32 @@ export const waterGetSeries = tool('water_get_series', {
           'Use as the FROM target in water_dataframe_query SQL.',
       ),
   }),
+
+  enrichment: {
+    query: z
+      .object({
+        site: z.string().describe('Site number queried.'),
+        parameterCd: z.string().describe('Parameter code queried.'),
+        startDate: z.string().describe('Start date applied (YYYY-MM-DD).'),
+        endDate: z.string().describe('End date applied (YYYY-MM-DD).'),
+        seriesType: z.enum(['daily', 'instantaneous']).describe('Series type used.'),
+      })
+      .describe('Query parameters used for this request.'),
+    notice: z
+      .string()
+      .optional()
+      .describe(
+        'Advisory when the result was truncated — narrow the date range or enable DataCanvas for full access.',
+      ),
+  },
+
+  enrichmentTrailer: {
+    query: {
+      render(v) {
+        return `**Query:** site=${v.site}, parameterCd=${v.parameterCd}, ${v.startDate} to ${v.endDate}, seriesType=${v.seriesType}`;
+      },
+    },
+  },
 
   errors: [
     {
@@ -217,6 +243,16 @@ export const waterGetSeries = tool('water_get_series', {
     const totalRecords = ts.values.length;
     ctx.log.info('Series records', { totalRecords, site: ts.siteNumber });
 
+    ctx.enrich({
+      query: {
+        site: input.site,
+        parameterCd: input.parameterCd,
+        startDate: input.startDate,
+        endDate: input.endDate,
+        seriesType: input.seriesType,
+      },
+    });
+
     // Canvas spillover path
     const canvas = getCanvas();
     if (canvas && totalRecords > SPILLOVER_THRESHOLD) {
@@ -245,6 +281,12 @@ export const waterGetSeries = tool('water_get_series', {
         signal: ctx.signal,
       });
 
+      if (spillResult.spilled) {
+        ctx.enrich({
+          notice: `Result truncated to ${SPILLOVER_THRESHOLD} preview records — query the full ${totalRecords} records via water_dataframe_query using canvas_id.`,
+        });
+      }
+
       const previewValues = spillResult.previewRows.map((r) => ({
         dateTime: String(r['date_time'] ?? ''),
         value: String(r['value'] ?? ''),
@@ -271,6 +313,12 @@ export const waterGetSeries = tool('water_get_series', {
     // No canvas: return last 500 records
     const truncated = totalRecords > SPILLOVER_THRESHOLD;
     const values = truncated ? ts.values.slice(-SPILLOVER_THRESHOLD) : ts.values;
+
+    if (truncated) {
+      ctx.enrich({
+        notice: `Result truncated to ${SPILLOVER_THRESHOLD} records — narrow the date range or enable DataCanvas for full access to all ${totalRecords} records.`,
+      });
+    }
 
     return {
       siteNumber: ts.siteNumber,
@@ -301,7 +349,7 @@ export const waterGetSeries = tool('water_get_series', {
       );
     } else if (result.truncated) {
       lines.push(
-        `*(showing last ${result.values.length} of ${result.totalRecords} records — set CANVAS_PROVIDER_TYPE=duckdb for full access)*`,
+        `*(showing last ${result.values.length} of ${result.totalRecords} records — narrow the date range or enable DataCanvas for full access)*`,
       );
     }
 

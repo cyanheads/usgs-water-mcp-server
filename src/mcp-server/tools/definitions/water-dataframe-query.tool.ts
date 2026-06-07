@@ -15,7 +15,7 @@ export const waterDataframeQuery = tool('water_dataframe_query', {
     'Workflow: water_get_series (get canvas_id + table_name) → water_dataframe_describe (confirm schema) → ' +
     'water_dataframe_query (SQL analysis). Only SELECT statements are permitted. ' +
     'Results are capped at 10,000 rows; use WHERE and LIMIT clauses to stay within budget. ' +
-    'Requires CANVAS_PROVIDER_TYPE=duckdb to be set in the server environment.',
+    'Requires DataCanvas to be enabled on this server instance. Returns an error if DataCanvas is not available.',
   annotations: { readOnlyHint: true, idempotentHint: true, openWorldHint: false },
   input: z.object({
     canvas_id: z

@@ -78,19 +78,36 @@ export const waterGetReadings = tool('water_get_readings', {
     total: z.number().int().describe('Total number of site+parameter time series returned.'),
   }),
 
-  errors: [
-    {
-      reason: 'site_not_found',
-      code: JsonRpcErrorCode.NotFound,
-      when: 'One or more site numbers returned no time series (unknown site ID).',
-      recovery: 'Verify site numbers using water_find_sites before calling this tool.',
+  enrichment: {
+    query: z
+      .object({
+        sites: z.array(z.string()).describe('Site numbers queried.'),
+        parameterCd: z
+          .array(z.string())
+          .optional()
+          .describe('Parameter codes requested, if filtered.'),
+        period: z.string().describe('Lookback period applied (ISO 8601 duration).'),
+      })
+      .describe('Query parameters used for this request.'),
+  },
+
+  enrichmentTrailer: {
+    query: {
+      render(v) {
+        const parts: string[] = [`sites=[${v.sites.join(', ')}]`, `period=${v.period}`];
+        if (v.parameterCd?.length) parts.push(`parameterCd=[${v.parameterCd.join(', ')}]`);
+        return `**Query:** ${parts.join(', ')}`;
+      },
     },
+  },
+
+  errors: [
     {
       reason: 'no_data_for_parameter',
       code: JsonRpcErrorCode.NotFound,
-      when: 'The site exists but has no data for the requested parameter in the requested period.',
+      when: 'NWIS returned no time series — the site(s) may not exist, or may not have data for the requested parameter(s) in the requested period. NWIS returns the same empty response for both cases.',
       recovery:
-        'Check available parameters via water_find_sites with parameterCd filter or try a longer period.',
+        'Use water_find_sites with a parameterCd filter to verify the site exists and measures the parameter. Try a longer period if the site is valid.',
     },
     {
       reason: 'invalid_site_format',
@@ -142,7 +159,14 @@ export const waterGetReadings = tool('water_get_readings', {
     }
 
     if (series.length === 0) {
-      throw ctx.fail('site_not_found', 'No time series returned for the given sites.');
+      // NWIS returns an empty timeSeries array for both unknown site IDs and valid sites that have
+      // no data for the requested parameter — the two cases are indistinguishable from this call.
+      throw ctx.fail(
+        'no_data_for_parameter',
+        'No data returned for the given sites and parameters — the site(s) may not exist, ' +
+          'or may not measure the requested parameter(s) in the requested period. ' +
+          'Use water_find_sites with a parameterCd filter to verify parameter availability at a site.',
+      );
     }
 
     // Check for series with no values (data gap for parameter)
@@ -162,6 +186,14 @@ export const waterGetReadings = tool('water_get_readings', {
       unitCode: s.unitCode,
       values: s.values,
     }));
+
+    ctx.enrich({
+      query: {
+        sites: input.sites,
+        parameterCd: input.parameterCd,
+        period: input.period,
+      },
+    });
 
     ctx.log.info('Readings fetched', { seriesCount: readings.length });
     return { readings, total: readings.length };
