@@ -2,6 +2,10 @@
 
 All notable changes to this project. Each entry links to its full per-version file in [changelog/](changelog/).
 
+## [0.1.3](changelog/0.1.x/0.1.3.md) — 2026-06-06
+
+Fix misclassified site_not_found errors, remove internal env var from tool descriptions, add query enrichment context, and make stateCd/countyCd optional in basic mode
+
 ## [0.1.2](changelog/0.1.x/0.1.2.md) — 2026-06-06
 
 Public hosted endpoint at https://usgs-water.caseyjhand.com/mcp
