@@ -52,8 +52,14 @@ export const waterGetSeries = tool('water_get_series', {
         '5-digit USGS parameter code (e.g. "00060" for discharge, "00065" for gage height). ' +
           'Use water_list_parameters to discover available codes.',
       ),
-    startDate: z.string().describe('Start date in YYYY-MM-DD format (e.g. "2024-01-01").'),
-    endDate: z.string().describe('End date in YYYY-MM-DD format (e.g. "2024-12-31").'),
+    startDate: z
+      .string()
+      .regex(/^\d{4}-\d{2}-\d{2}$/, 'startDate must be in YYYY-MM-DD format (e.g. "2024-01-01").')
+      .describe('Start date in YYYY-MM-DD format (e.g. "2024-01-01").'),
+    endDate: z
+      .string()
+      .regex(/^\d{4}-\d{2}-\d{2}$/, 'endDate must be in YYYY-MM-DD format (e.g. "2024-12-31").')
+      .describe('End date in YYYY-MM-DD format (e.g. "2024-12-31").'),
     seriesType: z
       .enum(['daily', 'instantaneous'])
       .default('daily')
@@ -173,8 +179,27 @@ export const waterGetSeries = tool('water_get_series', {
   ],
 
   async handler(input, ctx) {
+    // Calendar validity: reject dates that pass the YYYY-MM-DD regex but aren't real calendar
+    // dates — both NaN cases (month > 12, day > 31) and JS rollover cases (e.g. Feb 30 → Mar 1,
+    // Feb 29 on a non-leap year → Mar 1). Round-trip through UTC to catch rollovers.
+    const startParsed = new Date(`${input.startDate}T00:00:00Z`);
+    const endParsed = new Date(`${input.endDate}T00:00:00Z`);
+    const toUtcDate = (d: Date) =>
+      `${d.getUTCFullYear()}-${String(d.getUTCMonth() + 1).padStart(2, '0')}-${String(d.getUTCDate()).padStart(2, '0')}`;
+    if (Number.isNaN(startParsed.getTime()) || toUtcDate(startParsed) !== input.startDate) {
+      throw ctx.fail(
+        'invalid_date_range',
+        `Invalid startDate "${input.startDate}" — not a real calendar date. Use YYYY-MM-DD (e.g. month must be 01–12, day must be valid for the month).`,
+      );
+    }
+    if (Number.isNaN(endParsed.getTime()) || toUtcDate(endParsed) !== input.endDate) {
+      throw ctx.fail(
+        'invalid_date_range',
+        `Invalid endDate "${input.endDate}" — not a real calendar date. Use YYYY-MM-DD (e.g. month must be 01–12, day must be valid for the month).`,
+      );
+    }
     // Validate date range order
-    if (input.startDate > input.endDate) {
+    if (startParsed > endParsed) {
       throw ctx.fail(
         'invalid_date_range',
         `startDate (${input.startDate}) must be before endDate (${input.endDate}).`,

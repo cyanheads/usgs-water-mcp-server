@@ -160,6 +160,59 @@ describe('waterGetSeries', () => {
     expect(result.canvas_id).toBeUndefined();
   });
 
+  it('rejects non-ISO startDate at Zod parse level (format error)', () => {
+    expect(() =>
+      waterGetSeries.input.parse({
+        site: '01646500',
+        parameterCd: '00060',
+        startDate: 'June 1 2024',
+        endDate: '2024-06-10',
+      }),
+    ).toThrow();
+  });
+
+  it('rejects non-ISO endDate at Zod parse level (format error)', () => {
+    expect(() =>
+      waterGetSeries.input.parse({
+        site: '01646500',
+        parameterCd: '00060',
+        startDate: '2024-01-01',
+        endDate: 'not-a-date',
+      }),
+    ).toThrow();
+  });
+
+  it('throws invalid_date_range for calendar-invalid startDate (month 13)', async () => {
+    const ctx = createMockContext({ errors: waterGetSeries.errors });
+    // Bypass Zod regex with a raw object — the regex allows YYYY-MM-DD shape, handler validates calendar
+    const input = {
+      site: '01646500',
+      parameterCd: '00060',
+      startDate: '2024-13-99',
+      endDate: '2024-12-31',
+      seriesType: 'daily' as const,
+    };
+    await expect(waterGetSeries.handler(input, ctx)).rejects.toMatchObject({
+      code: JsonRpcErrorCode.InvalidParams,
+      data: { reason: 'invalid_date_range' },
+    });
+  });
+
+  it('throws invalid_date_range for rollover startDate (Feb 30 → normalizes to Mar 1)', async () => {
+    const ctx = createMockContext({ errors: waterGetSeries.errors });
+    const input = {
+      site: '01646500',
+      parameterCd: '00060',
+      startDate: '2024-02-30',
+      endDate: '2024-12-31',
+      seriesType: 'daily' as const,
+    };
+    await expect(waterGetSeries.handler(input, ctx)).rejects.toMatchObject({
+      code: JsonRpcErrorCode.InvalidParams,
+      data: { reason: 'invalid_date_range' },
+    });
+  });
+
   it('throws invalid_date_range when endDate is before startDate', async () => {
     const ctx = createMockContext({ errors: waterGetSeries.errors });
     const input = waterGetSeries.input.parse({
