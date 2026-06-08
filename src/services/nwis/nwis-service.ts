@@ -143,18 +143,22 @@ function parseFloat_(s: string | undefined): number | null {
 
 /** Map a single RDB row from the NWIS site service to an NwisSite. */
 function mapSiteRow(r: Record<string, string>, fallbackSiteNo?: string): NwisSite {
+  const drainageArea = parseFloat_(r['drain_area_va']);
+  const altitude = parseFloat_(r['alt_va']);
+  const contributingArea = parseFloat_(r['contrib_drain_area_va']);
   return {
     siteNumber: r['site_no'] ?? fallbackSiteNo ?? '',
     siteName: r['station_nm'] ?? '',
     siteType: r['site_tp_cd'] ?? '',
     latitude: parseFloat_(r['dec_lat_va']) ?? 0,
     longitude: parseFloat_(r['dec_long_va']) ?? 0,
-    // state_cd and county_cd are only present in siteOutput=expanded; omit rather than ''
+    // state_cd, county_cd, drain_area_va, alt_va, contrib_drain_area_va only present in siteOutput=expanded
     ...(r['state_cd'] !== undefined && r['state_cd'] !== '' ? { stateCd: r['state_cd'] } : {}),
     ...(r['county_cd'] !== undefined && r['county_cd'] !== '' ? { countyCd: r['county_cd'] } : {}),
+    ...(drainageArea !== null ? { drainageArea } : {}),
+    ...(altitude !== null ? { altitude } : {}),
+    ...(contributingArea !== null ? { contributingArea } : {}),
     hucCd: r['huc_cd'] ?? '',
-    dataTypes: r['data_type_cd'] ? r['data_type_cd'].split(',').map((s) => s.trim()) : [],
-    parameterCds: r['parm_cd'] ? [r['parm_cd']] : [],
   };
 }
 

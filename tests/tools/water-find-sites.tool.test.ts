@@ -28,24 +28,49 @@ const MOCK_SITES: NwisSite[] = [
     stateCd: '24',
     countyCd: '031',
     hucCd: '02070008',
-    dataTypes: ['iv', 'dv'],
-    parameterCds: ['00060', '00065'],
+    drainageArea: 11560,
+    altitude: 35.12,
+    contributingArea: 11550,
   },
 ];
+
+/** Build N minimal mock sites (basic mode — no expanded fields). */
+function makeSites(count: number): NwisSite[] {
+  return Array.from({ length: count }, (_, i) => ({
+    siteNumber: String(10000000 + i).padStart(8, '0'),
+    siteName: `MOCK SITE ${i}`,
+    siteType: 'GW',
+    latitude: 38.0 + i * 0.01,
+    longitude: -98.0,
+    hucCd: '10270206',
+  }));
+}
 
 describe('waterFindSites', () => {
   beforeEach(() => {
     vi.clearAllMocks();
   });
 
-  it('returns matching sites', async () => {
+  it('returns matching sites with truncated=false when under cap', async () => {
     mockFindSites.mockResolvedValue(MOCK_SITES);
     const ctx = createMockContext({ errors: waterFindSites.errors });
     const input = waterFindSites.input.parse({ bbox: '-77.5,38.5,-76.5,39.5' });
     const result = await waterFindSites.handler(input, ctx);
     expect(result.total).toBe(1);
+    expect(result.truncated).toBe(false);
+    expect(result.upstreamTotal).toBe(1);
     expect(result.sites[0]?.siteNumber).toBe('01646500');
-    expect(result.sites[0]?.dataTypes).toContain('iv');
+  });
+
+  it('caps at 500 and returns truncated=true + upstreamTotal when over cap', async () => {
+    mockFindSites.mockResolvedValue(makeSites(800));
+    const ctx = createMockContext({ errors: waterFindSites.errors });
+    const input = waterFindSites.input.parse({ stateCd: 'KS', siteType: 'GW' });
+    const result = await waterFindSites.handler(input, ctx);
+    expect(result.truncated).toBe(true);
+    expect(result.total).toBe(500);
+    expect(result.upstreamTotal).toBe(800);
+    expect(result.sites).toHaveLength(500);
   });
 
   it('throws no_sites_found when service returns empty array', async () => {
@@ -81,7 +106,7 @@ describe('waterFindSites', () => {
   });
 
   it('formats sites as structured markdown with site number, type, coords', () => {
-    const result = { sites: MOCK_SITES, total: 1 };
+    const result = { sites: MOCK_SITES, total: 1, truncated: false, upstreamTotal: 1 };
     const blocks = waterFindSites.format!(result);
     const text = blocks[0]?.text ?? '';
     expect(text).toContain('01646500');
@@ -89,21 +114,38 @@ describe('waterFindSites', () => {
     expect(text).toContain('ST');
     expect(text).toContain('38.9495');
     expect(text).toContain('02070008');
-    expect(text).toContain('iv');
     // stateCd and countyCd are populated in this mock (expanded mode)
     expect(text).toContain('24');
     expect(text).toContain('031');
+    // Expanded drainage/altitude fields
+    expect(text).toContain('11560');
+    expect(text).toContain('35.12');
   });
 
   it('formats sites without state/county when absent (basic mode)', () => {
-    const basicSite = { ...MOCK_SITES[0]!, stateCd: undefined, countyCd: undefined };
-    const result = { sites: [basicSite], total: 1 };
+    const basicSite: NwisSite = {
+      ...MOCK_SITES[0]!,
+      stateCd: undefined,
+      countyCd: undefined,
+      drainageArea: undefined,
+      altitude: undefined,
+    };
+    const result = { sites: [basicSite], total: 1, truncated: false, upstreamTotal: 1 };
     const blocks = waterFindSites.format!(result);
     const text = blocks[0]?.text ?? '';
     expect(text).toContain('01646500');
-    // Should not show empty state/county labels
+    // Should not show empty state/county or drainage labels
     expect(text).not.toContain('State: undefined');
     expect(text).not.toContain('County: undefined');
+    expect(text).not.toContain('Drainage area');
+  });
+
+  it('formats truncated result with cap notice', () => {
+    const result = { sites: makeSites(500), total: 500, truncated: true, upstreamTotal: 800 };
+    const blocks = waterFindSites.format!(result);
+    const text = blocks[0]?.text ?? '';
+    expect(text).toContain('800');
+    expect(text).toContain('truncated');
   });
 
   it('populates filter enrichment on successful result', async () => {

@@ -5,18 +5,20 @@
 
 /** A single USGS monitoring site returned from the site service. */
 export interface NwisSite {
+  /** Altitude of the gage datum in feet above sea level. Present only when fetched with siteOutput=expanded. */
+  altitude?: number;
+  /** Contributing drainage area in square miles. Present only when fetched with siteOutput=expanded. */
+  contributingArea?: number;
   /** County FIPS code (3 digits). Present only when fetched with siteOutput=expanded. */
   countyCd?: string;
-  /** Available data types (iv, dv, etc.) when present. */
-  dataTypes: string[];
+  /** Drainage area in square miles. Present only when fetched with siteOutput=expanded. */
+  drainageArea?: number;
   /** 8-digit HUC. */
   hucCd: string;
   /** Decimal latitude. */
   latitude: number;
   /** Decimal longitude. */
   longitude: number;
-  /** Parameter codes available at the site when present. */
-  parameterCds: string[];
   /** Human-readable site name. */
   siteName: string;
   /** USGS site number (8–15 digits). */

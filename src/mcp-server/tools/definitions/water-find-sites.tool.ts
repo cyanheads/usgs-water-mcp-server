@@ -8,15 +8,19 @@ import { tool, z } from '@cyanheads/mcp-ts-core';
 import { JsonRpcErrorCode } from '@cyanheads/mcp-ts-core/errors';
 import { findSites } from '@/services/nwis/nwis-service.js';
 
+/** Maximum sites returned in a single response. Prevents token overflows on broad queries. */
+const SITE_CAP = 500;
+
 export const waterFindSites = tool('water_find_sites', {
   description:
     'Find USGS water monitoring sites by bounding box, state, county, or HUC watershed code. ' +
     'Filter by site type (stream gage, groundwater well, lake) and parameter availability. ' +
-    'Returns site numbers, names, coordinates, types, and available data type and parameter codes. ' +
+    'Returns site numbers, names, coordinates, types, and (in expanded mode) drainage area and altitude. ' +
     'Call this first to discover site numbers — water_get_readings, water_get_series, and ' +
-    'water_get_conditions all require a site number, and parameter availability varies by site. ' +
-    'NWIS has no result-count limit; scope results geographically (bbox) or by state/county/HUC ' +
-    'to avoid oversized responses.',
+    'water_get_conditions all require a site number. ' +
+    'To check which parameters or data types a site carries, use the parameterCd or hasDataTypeCd filters. ' +
+    'Results are capped at 500 sites; when truncated=true the full upstream count is in upstreamTotal — ' +
+    'narrow the query with bbox, countyCd, huc, siteType, parameterCd, or hasDataTypeCd to get all matches.',
   annotations: { readOnlyHint: true, idempotentHint: true, openWorldHint: true },
   input: z.object({
     bbox: z
@@ -117,22 +121,47 @@ export const waterFindSites = tool('water_find_sites', {
               .describe(
                 '8-digit Hydrologic Unit Code (HUC8) for the watershed containing this site.',
               ),
-            dataTypes: z
-              .array(
-                z.string().describe('A data type code available at this site (e.g. "iv", "dv").'),
-              )
-              .describe('Available data type codes at this site.'),
-            parameterCds: z
-              .array(z.string().describe('A parameter code available at this site (e.g. "00060").'))
+            drainageArea: z
+              .number()
+              .optional()
               .describe(
-                'Parameter codes available at this site. Present when siteOutput="expanded" or ' +
-                  'when a parameterCd filter was applied; may be empty for basic output.',
+                'Total drainage area in square miles. ' +
+                  'Populated only when siteOutput="expanded"; absent in basic mode.',
+              ),
+            altitude: z
+              .number()
+              .optional()
+              .describe(
+                'Altitude of the gage datum in feet above sea level (NAVD 88 or NGVD 29). ' +
+                  'Populated only when siteOutput="expanded"; absent in basic mode.',
+              ),
+            contributingArea: z
+              .number()
+              .optional()
+              .describe(
+                'Contributing drainage area in square miles (may differ from drainageArea for regulated basins). ' +
+                  'Populated only when siteOutput="expanded"; absent in basic mode.',
               ),
           })
           .describe('A USGS monitoring site with location, type, and available data.'),
       )
-      .describe('Matching USGS monitoring sites.'),
-    total: z.number().int().describe('Total number of sites returned in this response.'),
+      .describe(
+        'Matching USGS monitoring sites (capped at 500; see truncated/upstreamTotal for overflow).',
+      ),
+    total: z.number().int().describe('Number of sites returned in this response (at most 500).'),
+    truncated: z
+      .boolean()
+      .describe(
+        'True when the upstream result set exceeded the 500-site cap. ' +
+          'Narrow filters (add bbox, countyCd, huc, siteType, parameterCd, or hasDataTypeCd) to retrieve all matches.',
+      ),
+    upstreamTotal: z
+      .number()
+      .int()
+      .describe(
+        'Total number of sites matching the query upstream, before the 500-site cap was applied. ' +
+          'Equals total when truncated=false.',
+      ),
   }),
 
   enrichment: {
@@ -149,6 +178,12 @@ export const waterFindSites = tool('water_find_sites', {
           .describe('Site output mode used (basic or expanded).'),
       })
       .describe('Filters applied to this query.'),
+    notice: z
+      .string()
+      .optional()
+      .describe(
+        'Advisory when results were capped — add narrowing filters to retrieve all matches.',
+      ),
   },
 
   enrichmentTrailer: {
@@ -236,6 +271,10 @@ export const waterFindSites = tool('water_find_sites', {
       throw ctx.fail('no_sites_found', 'No USGS sites match the specified filters.');
     }
 
+    const upstreamTotal = sites.length;
+    const truncated = upstreamTotal > SITE_CAP;
+    const capped = truncated ? sites.slice(0, SITE_CAP) : sites;
+
     ctx.enrich({
       filters: {
         stateCd: input.stateCd,
@@ -246,22 +285,30 @@ export const waterFindSites = tool('water_find_sites', {
         hasDataTypeCd: input.hasDataTypeCd,
         siteOutput: input.siteOutput,
       },
+      notice: truncated
+        ? `Result capped at ${SITE_CAP} of ${upstreamTotal} matching sites. Add bbox, countyCd, huc, siteType, parameterCd, or hasDataTypeCd filters to narrow the query.`
+        : undefined,
     });
 
-    ctx.log.info('Sites found', { count: sites.length });
-    return { sites, total: sites.length };
+    ctx.log.info('Sites found', { count: capped.length, upstreamTotal, truncated });
+    return { sites: capped, total: capped.length, truncated, upstreamTotal };
   },
 
   format(result) {
-    const lines = [`**${result.total} site(s) found**\n`];
+    const header = result.truncated
+      ? `**${result.total} site(s) shown** (truncated; ${result.upstreamTotal} total matched — narrow filters to retrieve all)\n`
+      : `**${result.total} site(s) found**\n`;
+    const lines = [header];
     for (const s of result.sites) {
       lines.push(
         `### ${s.siteName} (${s.siteNumber})`,
         `**Type:** ${s.siteType} | **Lat/Lon:** ${s.latitude}, ${s.longitude}`,
         `**HUC:** ${s.hucCd}${s.stateCd ? ` | **State:** ${s.stateCd}` : ''}${s.countyCd ? ` | **County:** ${s.countyCd}` : ''}`,
       );
-      if (s.dataTypes.length > 0) lines.push(`**Data types:** ${s.dataTypes.join(', ')}`);
-      if (s.parameterCds.length > 0) lines.push(`**Parameters:** ${s.parameterCds.join(', ')}`);
+      if (s.drainageArea !== undefined)
+        lines.push(
+          `**Drainage area:** ${s.drainageArea} mi²${s.altitude !== undefined ? ` | **Altitude:** ${s.altitude} ft` : ''}${s.contributingArea !== undefined ? ` | **Contributing area:** ${s.contributingArea} mi²` : ''}`,
+        );
       lines.push('');
     }
     return [{ type: 'text', text: lines.join('\n') }];
