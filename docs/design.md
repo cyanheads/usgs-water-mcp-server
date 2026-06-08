@@ -64,7 +64,7 @@ No OGC API service at launch. The OGC API (`api.waterdata.usgs.gov/ogcapi/v0`) i
 | Env Var | Required | Description |
 |:--------|:---------|:------------|
 | `CANVAS_PROVIDER_TYPE` | No | Set to `duckdb` to enable DataCanvas spillover for large series. Optional — without it, `water_get_series` returns a truncated preview. |
-| `USGS_USER_AGENT` | No | Custom User-Agent string for USGS requests. USGS requests a descriptive User-Agent per their terms; defaults to `usgs-water-mcp-server/0.1.3 (contact: https://github.com/cyanheads/usgs-water-mcp-server)`. |
+| `USGS_USER_AGENT` | No | Custom User-Agent string for USGS requests. USGS requests a descriptive User-Agent per their terms; defaults to `usgs-water-mcp-server/0.1.4 (contact: https://github.com/cyanheads/usgs-water-mcp-server)`. |
 | `MCP_TRANSPORT_TYPE` | No | `stdio` (default) or `http`. Framework-managed. |
 | `PORT` | No | HTTP port when transport is `http`. Default `3000`. Framework-managed. |
 
