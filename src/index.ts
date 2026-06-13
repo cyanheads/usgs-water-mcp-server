@@ -21,6 +21,8 @@ import {
 import { setCanvas } from './services/canvas/canvas-accessor.js';
 
 await createApp({
+  name: 'usgs-water-mcp-server',
+  title: 'usgs-water-mcp-server',
   tools: [
     waterListParameters,
     waterFindSites,

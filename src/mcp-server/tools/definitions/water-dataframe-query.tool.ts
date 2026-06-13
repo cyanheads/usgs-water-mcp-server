@@ -64,7 +64,7 @@ export const waterDataframeQuery = tool('water_dataframe_query', {
     },
     {
       reason: 'invalid_sql',
-      code: JsonRpcErrorCode.InvalidParams,
+      code: JsonRpcErrorCode.ValidationError,
       when: 'The SQL is not a read-only SELECT, contains disallowed functions, or is syntactically invalid.',
       recovery:
         'Use only SELECT statements. Do not use file-reading functions (read_csv, read_parquet, etc.).',
@@ -95,7 +95,10 @@ export const waterDataframeQuery = tool('water_dataframe_query', {
 
     let result: QueryResult;
     try {
-      result = await instance.query(input.sql, { signal: ctx.signal });
+      result = await instance.query(input.sql, {
+        signal: ctx.signal,
+        denySystemCatalogs: true,
+      });
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : String(err);
       if (

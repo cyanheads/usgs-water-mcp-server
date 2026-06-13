@@ -78,7 +78,7 @@ describe('waterGetReadings', () => {
     const ctx = createMockContext({ errors: waterGetReadings.errors });
     const input = waterGetReadings.input.parse({ sites: ['BADSITE'] });
     await expect(waterGetReadings.handler(input, ctx)).rejects.toMatchObject({
-      code: JsonRpcErrorCode.InvalidParams,
+      code: JsonRpcErrorCode.ValidationError,
       data: { reason: 'invalid_site_format' },
     });
   });
@@ -88,7 +88,7 @@ describe('waterGetReadings', () => {
     const ctx = createMockContext({ errors: waterGetReadings.errors });
     const input = waterGetReadings.input.parse({ sites: ['01646500'] });
     await expect(waterGetReadings.handler(input, ctx)).rejects.toMatchObject({
-      code: JsonRpcErrorCode.InternalError,
+      code: JsonRpcErrorCode.ServiceUnavailable,
       data: { reason: 'upstream_error' },
     });
   });

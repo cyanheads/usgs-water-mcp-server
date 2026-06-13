@@ -90,7 +90,7 @@ describe('waterFindSites', () => {
     const ctx = createMockContext({ errors: waterFindSites.errors });
     const input = waterFindSites.input.parse({ bbox: 'bad-value' });
     await expect(waterFindSites.handler(input, ctx)).rejects.toMatchObject({
-      code: JsonRpcErrorCode.InvalidParams,
+      code: JsonRpcErrorCode.ValidationError,
       data: { reason: 'invalid_filter' },
     });
   });
@@ -100,7 +100,7 @@ describe('waterFindSites', () => {
     const ctx = createMockContext({ errors: waterFindSites.errors });
     const input = waterFindSites.input.parse({ stateCd: 'VA' });
     await expect(waterFindSites.handler(input, ctx)).rejects.toMatchObject({
-      code: JsonRpcErrorCode.InternalError,
+      code: JsonRpcErrorCode.ServiceUnavailable,
       data: { reason: 'upstream_error' },
     });
   });

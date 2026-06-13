@@ -193,7 +193,7 @@ describe('waterGetSeries', () => {
       seriesType: 'daily' as const,
     };
     await expect(waterGetSeries.handler(input, ctx)).rejects.toMatchObject({
-      code: JsonRpcErrorCode.InvalidParams,
+      code: JsonRpcErrorCode.ValidationError,
       data: { reason: 'invalid_date_range' },
     });
   });
@@ -208,7 +208,7 @@ describe('waterGetSeries', () => {
       seriesType: 'daily' as const,
     };
     await expect(waterGetSeries.handler(input, ctx)).rejects.toMatchObject({
-      code: JsonRpcErrorCode.InvalidParams,
+      code: JsonRpcErrorCode.ValidationError,
       data: { reason: 'invalid_date_range' },
     });
   });
@@ -222,7 +222,7 @@ describe('waterGetSeries', () => {
       endDate: '2024-01-01',
     });
     await expect(waterGetSeries.handler(input, ctx)).rejects.toMatchObject({
-      code: JsonRpcErrorCode.InvalidParams,
+      code: JsonRpcErrorCode.ValidationError,
       data: { reason: 'invalid_date_range' },
     });
   });
@@ -271,7 +271,7 @@ describe('waterGetSeries', () => {
       endDate: '2024-12-31',
     });
     await expect(waterGetSeries.handler(input, ctx)).rejects.toMatchObject({
-      code: JsonRpcErrorCode.InvalidParams,
+      code: JsonRpcErrorCode.ValidationError,
       data: { reason: 'invalid_date_range' },
     });
   });
@@ -286,7 +286,7 @@ describe('waterGetSeries', () => {
       endDate: '2024-12-31',
     });
     await expect(waterGetSeries.handler(input, ctx)).rejects.toMatchObject({
-      code: JsonRpcErrorCode.InternalError,
+      code: JsonRpcErrorCode.ServiceUnavailable,
       data: { reason: 'upstream_error' },
     });
   });

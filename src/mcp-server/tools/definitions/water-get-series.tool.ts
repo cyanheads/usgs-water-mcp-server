@@ -165,13 +165,13 @@ export const waterGetSeries = tool('water_get_series', {
     },
     {
       reason: 'invalid_date_range',
-      code: JsonRpcErrorCode.InvalidParams,
+      code: JsonRpcErrorCode.ValidationError,
       when: 'endDate is before startDate, or a date is malformed.',
       recovery: 'Ensure startDate is before endDate and both are in YYYY-MM-DD format.',
     },
     {
       reason: 'upstream_error',
-      code: JsonRpcErrorCode.InternalError,
+      code: JsonRpcErrorCode.ServiceUnavailable,
       when: 'NWIS returned a 5xx error or the request timed out.',
       recovery: 'The USGS service is temporarily unavailable. Retry after a short backoff.',
       retryable: true,

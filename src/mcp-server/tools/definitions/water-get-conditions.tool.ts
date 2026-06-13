@@ -152,7 +152,7 @@ export const waterGetConditions = tool('water_get_conditions', {
     },
     {
       reason: 'upstream_error',
-      code: JsonRpcErrorCode.InternalError,
+      code: JsonRpcErrorCode.ServiceUnavailable,
       when: 'NWIS IV or stat endpoint returned a 5xx error or timed out.',
       recovery: 'The USGS service is temporarily unavailable. Retry after a short backoff.',
       retryable: true,

@@ -85,7 +85,7 @@ describe('waterDataframeQuery', () => {
       sql: 'INVALID SQL HERE',
     });
     await expect(waterDataframeQuery.handler(input, ctx)).rejects.toMatchObject({
-      code: JsonRpcErrorCode.InvalidParams,
+      code: JsonRpcErrorCode.ValidationError,
       data: { reason: 'invalid_sql' },
     });
   });

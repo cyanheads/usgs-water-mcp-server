@@ -175,7 +175,7 @@ describe('waterGetConditions', () => {
     const ctx = createMockContext({ errors: waterGetConditions.errors });
     const input = waterGetConditions.input.parse({ site: '01646500', parameterCd: '00060' });
     await expect(waterGetConditions.handler(input, ctx)).rejects.toMatchObject({
-      code: JsonRpcErrorCode.InternalError,
+      code: JsonRpcErrorCode.ServiceUnavailable,
       data: { reason: 'upstream_error' },
     });
   });

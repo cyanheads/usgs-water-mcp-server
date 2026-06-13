@@ -111,13 +111,13 @@ export const waterGetReadings = tool('water_get_readings', {
     },
     {
       reason: 'invalid_site_format',
-      code: JsonRpcErrorCode.InvalidParams,
+      code: JsonRpcErrorCode.ValidationError,
       when: 'NWIS rejected the request — site number format is invalid (not 8–15 digits).',
       recovery: 'Correct the site number format. Site numbers are 8–15 digit strings.',
     },
     {
       reason: 'upstream_error',
-      code: JsonRpcErrorCode.InternalError,
+      code: JsonRpcErrorCode.ServiceUnavailable,
       when: 'NWIS returned a 5xx error or the request timed out.',
       recovery: 'The USGS service is temporarily unavailable. Retry after a short backoff.',
       retryable: true,

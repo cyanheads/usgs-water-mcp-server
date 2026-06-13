@@ -212,14 +212,14 @@ export const waterFindSites = tool('water_find_sites', {
     },
     {
       reason: 'invalid_filter',
-      code: JsonRpcErrorCode.InvalidParams,
+      code: JsonRpcErrorCode.ValidationError,
       when: 'NWIS rejected the request due to an invalid filter value or unsupported combination.',
       recovery:
         'Correct the filter values — check bBox decimal degree format, valid state codes, and HUC length.',
     },
     {
       reason: 'upstream_error',
-      code: JsonRpcErrorCode.InternalError,
+      code: JsonRpcErrorCode.ServiceUnavailable,
       when: 'NWIS returned a 5xx error or the request timed out.',
       recovery: 'The USGS service is temporarily unavailable. Retry after a short backoff.',
       retryable: true,
