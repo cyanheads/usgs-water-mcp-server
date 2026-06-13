@@ -2,6 +2,10 @@
 
 All notable changes to this project. Each entry links to its full per-version file in [changelog/](changelog/).
 
+## [0.1.5](changelog/0.1.x/0.1.5.md) — 2026-06-12
+
+Adopt @cyanheads/mcp-ts-core ^0.10.6: refined error codes, denySystemCatalogs SQL hardening, explicit server identity, Docker healthcheck, and post-pack bundle cleaning
+
 ## [0.1.4](changelog/0.1.x/0.1.4.md) — 2026-06-08
 
 Fix water_find_sites unbounded results and empty expanded fields; add YYYY-MM-DD date validation to water_get_series
