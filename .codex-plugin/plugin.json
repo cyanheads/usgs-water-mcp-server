@@ -1,25 +1,25 @@
 {
-  "name": "usgs-water-mcp-server",
+  "name": "@cyanheads/usgs-water-mcp-server",
   "version": "0.1.5",
-  "description": "",
+  "description": "Query real-time and historical water data from ~8,000 USGS stream gages and groundwater wells via MCP. STDIO or Streamable HTTP.",
   "author": {
-    "name": "",
-    "email": "",
-    "url": ""
+    "name": "cyanheads",
+    "email": "casey@caseyjhand.com",
+    "url": "https://github.com/cyanheads"
   },
-  "homepage": "",
-  "repository": "",
+  "homepage": "https://github.com/cyanheads/usgs-water-mcp-server#readme",
+  "repository": "git+https://github.com/cyanheads/usgs-water-mcp-server.git",
   "license": "Apache-2.0",
-  "keywords": ["mcp", "mcp-server", "model-context-protocol"],
+  "keywords": ["mcp", "mcp-server", "model-context-protocol", "typescript", "bun", "stdio", "streamable-http", "ai-agent", "usgs", "water-data", "hydrology", "nwis", "stream-gage", "groundwater", "streamflow", "water-quality", "real-time-data", "environmental-data"],
   "mcpServers": "./.codex-plugin/mcp.json",
   "interface": {
     "displayName": "usgs-water-mcp-server",
-    "shortDescription": "",
-    "longDescription": "",
-    "developerName": "",
-    "category": "",
+    "shortDescription": "Query real-time and historical water data from ~8,000 USGS stream gages and groundwater wells via MCP.",
+    "longDescription": "Query real-time and historical water data from roughly 8,000 USGS stream gages and groundwater wells. Supports site discovery, latest readings, historical time series, and current conditions ranked against period-of-record percentiles. Deployable as stdio or streamable HTTP.",
+    "developerName": "cyanheads",
+    "category": "science",
     "capabilities": ["Read"],
-    "websiteURL": "",
+    "websiteURL": "https://github.com/cyanheads/usgs-water-mcp-server",
     "defaultPrompt": []
   }
 }
