@@ -1,7 +1,7 @@
 {
-  "usgs-water-mcp-server": {
+  "@cyanheads/usgs-water-mcp-server": {
     "command": "npx",
-    "args": ["-y", "usgs-water-mcp-server"],
+    "args": ["-y", "@cyanheads/usgs-water-mcp-server"],
     "env": {
       "MCP_TRANSPORT_TYPE": "stdio"
     }
