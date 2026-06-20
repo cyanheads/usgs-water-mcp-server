@@ -2,6 +2,10 @@
 
 All notable changes to this project. Each entry links to its full per-version file in [changelog/](changelog/).
 
+## [0.1.6](changelog/0.1.x/0.1.6.md) — 2026-06-20
+
+Adopt @cyanheads/mcp-ts-core ^0.10.9: check-dependency-specifiers devcheck guard, plugin-manifest packaging checks, re-synced framework tooling and skills. Framework-maintenance only — no tool behavior changes.
+
 ## [0.1.5](changelog/0.1.x/0.1.5.md) — 2026-06-12
 
 Adopt @cyanheads/mcp-ts-core ^0.10.6: refined error codes, denySystemCatalogs SQL hardening, explicit server identity, Docker healthcheck, and post-pack bundle cleaning

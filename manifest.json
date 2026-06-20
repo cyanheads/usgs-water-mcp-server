@@ -1,7 +1,7 @@
 {
   "manifest_version": "0.3",
   "name": "usgs-water-mcp-server",
-  "version": "0.1.5",
+  "version": "0.1.6",
   "description": "Query real-time and historical USGS water data from ~8,000 stream gages and groundwater wells.",
   "author": { "name": "cyanheads" },
   "repository": {

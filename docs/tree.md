@@ -1,6 +1,6 @@
 # usgs-water-mcp-server - Directory Structure
 
-Generated on: 2026-06-13 03:44:23
+Generated on: 2026-06-20 18:26:46
 
 ```text
 usgs-water-mcp-server/
@@ -27,6 +27,7 @@ usgs-water-mcp-server/
 ├── scripts/
 │   ├── build-changelog.ts
 │   ├── build.ts
+│   ├── check-dependency-specifiers.ts
 │   ├── check-docs-sync.ts
 │   ├── check-framework-antipatterns.ts
 │   ├── check-skill-versions.ts
