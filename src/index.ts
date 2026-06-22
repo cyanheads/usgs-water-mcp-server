@@ -41,7 +41,7 @@ await createApp({
     '- Use water_find_sites to find sites by bbox, state, county, or HUC watershed\n' +
     '- water_get_readings returns the latest ~15-min real-time values for up to 100 sites\n' +
     '- water_get_series returns a historical daily or instantaneous time series; large ranges spill to ' +
-    'DataCanvas (set CANVAS_PROVIDER_TYPE=duckdb) queryable via water_dataframe_query\n' +
+    'DataCanvas, queryable via water_dataframe_query when enabled on this server instance\n' +
     '- water_get_conditions gives a current reading ranked against the full period-of-record percentiles\n' +
     '- Groundwater depth (parameter 72019) uses the standard IV service — gwlevels was decommissioned Nov 2025',
   setup(core) {

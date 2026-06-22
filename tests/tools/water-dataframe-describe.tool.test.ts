@@ -47,6 +47,18 @@ describe('waterDataframeDescribe', () => {
     });
   });
 
+  it('canvas_disabled error is agent-facing and omits the CANVAS_PROVIDER_TYPE env var (regression: #8)', async () => {
+    mockCanvasInstance = undefined;
+    const ctx = createMockContext({ errors: waterDataframeDescribe.errors });
+    const input = waterDataframeDescribe.input.parse({ canvas_id: 'canvas0001xx' });
+    const error = (await waterDataframeDescribe
+      .handler(input, ctx)
+      .catch((e: unknown) => e)) as Error;
+    expect(error).toBeInstanceOf(Error);
+    expect(error.message).toBe('DataCanvas is not enabled on this server instance.');
+    expect(error.message).not.toContain('CANVAS_PROVIDER_TYPE');
+  });
+
   it('throws canvas_not_found when acquire throws not found', async () => {
     mockCanvasInstance = {
       acquire: vi.fn().mockRejectedValue(new Error('canvas not found or expired')),

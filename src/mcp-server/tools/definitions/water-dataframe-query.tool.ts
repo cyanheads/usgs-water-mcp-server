@@ -53,8 +53,9 @@ export const waterDataframeQuery = tool('water_dataframe_query', {
     {
       reason: 'canvas_disabled',
       code: JsonRpcErrorCode.InvalidRequest,
-      when: 'CANVAS_PROVIDER_TYPE is not set to duckdb.',
-      recovery: 'Set CANVAS_PROVIDER_TYPE=duckdb in the server environment to enable DataCanvas.',
+      when: 'DataCanvas is not enabled on this server instance.',
+      recovery:
+        'DataCanvas is not available on this server instance; use water_get_series to read the data directly.',
     },
     {
       reason: 'canvas_not_found',
@@ -74,10 +75,10 @@ export const waterDataframeQuery = tool('water_dataframe_query', {
   async handler(input, ctx) {
     const canvas = getCanvas();
     if (!canvas) {
-      throw ctx.fail(
-        'canvas_disabled',
-        'DataCanvas is not enabled. Set CANVAS_PROVIDER_TYPE=duckdb.',
+      ctx.log.info(
+        'DataCanvas not enabled; set CANVAS_PROVIDER_TYPE=duckdb to enable SQL queries over staged series.',
       );
+      throw ctx.fail('canvas_disabled', 'DataCanvas is not enabled on this server instance.');
     }
 
     ctx.log.info('Running dataframe query', { canvas_id: input.canvas_id });
