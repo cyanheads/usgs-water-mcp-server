@@ -2,6 +2,10 @@
 
 All notable changes to this project. Each entry links to its full per-version file in [changelog/](changelog/).
 
+## [0.1.7](changelog/0.1.x/0.1.7.md) — 2026-06-21
+
+Sanitize the CANVAS_PROVIDER_TYPE env var out of the canvas-disabled error contract and server instructions; reroute the operator hint to the server log. Follow-up to #2, which sanitized the tool descriptions.
+
 ## [0.1.6](changelog/0.1.x/0.1.6.md) — 2026-06-20
 
 Adopt @cyanheads/mcp-ts-core ^0.10.9: check-dependency-specifiers devcheck guard, plugin-manifest packaging checks, re-synced framework tooling and skills. Framework-maintenance only — no tool behavior changes.
