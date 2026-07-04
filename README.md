@@ -1,3 +1,5 @@
+[![MseeP.ai Security Assessment Badge](https://mseep.net/pr/cyanheads-usgs-water-mcp-server-badge.png)](https://mseep.ai/app/cyanheads-usgs-water-mcp-server)
+
 <div align="center">
   <h1>@cyanheads/usgs-water-mcp-server</h1>
   <p><b>Query real-time and historical water data from ~8,000 USGS stream gages and groundwater wells via MCP. STDIO or Streamable HTTP.</b>
