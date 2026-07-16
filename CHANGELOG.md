@@ -2,6 +2,10 @@
 
 All notable changes to this project. Each entry links to its full per-version file in [changelog/](changelog/).
 
+## [0.1.9](changelog/0.1.x/0.1.9.md) — 2026-07-15
+
+Fix a midnight timezone bug in water_get_conditions' stat-row matching, add a percentileLabel field, and correct the hucCd width claim.
+
 ## [0.1.8](changelog/0.1.x/0.1.8.md) — 2026-07-15
 
 Validate NWIS inputs at the edge, bound and complete water_get_readings output, and adopt the mcp-ts-core 0.10.14 supply-chain baseline.

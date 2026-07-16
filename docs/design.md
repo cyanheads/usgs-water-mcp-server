@@ -9,7 +9,7 @@
 | `water_find_sites` | Find USGS monitoring sites by bounding box, state, county, or HUC. Filter by site type and parameter availability. Returns site number, name, type, coordinates, and available parameter codes. Required discovery step — downstream tools key on site numbers, and parameter availability varies. Note: NWIS has no limit param; scope results geographically (bbox) or by state/county/HUC. | `bbox`, `stateCd`, `countyCd`, `huc`, `siteType`, `parameterCd`, `hasDataTypeCd`, `siteOutput` | `readOnlyHint: true`, `idempotentHint: true`, `openWorldHint: true` |
 | `water_get_readings` | Get the latest instantaneous values (real-time, ~15 min) for one or more sites. Returns per-site results each including the siteNumber, parameter code, timestamp, value, unit, and provisional/approved qualifier. Accepts up to 100 site numbers in one call. Each series is capped at its 10 most recent records with the true count in `totalValues` and `truncated` flagging the cap — `water_get_series` is the tool for a full series. Requested sites NWIS returns nothing for are named in `missingSites`, so a partial batch is visible rather than inferred. | `sites` (array), `parameterCd` (array), `period` (ISO 8601 duration, e.g. `PT2H`, `P7D`) | `readOnlyHint: true`, `idempotentHint: true`, `openWorldHint: true` |
 | `water_get_series` | Get a time series of daily or instantaneous values for a site and parameter over a date range. Returns `siteNumber`, `parameterCd`, and value records (date/time, value, qualifiers). Large result sets (>500 rows) spill to DataCanvas — response includes `canvas_id` and `truncated` flag when canvas is available. | `site`, `parameterCd`, `startDate` (YYYY-MM-DD), `endDate` (YYYY-MM-DD), `seriesType` (`daily` \| `instantaneous`) | `readOnlyHint: true`, `idempotentHint: true`, `openWorldHint: true` |
-| `water_get_conditions` | Get current conditions at a site placed in historical context: today's value ranked against the site's daily percentile record. Returns the current reading alongside the percentile class (`record-high` / `above-normal` / `normal` / `below-normal` / `low` / `record-low`). Answers the real question — "is this flooding or drought?" — not just a raw number. | `site`, `parameterCd` | `readOnlyHint: true`, `idempotentHint: true`, `openWorldHint: true` |
+| `water_get_conditions` | Get current conditions at a site placed in historical context: today's value ranked against the site's daily percentile record. Returns the current reading alongside the percentile class (`record-high` / `above-normal` / `normal` / `below-normal` / `low` / `record-low`) and a `percentileLabel` stating that class's threshold in plain language. Answers the real question — "is this flooding or drought?" — not just a raw number. | `site`, `parameterCd` | `readOnlyHint: true`, `idempotentHint: true`, `openWorldHint: true` |
 | `water_list_parameters` | Static lookup of well-known USGS parameter codes with human-readable names, units, and domain. No network call. Solves the opaque-5-digit-code problem: an agent can call this first to discover that `00060` = "Discharge" (cfs), `00065` = "Gage height" (ft), `00010` = "Temperature" (°C), `72019` = "Depth to water, below land surface" (ft). | `group` (filter by domain: `streamflow` \| `groundwater` \| `temperature` \| `all`) | `readOnlyHint: true`, `idempotentHint: true`, `openWorldHint: false` |
 
 ### Resources
@@ -64,7 +64,7 @@ No OGC API service at launch. The OGC API (`api.waterdata.usgs.gov/ogcapi/v0`) i
 | Env Var | Required | Description |
 |:--------|:---------|:------------|
 | `CANVAS_PROVIDER_TYPE` | No | Set to `duckdb` to enable DataCanvas spillover for large series. Optional — without it, `water_get_series` returns a truncated preview. |
-| `USGS_USER_AGENT` | No | Custom User-Agent string for USGS requests. USGS requests a descriptive User-Agent per their terms; defaults to `usgs-water-mcp-server/0.1.8 (contact: https://github.com/cyanheads/usgs-water-mcp-server)`. |
+| `USGS_USER_AGENT` | No | Custom User-Agent string for USGS requests. USGS requests a descriptive User-Agent per their terms; defaults to `usgs-water-mcp-server/0.1.9 (contact: https://github.com/cyanheads/usgs-water-mcp-server)`. |
 | `MCP_TRANSPORT_TYPE` | No | `stdio` (default) or `http`. Framework-managed. |
 | `PORT` | No | HTTP port when transport is `http`. Default `3000`. Framework-managed. |
 
@@ -118,7 +118,7 @@ Verified against the live service; encoded as Zod patterns in `services/nwis/inp
 |:--|:-----|:--------|
 | 1a | `GET /nwis/iv?format=json&sites={siteId}&parameterCd={code}&period=PT2H` | Current value with qualifier |
 | 1b | `GET /nwis/stat?format=rdb&sites={siteId}&parameterCd={code}&statReportType=daily&statType=all` | Full daily percentile table |
-| 2 | Compute: look up today's month+day in the stat table, find the bounding percentiles | Classify into `record-high`/`above-normal`/`normal`/`below-normal`/`low`/`record-low` |
+| 2 | Compute: look up the observation's own month+day in the stat table, find the bounding percentiles | Classify into `record-high`/`above-normal`/`normal`/`below-normal`/`low`/`record-low` |
 
 Calls 1a and 1b run in `Promise.all`. If stat returns no data (new site, parameter not long enough), `water_get_conditions` returns the current reading with a note that historical context is unavailable — partial success, not a throw.
 
@@ -277,11 +277,16 @@ Statistics:           GET https://waterservices.usgs.gov/nwis/stat/?format=rdb&s
 
 ### Percentile classification table
 
-| Condition (`percentileClass` value) | Percentile range |
-|:-------------------------------------|:----------------|
-| `record-high` | ≥ p95 |
-| `above-normal` | p75 – p95 |
-| `normal` | p25 – p75 |
-| `below-normal` | p10 – p25 |
-| `low` | p05 – p10 |
-| `record-low` | < p05 |
+Each class ships with the `percentileLabel` below alongside it. `record-high` and `record-low` name percentile-of-record extremes, not verified all-time records — the stat row carries the true observed extremes separately in `max_va`/`min_va`. Since the raw `percentileClass` value is what reaches `structuredContent`, and schema description text is invisible wherever that value is read, the label has to be its own runtime field.
+
+| Condition (`percentileClass` value) | Percentile range | `percentileLabel` |
+|:-------------------------------------|:----------------|:------------------|
+| `record-high` | ≥ p95 | ≥ 95th percentile (percentile-of-record extreme, not a verified all-time record) |
+| `above-normal` | p75 – p95 | 75th–95th percentile |
+| `normal` | p25 – p75 | 25th–75th percentile |
+| `below-normal` | p10 – p25 | 10th–25th percentile |
+| `low` | p05 – p10 | 5th–10th percentile |
+| `record-low` | < p05 | < 5th percentile (percentile-of-record extreme, not a verified all-time record) |
+| `unknown` | thresholds unavailable | insufficient percentile data |
+
+The calendar row is matched on the observation timestamp's own `YYYY-MM-DD` prefix. NWIS IV timestamps carry an explicit UTC offset and the stat table's `month_nu`/`day_nu` are plain calendar integers, so parsing through `Date` would re-project the instant into the runtime's timezone and select a neighboring row for readings near midnight.

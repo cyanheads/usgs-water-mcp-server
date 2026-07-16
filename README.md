@@ -7,7 +7,7 @@
 
 <div align="center">
 
-[![Version](https://img.shields.io/badge/Version-0.1.8-blue.svg?style=flat-square)](./CHANGELOG.md) [![License](https://img.shields.io/badge/License-Apache%202.0-orange.svg?style=flat-square)](./LICENSE) [![Docker](https://img.shields.io/badge/Docker-ghcr.io-2496ED?style=flat-square&logo=docker&logoColor=white)](https://github.com/users/cyanheads/packages/container/package/usgs-water-mcp-server) [![MCP SDK](https://img.shields.io/badge/MCP%20SDK-^1.29.0-green.svg?style=flat-square)](https://modelcontextprotocol.io/) [![npm](https://img.shields.io/npm/v/@cyanheads/usgs-water-mcp-server?style=flat-square&logo=npm&logoColor=white)](https://www.npmjs.com/package/@cyanheads/usgs-water-mcp-server) [![TypeScript](https://img.shields.io/badge/TypeScript-^6.0.3-3178C6.svg?style=flat-square)](https://www.typescriptlang.org/) [![Bun](https://img.shields.io/badge/Bun-v1.3.14-blueviolet.svg?style=flat-square)](https://bun.sh/)
+[![Version](https://img.shields.io/badge/Version-0.1.9-blue.svg?style=flat-square)](./CHANGELOG.md) [![License](https://img.shields.io/badge/License-Apache%202.0-orange.svg?style=flat-square)](./LICENSE) [![Docker](https://img.shields.io/badge/Docker-ghcr.io-2496ED?style=flat-square&logo=docker&logoColor=white)](https://github.com/users/cyanheads/packages/container/package/usgs-water-mcp-server) [![MCP SDK](https://img.shields.io/badge/MCP%20SDK-^1.29.0-green.svg?style=flat-square)](https://modelcontextprotocol.io/) [![npm](https://img.shields.io/npm/v/@cyanheads/usgs-water-mcp-server?style=flat-square&logo=npm&logoColor=white)](https://www.npmjs.com/package/@cyanheads/usgs-water-mcp-server) [![TypeScript](https://img.shields.io/badge/TypeScript-^6.0.3-3178C6.svg?style=flat-square)](https://www.typescriptlang.org/) [![Bun](https://img.shields.io/badge/Bun-v1.3.14-blueviolet.svg?style=flat-square)](https://bun.sh/)
 
 </div>
 
@@ -95,6 +95,8 @@ Get current hydrologic conditions placed in full historical context.
 
 - Fetches the current IV reading and the full daily percentile table in parallel
 - Classifies the reading: `record-high` (≥ p95), `above-normal` (p75–p95), `normal` (p25–p75), `below-normal` (p10–p25), `low` (p05–p10), `record-low` (< p05)
+- Pairs each class with a `percentileLabel` spelling out the threshold — `record-high` and `record-low` mark percentile-of-record extremes, not verified all-time records, and the label says so where the class name does not
+- Ranks against the observation's own calendar day, so a reading near midnight is not compared against the neighboring day's percentiles
 - Answers "is this flooding or drought?" — not just a raw number
 - Gracefully degrades when a site has insufficient record history: returns the current reading with `historicalContext: null` and an explanatory note
 
@@ -143,7 +145,7 @@ USGS NWIS–specific:
 
 Agent-friendly output:
 
-- Percentile classification on every conditions response — callers get a `percentileClass` string (`record-high`, `normal`, `record-low`, etc.) they can act on directly without parsing numeric thresholds
+- Percentile classification on every conditions response — callers get a `percentileClass` string (`record-high`, `normal`, `record-low`, etc.) they can act on directly without parsing numeric thresholds, plus a `percentileLabel` stating the threshold in plain language so the `record-*` classes are not mistaken for verified all-time records
 - Partial success on conditions: missing stat data returns `historicalContext: null` with an explanatory note rather than an error, so the current reading is always available when the site is valid
 - Partial success on batches: `water_get_readings` returns the series it got and names the rest in `missingSites`, so a silently dropped site never reads as a complete answer
 - Truncation signals: `water_get_series` reports `totalRecords` and `truncated`, and `water_get_readings` reports per-series `totalValues` plus `truncated`, so callers know when a preview is incomplete. `canvas_id` / `table_name` tell them exactly how to retrieve the rest
@@ -268,7 +270,7 @@ cp .env.example .env
 | Variable | Description | Default |
 |:---------|:------------|:--------|
 | `CANVAS_PROVIDER_TYPE` | Set to `duckdb` to enable DataCanvas spillover for large time-series results from `water_get_series`. | — |
-| `USGS_USER_AGENT` | Custom User-Agent string sent to USGS NWIS. USGS requests a descriptive User-Agent per their terms. | `usgs-water-mcp-server/0.1.8 (contact: https://github.com/cyanheads/usgs-water-mcp-server)` |
+| `USGS_USER_AGENT` | Custom User-Agent string sent to USGS NWIS. USGS requests a descriptive User-Agent per their terms. | `usgs-water-mcp-server/0.1.9 (contact: https://github.com/cyanheads/usgs-water-mcp-server)` |
 | `USGS_REQUEST_TIMEOUT_MS` | HTTP request timeout in milliseconds for NWIS calls. | `30000` |
 | `MCP_TRANSPORT_TYPE` | Transport: `stdio` or `http`. | `stdio` |
 | `MCP_HTTP_PORT` | Port for HTTP server. | `3010` |
