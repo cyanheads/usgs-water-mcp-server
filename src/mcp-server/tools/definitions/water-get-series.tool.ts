@@ -8,7 +8,8 @@ import { tool, z } from '@cyanheads/mcp-ts-core';
 import { spillover } from '@cyanheads/mcp-ts-core/canvas';
 import { JsonRpcErrorCode } from '@cyanheads/mcp-ts-core/errors';
 import { getCanvas } from '@/services/canvas/canvas-accessor.js';
-import { getSeries } from '@/services/nwis/nwis-service.js';
+import { ParameterCdSchema, SiteNumberSchema } from '@/services/nwis/input-schemas.js';
+import { classifyNwisFailure, getSeries } from '@/services/nwis/nwis-service.js';
 import type { NwisValueRecord } from '@/services/nwis/types.js';
 
 /** Threshold above which results spill to canvas. */
@@ -40,18 +41,15 @@ export const waterGetSeries = tool('water_get_series', {
     'Use water_find_sites to discover valid site numbers. Use water_list_parameters for parameter codes.',
   annotations: { readOnlyHint: true, idempotentHint: true, openWorldHint: true },
   input: z.object({
-    site: z
-      .string()
-      .describe(
-        'USGS site number (8–15 digits, e.g. "01646500" for Potomac River at Little Falls). ' +
-          'Use water_find_sites to discover valid site numbers.',
-      ),
-    parameterCd: z
-      .string()
-      .describe(
-        '5-digit USGS parameter code (e.g. "00060" for discharge, "00065" for gage height). ' +
-          'Use water_list_parameters to discover available codes.',
-      ),
+    site: SiteNumberSchema.describe(
+      'USGS site number (8–15 digits, e.g. "01646500" for Potomac River at Little Falls). ' +
+        'Use water_find_sites to discover valid site numbers.',
+    ),
+    parameterCd: ParameterCdSchema.describe(
+      'A single 5-digit USGS parameter code (e.g. "00060" for discharge, "00065" for gage height). ' +
+        'One code per call — this tool returns one series. ' +
+        'Use water_list_parameters to discover available codes.',
+    ),
     startDate: z
       .string()
       .regex(/^\d{4}-\d{2}-\d{2}$/, 'startDate must be in YYYY-MM-DD format (e.g. "2024-01-01").')
@@ -166,8 +164,15 @@ export const waterGetSeries = tool('water_get_series', {
     {
       reason: 'invalid_date_range',
       code: JsonRpcErrorCode.ValidationError,
-      when: 'endDate is before startDate, or a date is malformed.',
+      when: 'endDate is before startDate, or a date passes the YYYY-MM-DD shape check but is not a real calendar date.',
       recovery: 'Ensure startDate is before endDate and both are in YYYY-MM-DD format.',
+    },
+    {
+      reason: 'invalid_request',
+      code: JsonRpcErrorCode.ValidationError,
+      when: 'NWIS rejected the request. Input formats are validated against NWIS-accepted patterns before the call, so this surfaces a value that is well-formed but unacceptable upstream.',
+      recovery:
+        'Read the NWIS message in this error — it names the field it rejected. Correct that field and retry.',
     },
     {
       reason: 'upstream_error',
@@ -227,25 +232,13 @@ export const waterGetSeries = tool('water_get_series', {
         ctx.signal,
       );
     } catch (err: unknown) {
-      const msg = err instanceof Error ? err.message : String(err);
-      if (
-        msg.includes('rejected') ||
-        msg.includes('InvalidParams') ||
-        msg.includes('ValidationError')
-      ) {
-        throw ctx.fail('invalid_date_range', msg);
-      }
-      if (
-        msg.includes('unavailable') ||
-        msg.includes('ServiceUnavailable') ||
-        msg.includes('timed out')
-      ) {
-        throw ctx.fail('upstream_error', msg);
-      }
+      const failure = classifyNwisFailure(err);
+      if (failure) throw ctx.fail(failure.reason, failure.message, undefined, { cause: err });
       throw err;
     }
 
-    if (seriesList.length === 0) {
+    const ts = seriesList[0];
+    if (!ts) {
       // NWIS returns an empty timeSeries array for both unknown sites and date ranges with no
       // data — both map here. Use no_data_for_range when the site is plausible but the range
       // may be the issue; callers can retry with a narrower range.
@@ -255,9 +248,6 @@ export const waterGetSeries = tool('water_get_series', {
           `site may not exist, or no data in the requested date range (${input.startDate} to ${input.endDate}).`,
       );
     }
-
-    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-    const ts = seriesList[0]!;
     if (ts.values.length === 0) {
       throw ctx.fail(
         'no_data_for_range',

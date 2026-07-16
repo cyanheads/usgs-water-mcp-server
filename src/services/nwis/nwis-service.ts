@@ -4,7 +4,12 @@
  * @module services/nwis/nwis-service
  */
 
-import { serviceUnavailable, validationError } from '@cyanheads/mcp-ts-core/errors';
+import {
+  JsonRpcErrorCode,
+  McpError,
+  serviceUnavailable,
+  validationError,
+} from '@cyanheads/mcp-ts-core/errors';
 import { withRetry } from '@cyanheads/mcp-ts-core/utils';
 import { getServerConfig } from '@/config/server-config.js';
 import type {
@@ -95,6 +100,39 @@ async function fetchText(url: string, signal?: AbortSignal): Promise<string> {
   }
 
   return text;
+}
+
+// ── Failure classification ────────────────────────────────────────────────────
+
+/** An NWIS failure mapped onto the reason vocabulary every network-calling tool declares. */
+export interface NwisFailure {
+  /** NWIS's own message, which names the offending field verbatim on a rejected request. */
+  message: string;
+  reason: 'invalid_request' | 'upstream_error';
+}
+
+/**
+ * Classify an error raised by this module into the failure reason its calling tool declares.
+ *
+ * Every NWIS failure this module raises is already typed — an HTML 400 becomes a
+ * `validationError`, a 5xx becomes a `serviceUnavailable` — so callers branch on the error's
+ * code instead of re-matching its prose. `invalid_request` names no field on purpose: NWIS
+ * reports the offending one verbatim in the message (`period: Invalid format…`,
+ * `ParameterCd: length must be…`), and inferring a field from the wrapper text is what made a
+ * malformed period surface as a malformed site number.
+ *
+ * Returns null for anything this module did not classify — raw network faults and aborts — which
+ * callers rethrow for the framework's auto-classifier to handle.
+ */
+export function classifyNwisFailure(err: unknown): NwisFailure | null {
+  if (!(err instanceof McpError)) return null;
+  if (err.code === JsonRpcErrorCode.ValidationError) {
+    return { reason: 'invalid_request', message: err.message };
+  }
+  if (err.code === JsonRpcErrorCode.ServiceUnavailable) {
+    return { reason: 'upstream_error', message: err.message };
+  }
+  return null;
 }
 
 // ── RDB parser ────────────────────────────────────────────────────────────────
@@ -217,10 +255,9 @@ export async function getSiteInfo(
     operation: 'getSiteInfo',
   });
 
-  const rows = parseRdb(text);
-  if (rows.length === 0) return null;
-  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-  return mapSiteRow(rows[0]!, siteNumber);
+  const first = parseRdb(text)[0];
+  if (!first) return null;
+  return mapSiteRow(first, siteNumber);
 }
 
 // ── HTML entity decoder ───────────────────────────────────────────────────────

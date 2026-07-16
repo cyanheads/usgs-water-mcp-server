@@ -4,13 +4,20 @@
  * @module tests/tools/water-get-series.tool.test
  */
 
-import { JsonRpcErrorCode } from '@cyanheads/mcp-ts-core/errors';
+import {
+  JsonRpcErrorCode,
+  serviceUnavailable,
+  validationError,
+} from '@cyanheads/mcp-ts-core/errors';
 import { createMockContext } from '@cyanheads/mcp-ts-core/testing';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { waterGetSeries } from '@/mcp-server/tools/definitions/water-get-series.tool.js';
 import type { NwisTimeSeries } from '@/services/nwis/types.js';
 
-vi.mock('@/services/nwis/nwis-service.js', () => ({
+// Stub the network calls; keep the real classifyNwisFailure — it is pure, and it is the mapping
+// under test here.
+vi.mock('@/services/nwis/nwis-service.js', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('@/services/nwis/nwis-service.js')>()),
   getSeries: vi.fn(),
   getReadings: vi.fn(),
   getStats: vi.fn(),
@@ -259,9 +266,14 @@ describe('waterGetSeries', () => {
     });
   });
 
-  it('maps service ValidationError to invalid_date_range', async () => {
+  it('maps an NWIS rejection to invalid_request, not invalid_date_range', async () => {
+    // The dates here are valid — NWIS is complaining about the parameter code. Reporting this as
+    // a date-range problem sends the caller after the wrong field.
     mockGetSeries.mockRejectedValue(
-      new Error('NWIS rejected the request: ValidationError date out of bounds'),
+      validationError(
+        'NWIS rejected the request: HTTP Status 400 - ParameterCd: length must be no less than 5 characters',
+        { httpStatus: 400 },
+      ),
     );
     const ctx = createMockContext({ errors: waterGetSeries.errors });
     const input = waterGetSeries.input.parse({
@@ -272,12 +284,31 @@ describe('waterGetSeries', () => {
     });
     await expect(waterGetSeries.handler(input, ctx)).rejects.toMatchObject({
       code: JsonRpcErrorCode.ValidationError,
-      data: { reason: 'invalid_date_range' },
+      data: { reason: 'invalid_request' },
+      message: expect.stringContaining('ParameterCd'),
     });
   });
 
+  it('still reports the handler-owned date checks as invalid_date_range', async () => {
+    // invalid_date_range survives for the case it actually describes: this tool's own
+    // calendar/order validation, which never reaches NWIS.
+    const ctx = createMockContext({ errors: waterGetSeries.errors });
+    const input = waterGetSeries.input.parse({
+      site: '01646500',
+      parameterCd: '00060',
+      startDate: '2024-12-31',
+      endDate: '2024-01-01',
+    });
+    await expect(waterGetSeries.handler(input, ctx)).rejects.toMatchObject({
+      data: { reason: 'invalid_date_range' },
+    });
+    expect(mockGetSeries).not.toHaveBeenCalled();
+  });
+
   it('maps 5xx/timeout to upstream_error', async () => {
-    mockGetSeries.mockRejectedValue(new Error('NWIS service unavailable'));
+    mockGetSeries.mockRejectedValue(
+      serviceUnavailable('NWIS returned HTTP 503: Service Unavailable', { status: 503 }),
+    );
     const ctx = createMockContext({ errors: waterGetSeries.errors });
     const input = waterGetSeries.input.parse({
       site: '01646500',
@@ -289,6 +320,40 @@ describe('waterGetSeries', () => {
       code: JsonRpcErrorCode.ServiceUnavailable,
       data: { reason: 'upstream_error' },
     });
+  });
+
+  it('rejects a malformed parameterCd at Zod parse level, before any NWIS call', () => {
+    expect(() =>
+      waterGetSeries.input.parse({
+        site: '01646500',
+        parameterCd: 'BAD',
+        startDate: '2024-01-01',
+        endDate: '2024-01-03',
+      }),
+    ).toThrow();
+    expect(mockGetSeries).not.toHaveBeenCalled();
+  });
+
+  it('rejects a comma-separated parameterCd (this tool returns a single series)', () => {
+    expect(() =>
+      waterGetSeries.input.parse({
+        site: '01646500',
+        parameterCd: '00060,00065',
+        startDate: '2024-01-01',
+        endDate: '2024-01-03',
+      }),
+    ).toThrow();
+  });
+
+  it('rejects a malformed site at Zod parse level', () => {
+    expect(() =>
+      waterGetSeries.input.parse({
+        site: 'BADSITE',
+        parameterCd: '00060',
+        startDate: '2024-01-01',
+        endDate: '2024-01-03',
+      }),
+    ).toThrow();
   });
 
   it('formats inline series as markdown with value rows', () => {

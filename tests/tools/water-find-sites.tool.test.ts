@@ -4,13 +4,20 @@
  * @module tests/tools/water-find-sites.tool.test
  */
 
-import { JsonRpcErrorCode } from '@cyanheads/mcp-ts-core/errors';
+import {
+  JsonRpcErrorCode,
+  serviceUnavailable,
+  validationError,
+} from '@cyanheads/mcp-ts-core/errors';
 import { createMockContext, getEnrichment } from '@cyanheads/mcp-ts-core/testing';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { waterFindSites } from '@/mcp-server/tools/definitions/water-find-sites.tool.js';
 import type { NwisSite } from '@/services/nwis/types.js';
 
-vi.mock('@/services/nwis/nwis-service.js', () => ({
+// Stub the network calls; keep the real classifyNwisFailure — it is pure, and it is the mapping
+// under test here.
+vi.mock('@/services/nwis/nwis-service.js', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('@/services/nwis/nwis-service.js')>()),
   findSites: vi.fn(),
 }));
 
@@ -83,20 +90,29 @@ describe('waterFindSites', () => {
     });
   });
 
-  it('maps HTML 400 error to invalid_filter', async () => {
+  it('maps an NWIS rejection to invalid_request, surfacing the field NWIS named', async () => {
+    // A two-letter state code that isn't a real state passes the edge schema and still reaches the
+    // service; the reason must not pretend to know which filter was at fault when only NWIS's
+    // message does. Rejection text is NWIS's own, verbatim.
     mockFindSites.mockRejectedValue(
-      new Error('NWIS rejected the request: ValidationError — bad bBox'),
+      validationError(
+        'NWIS rejected the request: HTTP Status 400 - stateCd not found, server=[caas01]',
+        { httpStatus: 400 },
+      ),
     );
     const ctx = createMockContext({ errors: waterFindSites.errors });
-    const input = waterFindSites.input.parse({ bbox: 'bad-value' });
+    const input = waterFindSites.input.parse({ stateCd: 'ZZ' });
     await expect(waterFindSites.handler(input, ctx)).rejects.toMatchObject({
       code: JsonRpcErrorCode.ValidationError,
-      data: { reason: 'invalid_filter' },
+      data: { reason: 'invalid_request' },
+      message: expect.stringContaining('stateCd not found'),
     });
   });
 
   it('maps 5xx/timeout to upstream_error', async () => {
-    mockFindSites.mockRejectedValue(new Error('NWIS service unavailable'));
+    mockFindSites.mockRejectedValue(
+      serviceUnavailable('NWIS returned HTTP 503: Service Unavailable', { status: 503 }),
+    );
     const ctx = createMockContext({ errors: waterFindSites.errors });
     const input = waterFindSites.input.parse({ stateCd: 'VA' });
     await expect(waterFindSites.handler(input, ctx)).rejects.toMatchObject({
@@ -187,5 +203,53 @@ describe('waterFindSites', () => {
       }),
       expect.anything(),
     );
+  });
+
+  describe('input validation', () => {
+    it('rejects a malformed bbox at Zod parse level, before any NWIS call', () => {
+      expect(() => waterFindSites.input.parse({ bbox: 'bad-value' })).toThrow();
+      expect(mockFindSites).not.toHaveBeenCalled();
+    });
+
+    it('rejects a bbox without exactly four decimal numbers', () => {
+      expect(() => waterFindSites.input.parse({ bbox: '-77.5,38.5,-76.5' })).toThrow();
+      expect(() => waterFindSites.input.parse({ bbox: '-77.5,38.5,-76.5,39.5,1' })).toThrow();
+    });
+
+    it('accepts a well-formed bbox', () => {
+      expect(() => waterFindSites.input.parse({ bbox: '-77.5,38.5,-76.5,39.5' })).not.toThrow();
+      expect(() => waterFindSites.input.parse({ bbox: '-180,-90,180,90' })).not.toThrow();
+    });
+
+    it('accepts only the 2- and 8-digit HUC lengths NWIS supports', () => {
+      expect(() => waterFindSites.input.parse({ huc: '02' })).not.toThrow();
+      expect(() => waterFindSites.input.parse({ huc: '02070008' })).not.toThrow();
+      // NWIS returns 400 "invalid huc argument" for 4- and 6-digit HUCs, and
+      // "length must be no greater than 8" for 10- and 12-digit HUCs.
+      for (const huc of ['0207', '020700', '0207000810', '020700081005']) {
+        expect(() => waterFindSites.input.parse({ huc })).toThrow();
+      }
+    });
+
+    it('accepts a bare 5-digit FIPS countyCd and rejects the colon form', () => {
+      expect(() => waterFindSites.input.parse({ countyCd: '51013' })).not.toThrow();
+      expect(() => waterFindSites.input.parse({ countyCd: '51059,51061' })).not.toThrow();
+      // NWIS: 400 "invalid fips5 county code string argument length".
+      expect(() => waterFindSites.input.parse({ countyCd: '51:013' })).toThrow();
+    });
+
+    it('rejects a stateCd longer than 2 characters', () => {
+      expect(() => waterFindSites.input.parse({ stateCd: 'WA' })).not.toThrow();
+      expect(() => waterFindSites.input.parse({ stateCd: 'WAS' })).toThrow();
+    });
+
+    it('preserves comma-separated multi-value parameterCd', () => {
+      // NWIS accepts a parameterCd list on the site service — a single-value pattern here would
+      // regress the multi-code filtering this tool documents.
+      expect(() => waterFindSites.input.parse({ parameterCd: '00060' })).not.toThrow();
+      expect(() => waterFindSites.input.parse({ parameterCd: '00060,00065' })).not.toThrow();
+      expect(() => waterFindSites.input.parse({ parameterCd: '0006' })).toThrow();
+      expect(() => waterFindSites.input.parse({ parameterCd: '00060, 00065' })).toThrow();
+    });
   });
 });

@@ -6,7 +6,14 @@
 
 import { tool, z } from '@cyanheads/mcp-ts-core';
 import { JsonRpcErrorCode } from '@cyanheads/mcp-ts-core/errors';
-import { findSites } from '@/services/nwis/nwis-service.js';
+import {
+  BboxSchema,
+  CountyCdSchema,
+  HucSchema,
+  ParameterCdListSchema,
+  StateCdSchema,
+} from '@/services/nwis/input-schemas.js';
+import { classifyNwisFailure, findSites } from '@/services/nwis/nwis-service.js';
 
 /** Maximum sites returned in a single response. Prevents token overflows on broad queries. */
 const SITE_CAP = 500;
@@ -23,35 +30,25 @@ export const waterFindSites = tool('water_find_sites', {
     'narrow the query with bbox, countyCd, huc, siteType, parameterCd, or hasDataTypeCd to get all matches.',
   annotations: { readOnlyHint: true, idempotentHint: true, openWorldHint: true },
   input: z.object({
-    bbox: z
-      .string()
-      .optional()
-      .describe(
-        'Bounding box as "west,south,east,north" in decimal degrees ' +
-          '(e.g. "-77.5,38.5,-76.5,39.5" for the DC metro area). ' +
-          'Mutually exclusive with stateCd/countyCd/huc.',
-      ),
-    stateCd: z
-      .string()
-      .optional()
-      .describe(
-        '2-character US state abbreviation (e.g. "VA", "WA"). ' +
-          'Returns all sites in the state for the given filters.',
-      ),
-    countyCd: z
-      .string()
-      .optional()
-      .describe(
-        'FIPS county code(s) as "SS:CCC" or comma-separated list (e.g. "51:013" for Arlington, VA). ' +
-          'Use with stateCd for clarity.',
-      ),
-    huc: z
-      .string()
-      .optional()
-      .describe(
-        'Hydrologic Unit Code (HUC) — 2, 4, 6, or 8 digits (e.g. "02070010" for Potomac/Shenandoah). ' +
-          'Scopes results to a watershed.',
-      ),
+    bbox: BboxSchema.optional().describe(
+      'Bounding box as "west,south,east,north" in decimal degrees ' +
+        '(e.g. "-77.5,38.5,-76.5,39.5" for the DC metro area). ' +
+        'Mutually exclusive with stateCd/countyCd/huc.',
+    ),
+    stateCd: StateCdSchema.optional().describe(
+      '2-character US state abbreviation (e.g. "VA", "WA"). ' +
+        'Returns all sites in the state for the given filters.',
+    ),
+    countyCd: CountyCdSchema.optional().describe(
+      'FIPS county code(s) as bare 5-digit numbers — state and county digits concatenated, ' +
+        'no separator (e.g. "51013" for Arlington, VA). ' +
+        'Comma-separate up to 20 (e.g. "51059,51061"). Use with stateCd for clarity.',
+    ),
+    huc: HucSchema.optional().describe(
+      'Hydrologic Unit Code (HUC) scoping results to a watershed. ' +
+        'Either a 2-digit major HUC (e.g. "02" for the Mid-Atlantic region) or an 8-digit minor HUC ' +
+        '(e.g. "02070008" for the Middle Potomac). NWIS accepts no other lengths.',
+    ),
     siteType: z
       .string()
       .optional()
@@ -60,13 +57,11 @@ export const waterFindSites = tool('water_find_sites', {
           '"SP" (spring), "AT" (atmosphere), "OC" (ocean), "ES" (estuary). ' +
           'Comma-separate multiple types (e.g. "ST,GW").',
       ),
-    parameterCd: z
-      .string()
-      .optional()
-      .describe(
-        '5-digit parameter code to require at each returned site (e.g. "00060" for discharge). ' +
-          'Use water_list_parameters to discover codes. Comma-separate multiple codes.',
-      ),
+    parameterCd: ParameterCdListSchema.optional().describe(
+      '5-digit parameter code to require at each returned site (e.g. "00060" for discharge). ' +
+        'Use water_list_parameters to discover codes. ' +
+        'Comma-separate multiple codes with no spaces (e.g. "00060,00065").',
+    ),
     hasDataTypeCd: z
       .string()
       .optional()
@@ -211,11 +206,11 @@ export const waterFindSites = tool('water_find_sites', {
         'Broaden the bounding box, remove parameterCd or siteType filters, or try a different state/HUC.',
     },
     {
-      reason: 'invalid_filter',
+      reason: 'invalid_request',
       code: JsonRpcErrorCode.ValidationError,
-      when: 'NWIS rejected the request due to an invalid filter value or unsupported combination.',
+      when: 'NWIS rejected the request. Filter formats are validated against NWIS-accepted patterns before the call, so this surfaces a well-formed value NWIS still refused (an unknown code, or an unsupported filter combination).',
       recovery:
-        'Correct the filter values — check bBox decimal degree format, valid state codes, and HUC length.',
+        'Read the NWIS message in this error — it names the field it rejected. Correct that filter and retry.',
     },
     {
       reason: 'upstream_error',
@@ -248,22 +243,8 @@ export const waterFindSites = tool('water_find_sites', {
       if (input.hasDataTypeCd) params.hasDataTypeCd = input.hasDataTypeCd;
       sites = await findSites(params, ctx.signal);
     } catch (err: unknown) {
-      // Detect HTML 400 → invalid_filter; 5xx already throws ServiceUnavailable
-      const msg = err instanceof Error ? err.message : String(err);
-      if (
-        msg.includes('rejected') ||
-        msg.includes('InvalidParams') ||
-        msg.includes('ValidationError')
-      ) {
-        throw ctx.fail('invalid_filter', msg);
-      }
-      if (
-        msg.includes('unavailable') ||
-        msg.includes('ServiceUnavailable') ||
-        msg.includes('timed out')
-      ) {
-        throw ctx.fail('upstream_error', msg);
-      }
+      const failure = classifyNwisFailure(err);
+      if (failure) throw ctx.fail(failure.reason, failure.message, undefined, { cause: err });
       throw err;
     }
 

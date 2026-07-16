@@ -185,7 +185,8 @@ export const waterGetConditions = tool('water_get_conditions', {
       throw err;
     }
 
-    if (ivResult.length === 0) {
+    const ts = ivResult[0];
+    if (!ts) {
       // NWIS returns an empty timeSeries array for both unknown sites and valid sites that have no
       // data for the requested parameter — the two cases are indistinguishable without a separate
       // site-existence check.
@@ -197,18 +198,14 @@ export const waterGetConditions = tool('water_get_conditions', {
       );
     }
 
-    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-    const ts = ivResult[0]!;
-    if (ts.values.length === 0) {
+    // Most recent reading — an empty series carries no current value to report.
+    const latest = ts.values[ts.values.length - 1];
+    if (!latest) {
       throw ctx.fail(
         'no_data_for_parameter',
         `No current reading for site ${input.site} parameter ${input.parameterCd}.`,
       );
     }
-
-    // Most recent reading — ts.values.length > 0 asserted above
-    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-    const latest = ts.values[ts.values.length - 1]!;
     const currentValue = latest.value;
     const currentDateTime = latest.dateTime;
     const qualifiers = latest.qualifiers;
