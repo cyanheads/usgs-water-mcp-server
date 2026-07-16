@@ -30,6 +30,41 @@ function classifyPercentile(
   return 'unknown';
 }
 
+/**
+ * Plain-language threshold for each percentile class. The class names 'record-high' and
+ * 'record-low' describe percentile-of-record extremes (≥ p95 / < p05), not verified all-time
+ * records — the stat table carries the true observed extremes separately in max_va/min_va. The
+ * enum value alone is what reaches structuredContent, so the disambiguation travels as its own
+ * field rather than as schema description text a downstream reader never sees.
+ */
+const PERCENTILE_LABELS: Record<PercentileClass, string> = {
+  'record-high': '≥ 95th percentile (percentile-of-record extreme, not a verified all-time record)',
+  'above-normal': '75th–95th percentile',
+  normal: '25th–75th percentile',
+  'below-normal': '10th–25th percentile',
+  low: '5th–10th percentile',
+  'record-low': '< 5th percentile (percentile-of-record extreme, not a verified all-time record)',
+  unknown: 'insufficient percentile data',
+};
+
+/**
+ * Read the observation's own calendar month and day out of an NWIS timestamp.
+ *
+ * NWIS IV timestamps carry an explicit UTC offset (e.g. "2026-06-28T00:50:00.000-04:00"), so the
+ * date prefix already is the observation's local calendar date. Routing it through `Date` would
+ * re-project that instant into the runtime's timezone and select a neighboring stat row for
+ * readings near midnight — in either direction, depending on the sign of the offset. The stat
+ * table's month_nu/day_nu are plain calendar integers carrying no timezone of their own, so the
+ * string prefix is what they have to be matched against.
+ *
+ * Returns null when the timestamp carries no parseable date prefix.
+ */
+function parseObservationDate(dateTime: string): { day: number; month: number } | null {
+  const match = /^\d{4}-(\d{2})-(\d{2})/.exec(dateTime);
+  if (!match?.[1] || !match[2]) return null;
+  return { month: Number.parseInt(match[1], 10), day: Number.parseInt(match[2], 10) };
+}
+
 export const waterGetConditions = tool('water_get_conditions', {
   description:
     'Get current hydrologic conditions at a USGS site, placed in historical context. ' +
@@ -92,7 +127,17 @@ export const waterGetConditions = tool('water_get_conditions', {
           .describe(
             'Classification relative to the full period-of-record: ' +
               'record-high (≥ p95), above-normal (p75–p95), normal (p25–p75), ' +
-              'below-normal (p10–p25), low (p05–p10), record-low (< p05).',
+              'below-normal (p10–p25), low (p05–p10), record-low (< p05). ' +
+              'See percentileLabel for the threshold in plain language.',
+          ),
+        percentileLabel: z
+          .string()
+          .describe(
+            'Plain-language threshold for percentileClass (e.g. "25th–75th percentile"). ' +
+              'The record-high and record-low classes mark percentile-of-record extremes ' +
+              '(≥ p95 / < p05), not verified all-time records — this field says so where the ' +
+              'class name does not. Report this alongside percentileClass rather than the ' +
+              'class name alone.',
           ),
         p05: z
           .number()
@@ -213,6 +258,7 @@ export const waterGetConditions = tool('water_get_conditions', {
     // Historical context — stat may be null if unavailable
     let historicalContext: {
       percentileClass: PercentileClass;
+      percentileLabel: string;
       p05: number | null;
       p10: number | null;
       p25: number | null;
@@ -224,12 +270,11 @@ export const waterGetConditions = tool('water_get_conditions', {
     let note: string | undefined;
 
     if (statResult && statResult.rows.length > 0) {
-      const now = new Date(currentDateTime);
-      const month = now.getMonth() + 1;
-      const day = now.getDate();
-
-      // Find the stat row for today's month+day
-      const statRow = statResult.rows.find((r) => r.monthNu === month && r.dayNu === day);
+      // Match on the observation's own calendar day, not the runtime's — see parseObservationDate.
+      const observed = parseObservationDate(currentDateTime);
+      const statRow = observed
+        ? statResult.rows.find((r) => r.monthNu === observed.month && r.dayNu === observed.day)
+        : undefined;
 
       if (statRow) {
         const numValue = Number.parseFloat(currentValue);
@@ -246,6 +291,7 @@ export const waterGetConditions = tool('water_get_conditions', {
 
         historicalContext = {
           percentileClass,
+          percentileLabel: PERCENTILE_LABELS[percentileClass],
           p05: statRow.p05,
           p10: statRow.p10,
           p25: statRow.p25,
@@ -295,7 +341,7 @@ export const waterGetConditions = tool('water_get_conditions', {
 
     if (result.historicalContext) {
       lines.push(
-        `**Condition:** ${result.historicalContext.percentileClass} (period of record: ${result.historicalContext.periodOfRecord})`,
+        `**Condition:** ${result.historicalContext.percentileClass} — ${result.historicalContext.percentileLabel} | **Period of record:** ${result.historicalContext.periodOfRecord}`,
         `**Percentiles for today's calendar day:**`,
         `  p05=${result.historicalContext.p05 ?? 'N/A'} | p10=${result.historicalContext.p10 ?? 'N/A'} | p25=${result.historicalContext.p25 ?? 'N/A'} | p50=${result.historicalContext.p50 ?? 'N/A'} | p75=${result.historicalContext.p75 ?? 'N/A'} | p95=${result.historicalContext.p95 ?? 'N/A'}`,
       );
