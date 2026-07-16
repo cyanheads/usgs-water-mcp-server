@@ -7,7 +7,7 @@
 | Name | Description | Key Inputs | Annotations |
 |:-----|:------------|:-----------|:------------|
 | `water_find_sites` | Find USGS monitoring sites by bounding box, state, county, or HUC. Filter by site type and parameter availability. Returns site number, name, type, coordinates, and available parameter codes. Required discovery step — downstream tools key on site numbers, and parameter availability varies. Note: NWIS has no limit param; scope results geographically (bbox) or by state/county/HUC. | `bbox`, `stateCd`, `countyCd`, `huc`, `siteType`, `parameterCd`, `hasDataTypeCd`, `siteOutput` | `readOnlyHint: true`, `idempotentHint: true`, `openWorldHint: true` |
-| `water_get_readings` | Get the latest instantaneous values (real-time, ~15 min) for one or more sites. Returns per-site results each including the siteNumber, parameter code, timestamp, value, unit, and provisional/approved qualifier. Accepts up to 100 site numbers in one call. | `sites` (array), `parameterCd` (array), `period` (ISO 8601 duration, e.g. `PT2H`, `P7D`) | `readOnlyHint: true`, `idempotentHint: true`, `openWorldHint: true` |
+| `water_get_readings` | Get the latest instantaneous values (real-time, ~15 min) for one or more sites. Returns per-site results each including the siteNumber, parameter code, timestamp, value, unit, and provisional/approved qualifier. Accepts up to 100 site numbers in one call. Each series is capped at its 10 most recent records with the true count in `totalValues` and `truncated` flagging the cap — `water_get_series` is the tool for a full series. Requested sites NWIS returns nothing for are named in `missingSites`, so a partial batch is visible rather than inferred. | `sites` (array), `parameterCd` (array), `period` (ISO 8601 duration, e.g. `PT2H`, `P7D`) | `readOnlyHint: true`, `idempotentHint: true`, `openWorldHint: true` |
 | `water_get_series` | Get a time series of daily or instantaneous values for a site and parameter over a date range. Returns `siteNumber`, `parameterCd`, and value records (date/time, value, qualifiers). Large result sets (>500 rows) spill to DataCanvas — response includes `canvas_id` and `truncated` flag when canvas is available. | `site`, `parameterCd`, `startDate` (YYYY-MM-DD), `endDate` (YYYY-MM-DD), `seriesType` (`daily` \| `instantaneous`) | `readOnlyHint: true`, `idempotentHint: true`, `openWorldHint: true` |
 | `water_get_conditions` | Get current conditions at a site placed in historical context: today's value ranked against the site's daily percentile record. Returns the current reading alongside the percentile class (`record-high` / `above-normal` / `normal` / `below-normal` / `low` / `record-low`). Answers the real question — "is this flooding or drought?" — not just a raw number. | `site`, `parameterCd` | `readOnlyHint: true`, `idempotentHint: true`, `openWorldHint: true` |
 | `water_list_parameters` | Static lookup of well-known USGS parameter codes with human-readable names, units, and domain. No network call. Solves the opaque-5-digit-code problem: an agent can call this first to discover that `00060` = "Discharge" (cfs), `00065` = "Gage height" (ft), `00010` = "Temperature" (°C), `72019` = "Depth to water, below land surface" (ft). | `group` (filter by domain: `streamflow` \| `groundwater` \| `temperature` \| `all`) | `readOnlyHint: true`, `idempotentHint: true`, `openWorldHint: false` |
@@ -64,7 +64,7 @@ No OGC API service at launch. The OGC API (`api.waterdata.usgs.gov/ogcapi/v0`) i
 | Env Var | Required | Description |
 |:--------|:---------|:------------|
 | `CANVAS_PROVIDER_TYPE` | No | Set to `duckdb` to enable DataCanvas spillover for large series. Optional — without it, `water_get_series` returns a truncated preview. |
-| `USGS_USER_AGENT` | No | Custom User-Agent string for USGS requests. USGS requests a descriptive User-Agent per their terms; defaults to `usgs-water-mcp-server/0.1.7 (contact: https://github.com/cyanheads/usgs-water-mcp-server)`. |
+| `USGS_USER_AGENT` | No | Custom User-Agent string for USGS requests. USGS requests a descriptive User-Agent per their terms; defaults to `usgs-water-mcp-server/0.1.8 (contact: https://github.com/cyanheads/usgs-water-mcp-server)`. |
 | `MCP_TRANSPORT_TYPE` | No | `stdio` (default) or `http`. Framework-managed. |
 | `PORT` | No | HTTP port when transport is `http`. Default `3000`. Framework-managed. |
 
@@ -89,10 +89,24 @@ Each step independently testable: the service layer can be unit-tested with mock
 | Noun | NWIS Endpoint | Format | Notes |
 |:-----|:-------------|:-------|:------|
 | Sites (discovery) | `/nwis/site` | RDB (tab-delimited) | `format=rdb`, `siteOutput=basic\|expanded`, filter by `bBox`, `stateCd`, `countyCd`, `huc`, `siteType`, `hasDataTypeCd`, `parameterCd` |
-| Instantaneous values | `/nwis/iv` | JSON (WaterML-JSON) | `format=json`, multi-site via `sites=a,b,c`, `period=PTnH` or `startDT/endDT` |
+| Instantaneous values | `/nwis/iv` | JSON (WaterML-JSON) | `format=json`, multi-site via `sites=a,b,c`, `period=PTnH` or `startDT/endDT`. An unknown site in a multi-site request is dropped from the response without comment — the request/response diff is the only signal |
 | Daily values | `/nwis/dv` | JSON (WaterML-JSON) | `format=json`, same site/param/date params as IV |
 | Statistics (percentiles) | `/nwis/stat` | RDB | `format=rdb`, `statReportType=daily`, `statType=all`, returns p05–p95 per calendar day |
 | Parameter codes | (static table) | — | Baked into `water_list_parameters`; OGC `/parameter-codes` also available but latency not worth it for a bounded lookup |
+
+### Accepted input formats
+
+Verified against the live service; encoded as Zod patterns in `services/nwis/input-schemas.ts` and shared by every tool that forwards a value into an NWIS query parameter.
+
+| Input | NWIS accepts | Notes |
+|:------|:-------------|:------|
+| `site` / `sites` | 8–15 digits | Zero-padded (e.g. `01646500`) |
+| `parameterCd` | Exactly 5 digits | Comma-separated lists are accepted on the site service and the IV/DV endpoints, so `water_find_sites` allows them; `water_get_series` and `water_get_conditions` take a single code because they return a single series |
+| `period` | ISO 8601 duration | Full grammar, not a fixed subset. Negative periods (`P-T2H`) are rejected by NWIS |
+| `huc` | **2 digits or 8 digits only** | A major HUC is 2 digits, a minor HUC is 8. 4- and 6-digit values return `invalid huc argument`; 10- and 12-digit values return `Huc: length must be no greater than 8 characters`. (Distinct from the `hucCd` *output* field, where site records can carry longer values.) |
+| `countyCd` | Bare 5-digit FIPS | State and county digits concatenated (`51013`), comma-separated up to 20. The colon form `51:013` returns `invalid fips5 county code string argument length` |
+| `stateCd` | 2 letters | Longer values return `StateCd length must be no greater than 2 characters` |
+| `bbox` | 4 comma-separated decimal numbers | `west,south,east,north`. NWIS validates only that they parse as decimal degrees; no further geographic checking is layered on top |
 
 ---
 
@@ -114,38 +128,42 @@ Calls 1a and 1b run in `Promise.all`. If stat returns no data (new site, paramet
 
 Typed failure contracts for the four network-calling tools. `water_list_parameters` is static — no contract needed.
 
+**Classification is code-based, not message-based.** `nwis-service` already types every failure it raises — an HTML 400 becomes a `validationError`, a 5xx becomes a `serviceUnavailable` — and `classifyNwisFailure()` maps that code onto the reason vocabulary below. Tools never re-match the error prose to guess a field.
+
+**`invalid_request` names no field on purpose.** NWIS wraps every rejection in identical text (`NWIS rejected the request: …`) and reports the offending field only inside its own message — and not always the field the caller passed (`period=P99999D` comes back as a complaint about `StartDT`). Selecting a reason by pattern-matching that prose is what made a bad `period` surface as a bad site number. The reason states what the server knows — NWIS refused the request — and the message carries NWIS's verbatim text for the caller to act on.
+
 ### `water_find_sites`
 
 | reason | code | when | retryable |
 |:-------|:-----|:-----|:----------|
 | `no_sites_found` | `NotFound` | No sites match the given filters | No — broaden bbox/state/HUC or remove parameterCd/siteType filter |
-| `invalid_filter` | `InvalidParams` | NWIS returns HTML 400 (bad filter value, unsupported combination) — message extracted from `<h1>` | No — correct the filter values |
+| `invalid_request` | `ValidationError` | NWIS returned HTML 400. Filter formats are pattern-validated before the call, so this is a well-formed value NWIS still refused (unknown code, unsupported combination) | No — read the NWIS message in the error; it names the field |
 | `upstream_error` | `ServiceUnavailable` | NWIS returns 5xx or network timeout | Yes — retry after backoff |
 
 ### `water_get_readings`
 
 | reason | code | when | retryable |
 |:-------|:-----|:-----|:----------|
-| `site_not_found` | `NotFound` | One or more site numbers return no time series (unknown site ID) | No — verify site numbers via `water_find_sites` |
-| `no_data_for_parameter` | `NotFound` | Site exists but has no data for the requested parameter code in the requested period | No — check available parameters via `water_find_sites` |
-| `invalid_site_format` | `InvalidParams` | NWIS returns HTML 400 due to malformed site number (not 8–15 digits) | No — correct the site number format |
+| `no_data_for_parameter` | `NotFound` | No time series returned, or every series came back empty. NWIS gives the same response for an unknown site and a valid site with no data for the parameter/period, so the two are indistinguishable here | No — check the site and its parameters via `water_find_sites` |
+| `invalid_request` | `ValidationError` | NWIS returned HTML 400 for a value that passed the input patterns | No — read the NWIS message in the error; it names the field |
 | `upstream_error` | `ServiceUnavailable` | NWIS returns 5xx or network timeout | Yes — retry after backoff |
+
+A batch where *some* sites return data is a success, not an error: the returned series are in `readings` and the rest are named in `missingSites`.
 
 ### `water_get_series`
 
 | reason | code | when | retryable |
 |:-------|:-----|:-----|:----------|
-| `site_not_found` | `NotFound` | Site number returns no time series | No — verify site via `water_find_sites` |
-| `no_data_for_range` | `NotFound` | Site/parameter combination has no data in the requested date range | No — narrow the date range or check parameter availability |
-| `invalid_date_range` | `InvalidParams` | `endDate` before `startDate`, or date exceeds available record bounds | No — correct the date range |
+| `no_data_for_range` | `NotFound` | Site/parameter combination has no data in the requested date range (also covers an unknown site — NWIS returns the same empty response) | No — narrow the date range or check parameter availability |
+| `invalid_date_range` | `ValidationError` | This tool's own date validation: `endDate` before `startDate`, or a date that matches `YYYY-MM-DD` but is not a real calendar date. Never reaches NWIS | No — correct the date range |
+| `invalid_request` | `ValidationError` | NWIS returned HTML 400 for a value that passed the input patterns | No — read the NWIS message in the error; it names the field |
 | `upstream_error` | `ServiceUnavailable` | NWIS returns 5xx or network timeout | Yes — retry after backoff |
 
 ### `water_get_conditions`
 
 | reason | code | when | retryable |
 |:-------|:-----|:-----|:----------|
-| `site_not_found` | `NotFound` | Site number returns no IV data | No — verify site via `water_find_sites` |
-| `no_data_for_parameter` | `NotFound` | Site has no current reading for the requested parameter code | No — check parameter availability via `water_find_sites` |
+| `no_data_for_parameter` | `NotFound` | No IV series returned, or the series carries no current reading. Covers an unknown site and a valid site without the parameter alike | No — check parameter availability via `water_find_sites` |
 | `upstream_error` | `ServiceUnavailable` | NWIS IV or stat endpoint returns 5xx or network timeout | Yes — retry after backoff |
 
 Note: absence of stat data (new site, insufficient record length) is **not** an error — `water_get_conditions` returns the current reading with `historicalContext: null` and a note. This is partial-success, not a throw.

@@ -7,7 +7,7 @@
 
 <div align="center">
 
-[![Version](https://img.shields.io/badge/Version-0.1.7-blue.svg?style=flat-square)](./CHANGELOG.md) [![License](https://img.shields.io/badge/License-Apache%202.0-orange.svg?style=flat-square)](./LICENSE) [![Docker](https://img.shields.io/badge/Docker-ghcr.io-2496ED?style=flat-square&logo=docker&logoColor=white)](https://github.com/users/cyanheads/packages/container/package/usgs-water-mcp-server) [![MCP SDK](https://img.shields.io/badge/MCP%20SDK-^1.29.0-green.svg?style=flat-square)](https://modelcontextprotocol.io/) [![npm](https://img.shields.io/npm/v/@cyanheads/usgs-water-mcp-server?style=flat-square&logo=npm&logoColor=white)](https://www.npmjs.com/package/@cyanheads/usgs-water-mcp-server) [![TypeScript](https://img.shields.io/badge/TypeScript-^6.0.3-3178C6.svg?style=flat-square)](https://www.typescriptlang.org/) [![Bun](https://img.shields.io/badge/Bun-v1.3.11-blueviolet.svg?style=flat-square)](https://bun.sh/)
+[![Version](https://img.shields.io/badge/Version-0.1.8-blue.svg?style=flat-square)](./CHANGELOG.md) [![License](https://img.shields.io/badge/License-Apache%202.0-orange.svg?style=flat-square)](./LICENSE) [![Docker](https://img.shields.io/badge/Docker-ghcr.io-2496ED?style=flat-square&logo=docker&logoColor=white)](https://github.com/users/cyanheads/packages/container/package/usgs-water-mcp-server) [![MCP SDK](https://img.shields.io/badge/MCP%20SDK-^1.29.0-green.svg?style=flat-square)](https://modelcontextprotocol.io/) [![npm](https://img.shields.io/npm/v/@cyanheads/usgs-water-mcp-server?style=flat-square&logo=npm&logoColor=white)](https://www.npmjs.com/package/@cyanheads/usgs-water-mcp-server) [![TypeScript](https://img.shields.io/badge/TypeScript-^6.0.3-3178C6.svg?style=flat-square)](https://www.typescriptlang.org/) [![Bun](https://img.shields.io/badge/Bun-v1.3.14-blueviolet.svg?style=flat-square)](https://bun.sh/)
 
 </div>
 
@@ -55,9 +55,9 @@ Static lookup of well-known USGS parameter codes — no network call, instant re
 
 Discover USGS monitoring sites before calling data tools — all other tools require a site number.
 
-- Geographic scoping: bounding box (`"west,south,east,north"` decimal degrees), state code, FIPS county code, or HUC watershed code
+- Geographic scoping: bounding box (`"west,south,east,north"` decimal degrees), 2-letter state code, bare 5-digit FIPS county code (e.g. `51013`), or HUC watershed code — either a 2-digit major HUC (`02`) or an 8-digit minor HUC (`02070008`), the only two lengths NWIS accepts
 - Site type filtering: `ST` (stream), `GW` (groundwater well), `LK` (lake/reservoir), `SP` (spring), and more
-- Parameter filter: only return sites that have data for a specific parameter code
+- Parameter filter: only return sites that have data for a specific parameter code — comma-separate to require several (e.g. `00060,00065`)
 - Data type filter: require sites with real-time (`iv`), daily (`dv`), or groundwater (`gw`) data
 - Returns site number, name, coordinates, type, state/county/HUC codes, and available data types
 
@@ -71,6 +71,8 @@ Get the latest instantaneous (~15 min) values for one or more USGS monitoring si
 - Accepts any parameter code discoverable via `water_list_parameters`
 - Configurable lookback period via ISO 8601 duration (e.g. `PT2H` = last 2 hours, `P7D` = last 7 days)
 - Returns per-site, per-parameter records with timestamp, value, unit, and provisional/approved qualifier
+- Bounded by design: each series carries its 10 most recent records, with `totalValues` reporting how many the period actually held and `truncated` flagging the cap. Use `water_get_series` when you need the full series
+- Partial batches are explicit: requested sites NWIS returns no data for are named in `missingSites` rather than dropped silently
 - Groundwater depth available via `parameterCd=72019` (the legacy `gwlevels` endpoint was decommissioned November 2025 — use the IV service instead)
 
 ---
@@ -132,7 +134,8 @@ Built on [`@cyanheads/mcp-ts-core`](https://www.npmjs.com/package/@cyanheads/mcp
 USGS NWIS–specific:
 
 - Wraps NWIS IV (instantaneous), DV (daily), site, and stat endpoints — no API key required, fully public
-- HTML error detection: NWIS returns 400 with an HTML body for bad inputs; the service layer extracts the error message and maps it to a typed failure
+- Input formats checked at the edge against what NWIS actually accepts — site numbers, parameter codes, ISO 8601 periods, HUC, FIPS county, state, and bbox all carry a validated pattern that is advertised in each tool's JSON Schema, so malformed values fail with a pointed message instead of an opaque upstream 400
+- HTML error detection: NWIS returns 400 with an HTML body for bad inputs; the service layer extracts NWIS's own message — which names the field it rejected — and maps it to a typed failure
 - Multi-site batching: `water_get_readings` accepts up to 100 site numbers in one call
 - Provisional vs. approved data qualifiers surfaced on every reading — not hidden from callers
 - DataCanvas spillover: `water_get_series` materializes large date-range responses as DuckDB-backed `df_<id>` tables queryable via `water_dataframe_query`
@@ -142,7 +145,9 @@ Agent-friendly output:
 
 - Percentile classification on every conditions response — callers get a `percentileClass` string (`record-high`, `normal`, `record-low`, etc.) they can act on directly without parsing numeric thresholds
 - Partial success on conditions: missing stat data returns `historicalContext: null` with an explanatory note rather than an error, so the current reading is always available when the site is valid
-- Truncation signals: `water_get_series` always reports `totalRecords` and `truncated` so callers know when a preview is incomplete, and `canvas_id` / `table_name` tell them exactly how to retrieve the rest
+- Partial success on batches: `water_get_readings` returns the series it got and names the rest in `missingSites`, so a silently dropped site never reads as a complete answer
+- Truncation signals: `water_get_series` reports `totalRecords` and `truncated`, and `water_get_readings` reports per-series `totalValues` plus `truncated`, so callers know when a preview is incomplete. `canvas_id` / `table_name` tell them exactly how to retrieve the rest
+- Structured content and rendered text agree: every cap and count a tool applies is reported identically in `structuredContent` and in the markdown, so neither class of client sees a different answer
 
 ## Getting started
 
@@ -228,7 +233,7 @@ MCP_TRANSPORT_TYPE=http MCP_HTTP_PORT=3010 bun run start:http
 
 ### Prerequisites
 
-- [Bun v1.3.11](https://bun.sh/) or higher (or Node.js v24+).
+- [Bun v1.3.14](https://bun.sh/) or higher (or Node.js v24+).
 - No API key required — USGS NWIS is a free, public API.
 
 ### Installation
@@ -263,7 +268,7 @@ cp .env.example .env
 | Variable | Description | Default |
 |:---------|:------------|:--------|
 | `CANVAS_PROVIDER_TYPE` | Set to `duckdb` to enable DataCanvas spillover for large time-series results from `water_get_series`. | — |
-| `USGS_USER_AGENT` | Custom User-Agent string sent to USGS NWIS. USGS requests a descriptive User-Agent per their terms. | `usgs-water-mcp-server/0.1.7 (contact: https://github.com/cyanheads/usgs-water-mcp-server)` |
+| `USGS_USER_AGENT` | Custom User-Agent string sent to USGS NWIS. USGS requests a descriptive User-Agent per their terms. | `usgs-water-mcp-server/0.1.8 (contact: https://github.com/cyanheads/usgs-water-mcp-server)` |
 | `USGS_REQUEST_TIMEOUT_MS` | HTTP request timeout in milliseconds for NWIS calls. | `30000` |
 | `MCP_TRANSPORT_TYPE` | Transport: `stdio` or `http`. | `stdio` |
 | `MCP_HTTP_PORT` | Port for HTTP server. | `3010` |

@@ -1,6 +1,6 @@
 # usgs-water-mcp-server - Directory Structure
 
-Generated on: 2026-06-20 18:26:46
+Generated on: 2026-07-16 01:50:32
 
 ```text
 usgs-water-mcp-server/
@@ -11,10 +11,12 @@ usgs-water-mcp-server/
 │   ├── mcp.json
 │   └── plugin.json
 ├── .github/
-│   └── ISSUE_TEMPLATE/
-│       ├── bug_report.yml
-│       ├── config.yml
-│       └── feature_request.yml
+│   ├── ISSUE_TEMPLATE/
+│   │   ├── bug_report.yml
+│   │   ├── config.yml
+│   │   └── feature_request.yml
+│   ├── FUNDING.yml
+│   └── SECURITY.md
 ├── .vscode/
 │   ├── extensions.json
 │   └── settings.json
@@ -150,6 +152,7 @@ usgs-water-mcp-server/
 │   │   ├── canvas/
 │   │   │   └── canvas-accessor.ts
 │   │   └── nwis/
+│   │       ├── input-schemas.ts
 │   │       ├── nwis-service.ts
 │   │       └── types.ts
 │   └── index.ts
@@ -168,6 +171,7 @@ usgs-water-mcp-server/
 │       └── water-list-parameters.tool.test.ts
 ├── .dockerignore
 ├── .env.example
+├── .gitattributes
 ├── .gitignore
 ├── .mcpbignore
 ├── AGENTS.md
@@ -175,6 +179,7 @@ usgs-water-mcp-server/
 ├── bun.lock
 ├── bunfig.toml
 ├── CHANGELOG.md
+├── CITATION.cff
 ├── CLAUDE.md
 ├── devcheck.config.json
 ├── Dockerfile
