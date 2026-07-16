@@ -4,20 +4,17 @@
 # This stage installs all dependencies (including dev), builds the TypeScript
 # source code into JavaScript, and prepares the production assets.
 # ==============================================================================
-FROM oven/bun:1.3 AS build
+FROM oven/bun:1.3.14 AS build
 
 WORKDIR /usr/src/app
-
-# Install build tools required for native modules (duckdb uses node-gyp)
-RUN apt-get update && apt-get install -y --no-install-recommends \
-    python3 make g++ && \
-    rm -rf /var/lib/apt/lists/*
 
 # Copy dependency manifests for optimized layer caching
 COPY package.json bun.lock ./
 
-# Install all dependencies (including dev dependencies for building)
-RUN bun install --frozen-lockfile
+# Install all dependencies (including dev dependencies for building).
+# The BuildKit cache mount persists Bun's global package cache across builds.
+RUN --mount=type=cache,target=/root/.bun/install/cache \
+    bun install --frozen-lockfile --ignore-scripts
 
 # Copy the rest of the source code
 COPY . .
@@ -33,7 +30,7 @@ RUN bun run build
 # application. It uses a slim base image and only includes production
 # dependencies and build artifacts.
 # ==============================================================================
-FROM oven/bun:1.3-slim AS production
+FROM oven/bun:1.3.14-slim AS production
 
 WORKDIR /usr/src/app
 
@@ -52,16 +49,17 @@ LABEL org.opencontainers.image.version="${APP_VERSION}"
 # Copy dependency manifests
 COPY package.json bun.lock ./
 
-# Copy node_modules from the build stage — avoids reinstalling native modules
-# (duckdb requires python3/make/g++ to compile; copying the pre-built
-# artifacts from the build stage keeps the production image free of build tools).
+# Copy node_modules from the build stage rather than reinstalling. DuckDB's
+# bindings arrive as os/cpu-gated prebuilt platform packages, so both stages
+# install with --ignore-scripts and neither needs a compiler toolchain.
 COPY --from=build /usr/src/app/node_modules ./node_modules
 
 # Conditionally install OpenTelemetry optional peer dependencies (Tier 3).
 # These are not bundled by default to keep the base image lean. Enable at build time
 # with: docker build --build-arg OTEL_ENABLED=true
 ARG OTEL_ENABLED=true
-RUN if [ "$OTEL_ENABLED" = "true" ]; then \
+RUN --mount=type=cache,target=/root/.bun/install/cache \
+    if [ "$OTEL_ENABLED" = "true" ]; then \
       bun add @hono/otel \
         @opentelemetry/instrumentation-http \
         @opentelemetry/exporter-metrics-otlp-http \
