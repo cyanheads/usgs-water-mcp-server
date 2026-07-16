@@ -30,7 +30,8 @@ const MOCK_SITE: NwisSite = {
   longitude: -77.1273,
   stateCd: '24',
   countyCd: '031',
-  hucCd: '02070008',
+  // 12 digits, as NWIS actually returns for this site — hucCd carries no fixed width.
+  hucCd: '020700081005',
   dataTypes: ['iv', 'dv'],
   parameterCds: ['00060', '00065'],
 };

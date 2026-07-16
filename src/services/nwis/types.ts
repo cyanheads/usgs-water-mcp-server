@@ -13,7 +13,11 @@ export interface NwisSite {
   countyCd?: string;
   /** Drainage area in square miles. Present only when fetched with siteOutput=expanded. */
   drainageArea?: number;
-  /** 8-digit HUC. */
+  /**
+   * Hydrologic Unit Code of the watershed containing the site. Length varies by the level NWIS
+   * assigned — 8-digit (HUC8) and 12-digit (HUC12) values are both common, so no fixed width can
+   * be assumed. Not directly reusable as a `huc` query filter, which accepts 2 or 8 digits only.
+   */
   hucCd: string;
   /** Decimal latitude. */
   latitude: number;

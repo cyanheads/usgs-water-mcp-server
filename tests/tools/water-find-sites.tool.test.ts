@@ -34,7 +34,9 @@ const MOCK_SITES: NwisSite[] = [
     longitude: -77.1273,
     stateCd: '24',
     countyCd: '031',
-    hucCd: '02070008',
+    // 12 digits, as NWIS actually returns for this site. Paired with the 8-digit hucCd in
+    // makeSites() below, the fixtures carry both HUC levels site records come back at.
+    hucCd: '020700081005',
     drainageArea: 11560,
     altitude: 35.12,
     contributingArea: 11550,
@@ -129,7 +131,7 @@ describe('waterFindSites', () => {
     expect(text).toContain('POTOMAC');
     expect(text).toContain('ST');
     expect(text).toContain('38.9495');
-    expect(text).toContain('02070008');
+    expect(text).toContain('020700081005');
     // stateCd and countyCd are populated in this mock (expanded mode)
     expect(text).toContain('24');
     expect(text).toContain('031');

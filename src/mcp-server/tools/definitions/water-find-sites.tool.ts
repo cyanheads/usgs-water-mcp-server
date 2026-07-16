@@ -114,7 +114,12 @@ export const waterFindSites = tool('water_find_sites', {
             hucCd: z
               .string()
               .describe(
-                '8-digit Hydrologic Unit Code (HUC8) for the watershed containing this site.',
+                'Hydrologic Unit Code (HUC) of the watershed containing this site. ' +
+                  'Length varies by the level NWIS assigned the site — 8-digit (HUC8) and ' +
+                  '12-digit (HUC12, e.g. "020700081005") values are both common, so do not ' +
+                  'assume a fixed width. Do not pass this value straight back as the huc input ' +
+                  'filter, which takes 2 or 8 digits only; HUC codes nest, so the first 8 digits ' +
+                  'are the containing HUC8 subbasin and are what that filter accepts.',
               ),
             drainageArea: z
               .number()
