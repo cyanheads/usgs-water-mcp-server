@@ -2,6 +2,10 @@
 
 All notable changes to this project. Each entry links to its full per-version file in [changelog/](changelog/).
 
+## [0.1.10](changelog/0.1.x/0.1.10.md) — 2026-07-16
+
+water_get_conditions validates site and parameterCd at the schema edge, reports why historical context is missing via a new historicalContextStatus enum, and drops the flood/drought framing for an explicit instantaneous-vs-daily-mean disclosure.
+
 ## [0.1.9](changelog/0.1.x/0.1.9.md) — 2026-07-15
 
 Fix a midnight timezone bug in water_get_conditions' stat-row matching, add a percentileLabel field, and correct the hucCd width claim.
