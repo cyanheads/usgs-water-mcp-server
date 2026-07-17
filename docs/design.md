@@ -9,7 +9,7 @@
 | `water_find_sites` | Find USGS monitoring sites by bounding box, state, county, or HUC. Filter by site type and parameter availability. Returns site number, name, type, coordinates, and available parameter codes. Required discovery step — downstream tools key on site numbers, and parameter availability varies. Note: NWIS has no limit param; scope results geographically (bbox) or by state/county/HUC. | `bbox`, `stateCd`, `countyCd`, `huc`, `siteType`, `parameterCd`, `hasDataTypeCd`, `siteOutput` | `readOnlyHint: true`, `idempotentHint: true`, `openWorldHint: true` |
 | `water_get_readings` | Get the latest instantaneous values (real-time, ~15 min) for one or more sites. Returns per-site results each including the siteNumber, parameter code, timestamp, value, unit, and provisional/approved qualifier. Accepts up to 100 site numbers in one call. Each series is capped at its 10 most recent records with the true count in `totalValues` and `truncated` flagging the cap — `water_get_series` is the tool for a full series. Requested sites NWIS returns nothing for are named in `missingSites`, so a partial batch is visible rather than inferred. | `sites` (array), `parameterCd` (array), `period` (ISO 8601 duration, e.g. `PT2H`, `P7D`) | `readOnlyHint: true`, `idempotentHint: true`, `openWorldHint: true` |
 | `water_get_series` | Get a time series of daily or instantaneous values for a site and parameter over a date range. Returns `siteNumber`, `parameterCd`, and value records (date/time, value, qualifiers). Large result sets (>500 rows) spill to DataCanvas — response includes `canvas_id` and `truncated` flag when canvas is available. | `site`, `parameterCd`, `startDate` (YYYY-MM-DD), `endDate` (YYYY-MM-DD), `seriesType` (`daily` \| `instantaneous`) | `readOnlyHint: true`, `idempotentHint: true`, `openWorldHint: true` |
-| `water_get_conditions` | Get current conditions at a site placed in historical context: today's value ranked against the site's daily percentile record. Returns the current reading alongside the percentile class (`record-high` / `above-normal` / `normal` / `below-normal` / `low` / `record-low`) and a `percentileLabel` stating that class's threshold in plain language. Answers the real question — "is this flooding or drought?" — not just a raw number. | `site`, `parameterCd` | `readOnlyHint: true`, `idempotentHint: true`, `openWorldHint: true` |
+| `water_get_conditions` | Get current conditions at a site placed in historical context: today's value ranked against the site's daily percentile record for the same calendar day. Returns the current reading alongside the percentile class (`record-high` / `above-normal` / `normal` / `below-normal` / `low` / `record-low`), a `percentileLabel` stating that class's threshold in plain language, and a `comparisonBasis` disclosing that an instantaneous reading is ranked against approved daily-mean percentiles. A "how unusual is this reading" ranking — not a flood-stage or drought determination, which need authoritative thresholds this tool does not fetch. | `site`, `parameterCd` | `readOnlyHint: true`, `idempotentHint: true`, `openWorldHint: true` |
 | `water_list_parameters` | Static lookup of well-known USGS parameter codes with human-readable names, units, and domain. No network call. Solves the opaque-5-digit-code problem: an agent can call this first to discover that `00060` = "Discharge" (cfs), `00065` = "Gage height" (ft), `00010` = "Temperature" (°C), `72019` = "Depth to water, below land surface" (ft). | `group` (filter by domain: `streamflow` \| `groundwater` \| `temperature` \| `all`) | `readOnlyHint: true`, `idempotentHint: true`, `openWorldHint: false` |
 
 ### Resources
@@ -29,7 +29,7 @@ None — this server is data-oriented; no recurring analysis templates worth str
 
 USGS Water Data MCP Server exposes real-time and historical water data from the USGS National Water Information System (NWIS). Coverage: ~8,000 active stream gages and thousands of groundwater wells across the US and territories. Data is keyless and public.
 
-Primary use cases: check if a river is flooded or low before a trip; pull a streamflow time series for trend analysis; compare current groundwater depth against historical norms; find nearby monitoring sites for a region of interest.
+Primary use cases: see whether a river is running unusually high or low for the date before a trip; pull a streamflow time series for trend analysis; compare current groundwater depth against historical norms; find nearby monitoring sites for a region of interest.
 
 ---
 
@@ -64,7 +64,7 @@ No OGC API service at launch. The OGC API (`api.waterdata.usgs.gov/ogcapi/v0`) i
 | Env Var | Required | Description |
 |:--------|:---------|:------------|
 | `CANVAS_PROVIDER_TYPE` | No | Set to `duckdb` to enable DataCanvas spillover for large series. Optional — without it, `water_get_series` returns a truncated preview. |
-| `USGS_USER_AGENT` | No | Custom User-Agent string for USGS requests. USGS requests a descriptive User-Agent per their terms; defaults to `usgs-water-mcp-server/0.1.9 (contact: https://github.com/cyanheads/usgs-water-mcp-server)`. |
+| `USGS_USER_AGENT` | No | Custom User-Agent string for USGS requests. USGS requests a descriptive User-Agent per their terms; defaults to `usgs-water-mcp-server/0.1.10 (contact: https://github.com/cyanheads/usgs-water-mcp-server)`. |
 | `MCP_TRANSPORT_TYPE` | No | `stdio` (default) or `http`. Framework-managed. |
 | `PORT` | No | HTTP port when transport is `http`. Default `3000`. Framework-managed. |
 
@@ -120,7 +120,9 @@ Verified against the live service; encoded as Zod patterns in `services/nwis/inp
 | 1b | `GET /nwis/stat?format=rdb&sites={siteId}&parameterCd={code}&statReportType=daily&statType=all` | Full daily percentile table |
 | 2 | Compute: look up the observation's own month+day in the stat table, find the bounding percentiles | Classify into `record-high`/`above-normal`/`normal`/`below-normal`/`low`/`record-low` |
 
-Calls 1a and 1b run in `Promise.all`. If stat returns no data (new site, parameter not long enough), `water_get_conditions` returns the current reading with a note that historical context is unavailable — partial success, not a throw.
+Calls 1a and 1b run in `Promise.all`. The stat percentiles are computed from **approved daily-mean** values, while call 1a returns an **instantaneous** reading — NWIS publishes no instantaneous percentile product — so `percentileClass` is a cross-granularity approximation ("how unusual is today's reading for this calendar day"), not a flood-stage or drought determination. `historicalContext.comparisonBasis` states this at runtime.
+
+The stat call is captured, not awaited-to-throw, so an operational stat failure stays distinct from a genuinely empty table. `historicalContextStatus` reports which case occurred: `available` (percentiles present), `no_matching_day` (rows exist but none for the observation's calendar day), `no_record` (empty table — new site or record too short), or `unavailable` (the stat call failed — transient, retryable, and never attributed to the site's history). Every case still returns the current reading — partial success, not a throw. Only an IV-side 5xx/timeout throws `upstream_error`.
 
 ---
 
@@ -164,9 +166,10 @@ A batch where *some* sites return data is a success, not an error: the returned 
 | reason | code | when | retryable |
 |:-------|:-----|:-----|:----------|
 | `no_data_for_parameter` | `NotFound` | No IV series returned, or the series carries no current reading. Covers an unknown site and a valid site without the parameter alike | No — check parameter availability via `water_find_sites` |
+| `invalid_request` | `ValidationError` | NWIS returned HTML 400 for a value that passed the input patterns | No — read the NWIS message in the error; it names the field |
 | `upstream_error` | `ServiceUnavailable` | NWIS IV or stat endpoint returns 5xx or network timeout | Yes — retry after backoff |
 
-Note: absence of stat data (new site, insufficient record length) is **not** an error — `water_get_conditions` returns the current reading with `historicalContext: null` and a note. This is partial-success, not a throw.
+Note: absence of stat data is **not** an error — `water_get_conditions` returns the current reading with `historicalContext: null` and a note. `historicalContextStatus` discriminates *why* it is absent: `no_record` (empty table — new site or record too short), `no_matching_day` (rows exist but none for the observation's calendar day), or `unavailable` (the stat call failed — transient and retryable, kept distinct from a sparse site). A stat-side failure is caught inline, so it never turns an IV success into a throw; only an IV-side 5xx/timeout surfaces as `upstream_error`. This is partial-success, not a throw.
 
 ---
 
