@@ -2,6 +2,10 @@
 
 All notable changes to this project. Each entry links to its full per-version file in [changelog/](changelog/).
 
+## [0.1.12](changelog/0.1.x/0.1.12.md) — 2026-07-16
+
+water_find_sites stages its full match set to a DuckDB DataCanvas when a query exceeds the 500-site inline cap and a canvas provider is enabled, returning canvas_id and table_name to retrieve every match past the cap via water_dataframe_query. An optional canvas_id input reuses an existing canvas.
+
 ## [0.1.11](changelog/0.1.x/0.1.11.md) — 2026-07-16
 
 water_find_sites echoes the countyCd filter in its enrichment and trailer; the usgs-water://site/{siteId} resource validates siteId at the edge and declares a typed error contract; and stale site-metadata documentation — the removed available-data-types claim and altitude's mode boundary — is corrected.
