@@ -1,11 +1,14 @@
 /**
  * @fileoverview Find USGS monitoring sites by geographic filter (bbox, state, county, HUC),
- * site type, and parameter availability.
+ * site type, and parameter availability. Results are capped at 500 inline; when the result is
+ * truncated and a DataCanvas provider is enabled, the full match set is staged to a canvas table
+ * for gap-free retrieval via water_dataframe_query.
  * @module mcp-server/tools/definitions/water-find-sites.tool
  */
 
 import { tool, z } from '@cyanheads/mcp-ts-core';
 import { JsonRpcErrorCode } from '@cyanheads/mcp-ts-core/errors';
+import { getCanvas } from '@/services/canvas/canvas-accessor.js';
 import {
   BboxSchema,
   CountyCdSchema,
@@ -15,7 +18,7 @@ import {
 } from '@/services/nwis/input-schemas.js';
 import { classifyNwisFailure, findSites } from '@/services/nwis/nwis-service.js';
 
-/** Maximum sites returned in a single response. Prevents token overflows on broad queries. */
+/** Maximum sites returned inline in a single response. Prevents token overflows on broad queries. */
 const SITE_CAP = 500;
 
 export const waterFindSites = tool('water_find_sites', {
@@ -26,8 +29,10 @@ export const waterFindSites = tool('water_find_sites', {
     'Call this first to discover site numbers — water_get_readings, water_get_series, and ' +
     'water_get_conditions all require a site number. ' +
     'To check which parameters or data types a site carries, use the parameterCd or hasDataTypeCd filters. ' +
-    'Results are capped at 500 sites; when truncated=true the full upstream count is in upstreamTotal — ' +
-    'narrow the query with bbox, countyCd, huc, siteType, parameterCd, or hasDataTypeCd to get all matches.',
+    'Results are capped at 500 sites inline; when truncated=true the full upstream count is in upstreamTotal. ' +
+    'When the server has DataCanvas enabled, the full match set is staged to a canvas — the response then ' +
+    'includes canvas_id and table_name to retrieve every match (including those past the 500 cap) via water_dataframe_query. ' +
+    'Without DataCanvas, narrow the query with bbox, countyCd, huc, siteType, parameterCd, or hasDataTypeCd to get all matches.',
   annotations: { readOnlyHint: true, idempotentHint: true, openWorldHint: true },
   input: z.object({
     bbox: BboxSchema.optional().describe(
@@ -75,6 +80,14 @@ export const waterFindSites = tool('water_find_sites', {
       .describe(
         '"basic" returns core identification fields. ' +
           '"expanded" adds drainage area, altitude, contributing area, and other metadata.',
+      ),
+    canvas_id: z
+      .string()
+      .optional()
+      .describe(
+        'Canvas ID from a prior call to stage the full match set into an existing canvas rather ' +
+          'than creating a new one. Applies only when the result is truncated and DataCanvas is ' +
+          'enabled. Omit to start a fresh canvas.',
       ),
   }),
   output: z.object({
@@ -146,14 +159,19 @@ export const waterFindSites = tool('water_find_sites', {
           .describe('A USGS monitoring site with location, type, and available data.'),
       )
       .describe(
-        'Matching USGS monitoring sites (capped at 500; see truncated/upstreamTotal for overflow).',
+        'Matching USGS monitoring sites (capped at 500 inline; when truncated, upstreamTotal holds the full count ' +
+          'and canvas_id/table_name point to the staged full set when DataCanvas is enabled).',
       ),
-    total: z.number().int().describe('Number of sites returned in this response (at most 500).'),
+    total: z
+      .number()
+      .int()
+      .describe('Number of sites returned inline in this response (at most 500).'),
     truncated: z
       .boolean()
       .describe(
         'True when the upstream result set exceeded the 500-site cap. ' +
-          'Narrow filters (add bbox, countyCd, huc, siteType, parameterCd, or hasDataTypeCd) to retrieve all matches.',
+          'Query the full match set via water_dataframe_query when canvas_id is present, ' +
+          'or narrow filters (add bbox, countyCd, huc, siteType, parameterCd, or hasDataTypeCd) to retrieve all matches.',
       ),
     upstreamTotal: z
       .number()
@@ -161,6 +179,20 @@ export const waterFindSites = tool('water_find_sites', {
       .describe(
         'Total number of sites matching the query upstream, before the 500-site cap was applied. ' +
           'Equals total when truncated=false.',
+      ),
+    canvas_id: z
+      .string()
+      .optional()
+      .describe(
+        'Canvas ID for the DataCanvas holding the full, uncapped match set. Present only when truncated=true ' +
+          'and DataCanvas is enabled. Pass to water_dataframe_describe then water_dataframe_query to retrieve sites beyond the inline cap.',
+      ),
+    table_name: z
+      .string()
+      .optional()
+      .describe(
+        'DuckDB table name in the canvas holding all matching sites. Present when canvas_id is present. ' +
+          'Use as the FROM target in water_dataframe_query SQL.',
       ),
   }),
 
@@ -183,7 +215,8 @@ export const waterFindSites = tool('water_find_sites', {
       .string()
       .optional()
       .describe(
-        'Advisory when results were capped — add narrowing filters to retrieve all matches.',
+        'Advisory when results were capped — points to the staged canvas when DataCanvas is enabled, ' +
+          'otherwise to narrowing filters, for retrieving all matches.',
       ),
   },
 
@@ -263,6 +296,47 @@ export const waterFindSites = tool('water_find_sites', {
     const truncated = upstreamTotal > SITE_CAP;
     const capped = truncated ? sites.slice(0, SITE_CAP) : sites;
 
+    // DataCanvas handoff: when truncated and a canvas provider is enabled, stage the FULL match set
+    // so every site past the inline cap is retrievable via water_dataframe_query — a gap-free
+    // retrieval path that narrowing filters alone cannot guarantee. Uses registerTable, not
+    // spillover(): this tool's cap is count-based, so the full set must land on canvas whenever the
+    // count exceeds SITE_CAP, independent of the serialized-size budget spillover() gates on. No
+    // provider → the cap + narrowing-filters notice below is the fallback.
+    let canvasId: string | undefined;
+    let tableName: string | undefined;
+    const canvas = getCanvas();
+    if (canvas && truncated) {
+      const instance = await canvas.acquire(input.canvas_id, ctx);
+      const scope = input.stateCd ?? input.countyCd ?? input.huc ?? (input.bbox ? 'bbox' : 'all');
+      const table = `water_sites_${scope}_${input.siteType ?? 'all'}`.replace(/[^a-z0-9_]/gi, '_');
+      const handle = await instance.registerTable(
+        table,
+        sites.map((s) => ({
+          site_number: s.siteNumber,
+          site_name: s.siteName,
+          site_type: s.siteType,
+          latitude: s.latitude,
+          longitude: s.longitude,
+          huc_cd: s.hucCd,
+          state_cd: s.stateCd ?? null,
+          county_cd: s.countyCd ?? null,
+          drainage_area: s.drainageArea ?? null,
+          altitude: s.altitude ?? null,
+          contributing_area: s.contributingArea ?? null,
+        })),
+        { signal: ctx.signal },
+      );
+      canvasId = instance.canvasId;
+      tableName = handle.tableName;
+    }
+
+    let notice: string | undefined;
+    if (truncated) {
+      notice = canvasId
+        ? `The full ${upstreamTotal}-site match set is staged on DataCanvas — retrieve every match via water_dataframe_query using canvas_id "${canvasId}" (table ${tableName}). Inline results are capped at ${SITE_CAP}.`
+        : `Result capped at ${SITE_CAP} of ${upstreamTotal} matching sites. Add bbox, countyCd, huc, siteType, parameterCd, or hasDataTypeCd filters to narrow the query, or enable DataCanvas (CANVAS_PROVIDER_TYPE=duckdb) to retrieve all matches via water_dataframe_query.`;
+    }
+
     ctx.enrich({
       filters: {
         stateCd: input.stateCd,
@@ -274,20 +348,41 @@ export const waterFindSites = tool('water_find_sites', {
         hasDataTypeCd: input.hasDataTypeCd,
         siteOutput: input.siteOutput,
       },
-      notice: truncated
-        ? `Result capped at ${SITE_CAP} of ${upstreamTotal} matching sites. Add bbox, countyCd, huc, siteType, parameterCd, or hasDataTypeCd filters to narrow the query.`
-        : undefined,
+      notice,
     });
 
-    ctx.log.info('Sites found', { count: capped.length, upstreamTotal, truncated });
-    return { sites: capped, total: capped.length, truncated, upstreamTotal };
+    ctx.log.info('Sites found', {
+      count: capped.length,
+      upstreamTotal,
+      truncated,
+      canvasStaged: canvasId !== undefined,
+    });
+    return {
+      sites: capped,
+      total: capped.length,
+      truncated,
+      upstreamTotal,
+      canvas_id: canvasId,
+      table_name: tableName,
+    };
   },
 
   format(result) {
     const header = result.truncated
-      ? `**${result.total} site(s) shown** (truncated; ${result.upstreamTotal} total matched — narrow filters to retrieve all)\n`
+      ? `**${result.total} site(s) shown** (truncated; ${result.upstreamTotal} total matched)\n`
       : `**${result.total} site(s) found**\n`;
     const lines = [header];
+
+    if (result.truncated && result.canvas_id) {
+      lines.push(
+        `**Canvas:** \`${result.canvas_id}\` | **Table:** \`${result.table_name}\``,
+        `*(full ${result.upstreamTotal}-site match set staged — query all matches via water_dataframe_query)*`,
+        '',
+      );
+    } else if (result.truncated) {
+      lines.push(`*(narrow filters to retrieve all ${result.upstreamTotal} matches)*`, '');
+    }
+
     for (const s of result.sites) {
       lines.push(
         `### ${s.siteName} (${s.siteNumber})`,

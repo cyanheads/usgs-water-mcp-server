@@ -6,7 +6,7 @@
 
 | Name | Description | Key Inputs | Annotations |
 |:-----|:------------|:-----------|:------------|
-| `water_find_sites` | Find USGS monitoring sites by bounding box, state, county, or HUC. Filter by site type and parameter availability. Returns site number, name, type, coordinates, and drainage area (expanded mode only) — altitude is included in both modes when recorded. Required discovery step — downstream tools key on site numbers, and parameter availability varies. Note: NWIS has no limit param; scope results geographically (bbox) or by state/county/HUC. | `bbox`, `stateCd`, `countyCd`, `huc`, `siteType`, `parameterCd`, `hasDataTypeCd`, `siteOutput` | `readOnlyHint: true`, `idempotentHint: true`, `openWorldHint: true` |
+| `water_find_sites` | Find USGS monitoring sites by bounding box, state, county, or HUC. Filter by site type and parameter availability. Returns site number, name, type, coordinates, and drainage area (expanded mode only) — altitude is included in both modes when recorded. Required discovery step — downstream tools key on site numbers, and parameter availability varies. Capped at 500 sites inline (`truncated` + `upstreamTotal` signal overflow); NWIS has no limit param, so with DataCanvas enabled the full match set stages to a canvas for gap-free retrieval via `water_dataframe_query`, else narrow the query geographically (bbox) or by state/county/HUC. | `bbox`, `stateCd`, `countyCd`, `huc`, `siteType`, `parameterCd`, `hasDataTypeCd`, `siteOutput`, `canvas_id` | `readOnlyHint: true`, `idempotentHint: true`, `openWorldHint: true` |
 | `water_get_readings` | Get the latest instantaneous values (real-time, ~15 min) for one or more sites. Returns per-site results each including the siteNumber, parameter code, timestamp, value, unit, and provisional/approved qualifier. Accepts up to 100 site numbers in one call. Each series is capped at its 10 most recent records with the true count in `totalValues` and `truncated` flagging the cap — `water_get_series` is the tool for a full series. Requested sites NWIS returns nothing for are named in `missingSites`, so a partial batch is visible rather than inferred. | `sites` (array), `parameterCd` (array), `period` (ISO 8601 duration, e.g. `PT2H`, `P7D`) | `readOnlyHint: true`, `idempotentHint: true`, `openWorldHint: true` |
 | `water_get_series` | Get a time series of daily or instantaneous values for a site and parameter over a date range. Returns `siteNumber`, `parameterCd`, and value records (date/time, value, qualifiers). Large result sets (>500 rows) spill to DataCanvas — response includes `canvas_id` and `truncated` flag when canvas is available. | `site`, `parameterCd`, `startDate` (YYYY-MM-DD), `endDate` (YYYY-MM-DD), `seriesType` (`daily` \| `instantaneous`) | `readOnlyHint: true`, `idempotentHint: true`, `openWorldHint: true` |
 | `water_get_conditions` | Get current conditions at a site placed in historical context: today's value ranked against the site's daily percentile record for the same calendar day. Returns the current reading alongside the percentile class (`record-high` / `above-normal` / `normal` / `below-normal` / `low` / `record-low`), a `percentileLabel` stating that class's threshold in plain language, and a `comparisonBasis` disclosing that an instantaneous reading is ranked against approved daily-mean percentiles. A "how unusual is this reading" ranking — not a flood-stage or drought determination, which need authoritative thresholds this tool does not fetch. | `site`, `parameterCd` | `readOnlyHint: true`, `idempotentHint: true`, `openWorldHint: true` |
@@ -45,7 +45,7 @@ Primary use cases: see whether a river is running unusually high or low for the 
 - Multi-site batching: IV/DV accept comma-separated site lists (up to 100) in one call
 - Error handling: NWIS returns HTML 400 pages for bad inputs, not JSON — must detect and parse HTML errors
 - Provisional vs. approved data qualifiers surfaced to callers (not hidden)
-- Large date-range series (>500 records) spill to DataCanvas for agent SQL analysis (requires `CANVAS_PROVIDER_TYPE=duckdb`)
+- Large result sets spill to DataCanvas for agent SQL analysis (requires `CANVAS_PROVIDER_TYPE=duckdb`): date-range series (>500 records) from `water_get_series`, and site match sets (>500 sites) from `water_find_sites`
 
 ---
 
@@ -63,8 +63,8 @@ No OGC API service at launch. The OGC API (`api.waterdata.usgs.gov/ogcapi/v0`) i
 
 | Env Var | Required | Description |
 |:--------|:---------|:------------|
-| `CANVAS_PROVIDER_TYPE` | No | Set to `duckdb` to enable DataCanvas spillover for large series. Optional — without it, `water_get_series` returns a truncated preview. |
-| `USGS_USER_AGENT` | No | Custom User-Agent string for USGS requests. USGS requests a descriptive User-Agent per their terms; defaults to `usgs-water-mcp-server/0.1.11 (contact: https://github.com/cyanheads/usgs-water-mcp-server)`. |
+| `CANVAS_PROVIDER_TYPE` | No | Set to `duckdb` to enable DataCanvas spillover for large result sets (`water_get_series` series, `water_find_sites` match sets). Optional — without it, both tools return a truncated preview with an overflow signal. |
+| `USGS_USER_AGENT` | No | Custom User-Agent string for USGS requests. USGS requests a descriptive User-Agent per their terms; defaults to `usgs-water-mcp-server/0.1.12 (contact: https://github.com/cyanheads/usgs-water-mcp-server)`. |
 | `MCP_TRANSPORT_TYPE` | No | `stdio` (default) or `http`. Framework-managed. |
 | `PORT` | No | HTTP port when transport is `http`. Default `3000`. Framework-managed. |
 
@@ -212,9 +212,11 @@ The `siteId` param carries the shared 8–15 digit `SiteNumberSchema`, so a malf
 
 **Decision:** The NWIS service layer must detect and handle HTML error pages. NWIS returns HTTP 400 with an HTML body (not JSON) for invalid inputs (bad site ID format, unsupported parameter combinations). The service layer should: check `Content-Type`, detect HTML error pages, extract the error message from the `<h1>` or `<title>` tag, and throw a `validationError` with that message.
 
-### DataCanvas: opt-in for series analysis
+### DataCanvas: opt-in for large result sets
 
-**Decision:** `water_get_series` spills large result sets (>500 rows) to DataCanvas when `CANVAS_PROVIDER_TYPE=duckdb` is set. Without DuckDB, it returns a preview of the most recent 500 rows with a `truncated` flag and `totalRecords` count. This avoids making DuckDB a hard dependency while still enabling SQL-based analysis for agents that want it.
+**Decision:** `water_get_series` and `water_find_sites` stage large result sets to DataCanvas when `CANVAS_PROVIDER_TYPE=duckdb` is set. Without DuckDB, each returns a bounded preview with a `truncated` flag: `water_get_series` the most recent 500 rows with a `totalRecords` count, `water_find_sites` the first 500 sites with an `upstreamTotal` count. This avoids making DuckDB a hard dependency while still enabling SQL-based analysis for agents that want it.
+
+**`water_find_sites` stages via `registerTable`, not `spillover()`.** `water_get_series` truncates on a character budget (`spillover()`'s `previewChars`), so `spillover()` — which registers to canvas only when the source exceeds that budget — fits it directly. `water_find_sites` truncates on a hard **count** (`SITE_CAP = 500`, shipped in v0.1.4), and the full match set must land on canvas whenever the count exceeds the cap, independent of serialized size. Driving that off a character budget would silently drop the sites just past the cap for match sets that happen to fit under the budget, so the handler registers the full set directly via `CanvasInstance.registerTable`. The inline preview stays the original capped site objects — no lossy round-trip out of the snake_case canvas rows, which also sidesteps re-deriving the optional expanded fields.
 
 ### No `water_get_groundwater_levels` tool (as originally sketched)
 

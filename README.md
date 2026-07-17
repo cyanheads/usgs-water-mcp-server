@@ -7,7 +7,7 @@
 
 <div align="center">
 
-[![Version](https://img.shields.io/badge/Version-0.1.11-blue.svg?style=flat-square)](./CHANGELOG.md) [![License](https://img.shields.io/badge/License-Apache%202.0-orange.svg?style=flat-square)](./LICENSE) [![Docker](https://img.shields.io/badge/Docker-ghcr.io-2496ED?style=flat-square&logo=docker&logoColor=white)](https://github.com/users/cyanheads/packages/container/package/usgs-water-mcp-server) [![MCP SDK](https://img.shields.io/badge/MCP%20SDK-^1.29.0-green.svg?style=flat-square)](https://modelcontextprotocol.io/) [![npm](https://img.shields.io/npm/v/@cyanheads/usgs-water-mcp-server?style=flat-square&logo=npm&logoColor=white)](https://www.npmjs.com/package/@cyanheads/usgs-water-mcp-server) [![TypeScript](https://img.shields.io/badge/TypeScript-^6.0.3-3178C6.svg?style=flat-square)](https://www.typescriptlang.org/) [![Bun](https://img.shields.io/badge/Bun-v1.3.14-blueviolet.svg?style=flat-square)](https://bun.sh/)
+[![Version](https://img.shields.io/badge/Version-0.1.12-blue.svg?style=flat-square)](./CHANGELOG.md) [![License](https://img.shields.io/badge/License-Apache%202.0-orange.svg?style=flat-square)](./LICENSE) [![Docker](https://img.shields.io/badge/Docker-ghcr.io-2496ED?style=flat-square&logo=docker&logoColor=white)](https://github.com/users/cyanheads/packages/container/package/usgs-water-mcp-server) [![MCP SDK](https://img.shields.io/badge/MCP%20SDK-^1.29.0-green.svg?style=flat-square)](https://modelcontextprotocol.io/) [![npm](https://img.shields.io/npm/v/@cyanheads/usgs-water-mcp-server?style=flat-square&logo=npm&logoColor=white)](https://www.npmjs.com/package/@cyanheads/usgs-water-mcp-server) [![TypeScript](https://img.shields.io/badge/TypeScript-^6.0.3-3178C6.svg?style=flat-square)](https://www.typescriptlang.org/) [![Bun](https://img.shields.io/badge/Bun-v1.3.14-blueviolet.svg?style=flat-square)](https://bun.sh/)
 
 </div>
 
@@ -29,17 +29,17 @@
 
 ## Tools
 
-Five tools for querying USGS water data, plus two for SQL analytics over the DuckDB-backed canvas dataframes that `water_get_series` materializes:
+Five tools for querying USGS water data, plus two for SQL analytics over the DuckDB-backed canvas dataframes that `water_get_series` and `water_find_sites` materialize:
 
 | Tool | Description |
 |:-----|:------------|
 | `water_list_parameters` | Static lookup of well-known USGS parameter codes with names, units, and domain. No network call. |
-| `water_find_sites` | Find USGS monitoring sites by bounding box, state, county, or HUC watershed. Filter by site type and parameter availability. |
+| `water_find_sites` | Find USGS monitoring sites by bounding box, state, county, or HUC watershed. Filter by site type and parameter availability. Large match sets spill to DataCanvas. |
 | `water_get_readings` | Get the latest instantaneous values (~15 min real-time) for up to 100 USGS sites. |
 | `water_get_series` | Get a time series of daily or instantaneous values for a site over a date range. Large ranges spill to DataCanvas. |
 | `water_get_conditions` | Get current hydrologic conditions ranked against the full period-of-record percentile statistics. |
-| `water_dataframe_describe` | List tables and columns staged on a DataCanvas by `water_get_series`. |
-| `water_dataframe_query` | Run a read-only SQL SELECT against time-series tables staged by `water_get_series`. |
+| `water_dataframe_describe` | List tables and columns staged on a DataCanvas by `water_get_series` or `water_find_sites`. |
+| `water_dataframe_query` | Run a read-only SQL SELECT against the time-series and site tables staged by `water_get_series` and `water_find_sites`. |
 
 ### `water_list_parameters`
 
@@ -60,6 +60,8 @@ Discover USGS monitoring sites before calling data tools — all other tools req
 - Parameter filter: only return sites that have data for a specific parameter code — comma-separate to require several (e.g. `00060,00065`)
 - Data type filter: require sites with real-time (`iv`), daily (`dv`), or groundwater (`gw`) data
 - Returns site number, name, coordinates, type, state/county/HUC codes, and drainage area (expanded mode only) — altitude is included in both modes when USGS records it
+- Bounded result set: capped at 500 sites inline, with a `truncated` flag and `upstreamTotal` (the full upstream count) so an oversized query never overflows the response
+- **DataCanvas spillover:** when the result is truncated and `CANVAS_PROVIDER_TYPE=duckdb` is set, the full match set is staged to a DuckDB-backed canvas — the response includes `canvas_id` and `table_name` to retrieve every match past the 500 cap via `water_dataframe_query`. Without DataCanvas, narrow the query with additional filters (county, HUC, bbox, parameter, data type) to bring the result under the cap
 
 ---
 
@@ -105,12 +107,12 @@ Get current hydrologic conditions placed in full historical context.
 
 ### `water_dataframe_describe` / `water_dataframe_query`
 
-In-conversation SQL analytics over the time-series dataframes that `water_get_series` materializes on a DuckDB-backed canvas.
+In-conversation SQL analytics over the dataframes that `water_get_series` and `water_find_sites` materialize on a DuckDB-backed canvas — time-series tables from the former, full site match sets from the latter.
 
 **Workflow:**
-1. Call `water_get_series` with a large date range — when DataCanvas is enabled, the response includes `canvas_id` and `table_name`
-2. Call `water_dataframe_describe` with the `canvas_id` to confirm the table schema (columns: `date_time`, `value`, `qualifiers`, `site_number`, `parameter_cd`, `unit_code`)
-3. Call `water_dataframe_query` with the `canvas_id` and a SELECT statement to run aggregates, filter by qualifier, or join multiple series
+1. Call `water_get_series` with a large date range, or `water_find_sites` with a query that matches more than 500 sites — when DataCanvas is enabled, the response includes `canvas_id` and `table_name`
+2. Call `water_dataframe_describe` with the `canvas_id` to confirm the table schema — series tables carry `date_time`, `value`, `qualifiers`, `site_number`, `parameter_cd`, `unit_code`; site tables carry `site_number`, `site_name`, `site_type`, `latitude`, `longitude`, `huc_cd`, and the expanded fields
+3. Call `water_dataframe_query` with the `canvas_id` and a SELECT statement to run aggregates, filter, or join
 
 Read-only by default — only SELECT statements are permitted. Results are capped at 10,000 rows. Requires `CANVAS_PROVIDER_TYPE=duckdb` in the server environment.
 
@@ -141,7 +143,7 @@ USGS NWIS–specific:
 - HTML error detection: NWIS returns 400 with an HTML body for bad inputs; the service layer extracts NWIS's own message — which names the field it rejected — and maps it to a typed failure
 - Multi-site batching: `water_get_readings` accepts up to 100 site numbers in one call
 - Provisional vs. approved data qualifiers surfaced on every reading — not hidden from callers
-- DataCanvas spillover: `water_get_series` materializes large date-range responses as DuckDB-backed `df_<id>` tables queryable via `water_dataframe_query`
+- DataCanvas spillover: `water_get_series` (long date ranges) and `water_find_sites` (match sets past the 500-site cap) stage the full result as a DuckDB-backed table queryable via `water_dataframe_query`
 - Groundwater via the IV service using parameter `72019` — the legacy `gwlevels` endpoint was decommissioned November 2025
 
 Agent-friendly output:
@@ -149,7 +151,7 @@ Agent-friendly output:
 - Percentile classification on every conditions response — callers get a `percentileClass` string (`record-high`, `normal`, `record-low`, etc.) they can act on directly without parsing numeric thresholds, plus a `percentileLabel` stating the threshold in plain language so the `record-*` classes are not mistaken for verified all-time records
 - Partial success on conditions: when percentiles are missing, the current reading still returns with `historicalContext: null` and a `historicalContextStatus` that separates an empty stat table (`no_record` / `no_matching_day`) from a failed stat call (`unavailable`, transient), rather than collapsing both into an error
 - Partial success on batches: `water_get_readings` returns the series it got and names the rest in `missingSites`, so a silently dropped site never reads as a complete answer
-- Truncation signals: `water_get_series` reports `totalRecords` and `truncated`, and `water_get_readings` reports per-series `totalValues` plus `truncated`, so callers know when a preview is incomplete. `canvas_id` / `table_name` tell them exactly how to retrieve the rest
+- Truncation signals: `water_get_series` reports `totalRecords` and `truncated`, `water_find_sites` reports `upstreamTotal` and `truncated`, and `water_get_readings` reports per-series `totalValues` plus `truncated`, so callers know when a preview is incomplete. `canvas_id` / `table_name` tell them exactly how to retrieve the rest
 - Structured content and rendered text agree: every cap and count a tool applies is reported identically in `structuredContent` and in the markdown, so neither class of client sees a different answer
 
 ## Getting started
@@ -225,7 +227,7 @@ Or with Docker:
 }
 ```
 
-To enable DataCanvas for SQL analytics over large time-series results, add `CANVAS_PROVIDER_TYPE=duckdb` to the `env` block in any of the configs above.
+To enable DataCanvas for SQL analytics over large result sets (time series and site match sets), add `CANVAS_PROVIDER_TYPE=duckdb` to the `env` block in any of the configs above.
 
 For Streamable HTTP, set the transport and start the server:
 
@@ -270,8 +272,8 @@ cp .env.example .env
 
 | Variable | Description | Default |
 |:---------|:------------|:--------|
-| `CANVAS_PROVIDER_TYPE` | Set to `duckdb` to enable DataCanvas spillover for large time-series results from `water_get_series`. | — |
-| `USGS_USER_AGENT` | Custom User-Agent string sent to USGS NWIS. USGS requests a descriptive User-Agent per their terms. | `usgs-water-mcp-server/0.1.11 (contact: https://github.com/cyanheads/usgs-water-mcp-server)` |
+| `CANVAS_PROVIDER_TYPE` | Set to `duckdb` to enable DataCanvas spillover for large results from `water_get_series` and `water_find_sites`. | — |
+| `USGS_USER_AGENT` | Custom User-Agent string sent to USGS NWIS. USGS requests a descriptive User-Agent per their terms. | `usgs-water-mcp-server/0.1.12 (contact: https://github.com/cyanheads/usgs-water-mcp-server)` |
 | `USGS_REQUEST_TIMEOUT_MS` | HTTP request timeout in milliseconds for NWIS calls. | `30000` |
 | `MCP_TRANSPORT_TYPE` | Transport: `stdio` or `http`. | `stdio` |
 | `MCP_HTTP_PORT` | Port for HTTP server. | `3010` |

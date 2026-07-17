@@ -21,6 +21,12 @@ vi.mock('@/services/nwis/nwis-service.js', async (importOriginal) => ({
   findSites: vi.fn(),
 }));
 
+// Canvas mock — undefined (disabled) by default; overridden per test to exercise the staging path.
+let mockCanvasInstance: unknown;
+vi.mock('@/services/canvas/canvas-accessor.js', () => ({
+  getCanvas: () => mockCanvasInstance,
+}));
+
 import { findSites } from '@/services/nwis/nwis-service.js';
 
 const mockFindSites = vi.mocked(findSites);
@@ -58,6 +64,7 @@ function makeSites(count: number): NwisSite[] {
 describe('waterFindSites', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    mockCanvasInstance = undefined;
   });
 
   it('returns matching sites with truncated=false when under cap', async () => {
@@ -80,6 +87,86 @@ describe('waterFindSites', () => {
     expect(result.total).toBe(500);
     expect(result.upstreamTotal).toBe(800);
     expect(result.sites).toHaveLength(500);
+  });
+
+  it('stages the full match set to canvas and returns canvas_id/table_name when truncated + canvas enabled', async () => {
+    mockFindSites.mockResolvedValue(makeSites(800));
+    const registerTable = vi.fn().mockResolvedValue({
+      tableName: 'water_sites_KS_GW',
+      rowCount: 800,
+      columns: [
+        'site_number',
+        'site_name',
+        'site_type',
+        'latitude',
+        'longitude',
+        'huc_cd',
+        'state_cd',
+        'county_cd',
+        'drainage_area',
+        'altitude',
+        'contributing_area',
+      ],
+    });
+    const mockInstance = { canvasId: 'canvas_sites01', registerTable };
+    mockCanvasInstance = { acquire: vi.fn().mockResolvedValue(mockInstance) };
+
+    const ctx = createMockContext({ errors: waterFindSites.errors });
+    const input = waterFindSites.input.parse({ stateCd: 'KS', siteType: 'GW' });
+    const result = await waterFindSites.handler(input, ctx);
+
+    // Inline stays count-capped; the canvas carries the full, uncapped set.
+    expect(result.truncated).toBe(true);
+    expect(result.total).toBe(500);
+    expect(result.upstreamTotal).toBe(800);
+    expect(result.sites).toHaveLength(500);
+    expect(result.canvas_id).toBe('canvas_sites01');
+    expect(result.table_name).toBe('water_sites_KS_GW');
+
+    // registerTable received the FULL 800-site set (not the capped 500), as snake_case canvas rows.
+    // The table name is derived from the filters, preserving their case (KS/GW).
+    expect(registerTable).toHaveBeenCalledTimes(1);
+    const [tableArg, rowsArg] = registerTable.mock.calls[0]!;
+    expect(tableArg).toBe('water_sites_KS_GW');
+    expect(rowsArg).toHaveLength(800);
+    expect(rowsArg[0]).toMatchObject({
+      site_number: expect.any(String),
+      site_name: expect.any(String),
+      site_type: 'GW',
+      huc_cd: expect.any(String),
+    });
+  });
+
+  it('does NOT stage to canvas when the result is under the cap even if canvas is enabled', async () => {
+    mockFindSites.mockResolvedValue(makeSites(100));
+    const registerTable = vi.fn();
+    const acquire = vi.fn().mockResolvedValue({ canvasId: 'canvas_sites02', registerTable });
+    mockCanvasInstance = { acquire };
+
+    const ctx = createMockContext({ errors: waterFindSites.errors });
+    const input = waterFindSites.input.parse({ stateCd: 'RI', siteType: 'GW' });
+    const result = await waterFindSites.handler(input, ctx);
+
+    expect(result.truncated).toBe(false);
+    expect(result.total).toBe(100);
+    expect(acquire).not.toHaveBeenCalled();
+    expect(registerTable).not.toHaveBeenCalled();
+    expect(result.canvas_id).toBeUndefined();
+    expect(result.table_name).toBeUndefined();
+  });
+
+  it('falls back to the count cap with no canvas fields when the provider is disabled', async () => {
+    // mockCanvasInstance stays undefined (default) — getCanvas() returns undefined.
+    mockFindSites.mockResolvedValue(makeSites(800));
+    const ctx = createMockContext({ errors: waterFindSites.errors });
+    const input = waterFindSites.input.parse({ stateCd: 'VA', siteType: 'GW' });
+    const result = await waterFindSites.handler(input, ctx);
+
+    expect(result.truncated).toBe(true);
+    expect(result.total).toBe(500);
+    expect(result.upstreamTotal).toBe(800);
+    expect(result.canvas_id).toBeUndefined();
+    expect(result.table_name).toBeUndefined();
   });
 
   it('throws no_sites_found when service returns empty array', async () => {
@@ -164,6 +251,23 @@ describe('waterFindSites', () => {
     const text = blocks[0]?.text ?? '';
     expect(text).toContain('800');
     expect(text).toContain('truncated');
+  });
+
+  it('formats a truncated canvas result with the canvas_id / table_name reference', () => {
+    const result = {
+      sites: makeSites(500),
+      total: 500,
+      truncated: true,
+      upstreamTotal: 800,
+      canvas_id: 'canvas_sites01',
+      table_name: 'water_sites_KS_GW',
+    };
+    const blocks = waterFindSites.format!(result);
+    const text = blocks[0]?.text ?? '';
+    expect(text).toContain('canvas_sites01');
+    expect(text).toContain('water_sites_KS_GW');
+    expect(text).toContain('water_dataframe_query');
+    expect(text).toContain('800');
   });
 
   it('populates filter enrichment on successful result', async () => {
