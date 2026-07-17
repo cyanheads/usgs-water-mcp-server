@@ -49,15 +49,18 @@ const MOCK_SITES: NwisSite[] = [
   },
 ];
 
-/** Build N minimal mock sites (basic mode — no expanded fields). */
-function makeSites(count: number): NwisSite[] {
+/**
+ * Build N minimal mock sites (basic mode — no expanded fields). Pass includeHuc=false to model
+ * sites NWIS assigned no HUC to (hucCd omitted, as mapSiteRow now does for a blank huc_cd).
+ */
+function makeSites(count: number, includeHuc = true): NwisSite[] {
   return Array.from({ length: count }, (_, i) => ({
     siteNumber: String(10000000 + i).padStart(8, '0'),
     siteName: `MOCK SITE ${i}`,
     siteType: 'GW',
     latitude: 38.0 + i * 0.01,
     longitude: -98.0,
-    hucCd: '10270206',
+    ...(includeHuc ? { hucCd: '10270206' } : {}),
   }));
 }
 
@@ -135,6 +138,25 @@ describe('waterFindSites', () => {
       site_type: 'GW',
       huc_cd: expect.any(String),
     });
+  });
+
+  it('stages huc_cd as null for sites NWIS assigned no HUC (regression: #22)', async () => {
+    // Every staged site lacks hucCd. The canvas row must carry huc_cd: null, not undefined — the
+    // first row seeds DuckDB column types, so a bare undefined would leave the column untyped.
+    mockFindSites.mockResolvedValue(makeSites(600, false));
+    const registerTable = vi
+      .fn()
+      .mockResolvedValue({ tableName: 'water_sites_KS_GW', rowCount: 600, columns: [] });
+    mockCanvasInstance = {
+      acquire: vi.fn().mockResolvedValue({ canvasId: 'canvas_nohuc', registerTable }),
+    };
+
+    const ctx = createMockContext({ errors: waterFindSites.errors });
+    const input = waterFindSites.input.parse({ stateCd: 'KS', siteType: 'GW' });
+    await waterFindSites.handler(input, ctx);
+
+    const [, rowsArg] = registerTable.mock.calls[0]!;
+    expect(rowsArg[0].huc_cd).toBeNull();
   });
 
   it('does NOT stage to canvas when the result is under the cap even if canvas is enabled', async () => {
@@ -269,6 +291,49 @@ describe('waterFindSites', () => {
     // The decoupled fields that are absent must not render their labels.
     expect(text).not.toContain('Drainage area');
     expect(text).not.toContain('Contributing area');
+  });
+
+  it('omits the HUC line entirely when NWIS assigned no HUC (regression: #22)', () => {
+    // A groundwater site NWIS gave no HUC: mapSiteRow now omits hucCd (like every sparse sibling)
+    // instead of backfilling '', so format() must skip the label rather than print a bare "HUC:".
+    const noHucSite: NwisSite = {
+      siteNumber: '363835076202001',
+      siteName: '60B 27',
+      siteType: 'GW',
+      latitude: 36.643206,
+      longitude: -76.3385525,
+      altitude: 16,
+      // hucCd, stateCd, countyCd, drainageArea, contributingArea all absent — basic-mode GW site.
+    };
+    const result = { sites: [noHucSite], total: 1, truncated: false, upstreamTotal: 1 };
+    const text = waterFindSites.format!(result)[0]?.text ?? '';
+
+    expect(text).toContain('60B 27');
+    expect(text).toContain('**Altitude:** 16 ft');
+    // No bare label and no stringified undefined for the omitted HUC.
+    expect(text).not.toContain('**HUC:**');
+    expect(text).not.toContain('undefined');
+  });
+
+  it('renders State/County even when HUC is absent (decoupled location parts)', () => {
+    // HUC and state/county are independent — an absent HUC must not suppress the state/county that
+    // expanded mode does carry.
+    const site: NwisSite = {
+      siteNumber: '01646500',
+      siteName: 'POTOMAC RIVER',
+      siteType: 'ST',
+      latitude: 38.9495,
+      longitude: -77.1273,
+      stateCd: '24',
+      countyCd: '031',
+      // hucCd absent.
+    };
+    const result = { sites: [site], total: 1, truncated: false, upstreamTotal: 1 };
+    const text = waterFindSites.format!(result)[0]?.text ?? '';
+
+    expect(text).toContain('**State:** 24');
+    expect(text).toContain('**County:** 031');
+    expect(text).not.toContain('**HUC:**');
   });
 
   it('formats truncated result with cap notice', () => {

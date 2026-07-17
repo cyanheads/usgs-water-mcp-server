@@ -126,11 +126,13 @@ export const waterFindSites = tool('water_find_sites', {
               ),
             hucCd: z
               .string()
+              .optional()
               .describe(
                 'Hydrologic Unit Code (HUC) of the watershed containing this site. ' +
                   'Length varies by the level NWIS assigned the site — 8-digit (HUC8) and ' +
                   '12-digit (HUC12, e.g. "020700081005") values are both common, so do not ' +
-                  'assume a fixed width. Do not pass this value straight back as the huc input ' +
+                  'assume a fixed width. Absent when NWIS assigns the site no HUC. ' +
+                  'Do not pass this value straight back as the huc input ' +
                   'filter, which takes 2 or 8 digits only; HUC codes nest, so the first 8 digits ' +
                   'are the containing HUC8 subbasin and are what that filter accepts.',
               ),
@@ -317,7 +319,7 @@ export const waterFindSites = tool('water_find_sites', {
           site_type: s.siteType,
           latitude: s.latitude,
           longitude: s.longitude,
-          huc_cd: s.hucCd,
+          huc_cd: s.hucCd ?? null,
           state_cd: s.stateCd ?? null,
           county_cd: s.countyCd ?? null,
           drainage_area: s.drainageArea ?? null,
@@ -392,8 +394,15 @@ export const waterFindSites = tool('water_find_sites', {
       lines.push(
         `### ${s.siteName} (${s.siteNumber})`,
         `**Type:** ${s.siteType} | **Lat/Lon:** ${s.latitude}, ${s.longitude}`,
-        `**HUC:** ${s.hucCd}${s.stateCd ? ` | **State:** ${s.stateCd}` : ''}${s.countyCd ? ` | **County:** ${s.countyCd}` : ''}`,
       );
+      // HUC, state, and county each render only when present — NWIS omits HUC for some sites, and
+      // state/county populate in expanded mode only. Building the line from the parts that exist
+      // keeps an absent field from printing a bare label (the #22 blank "HUC:" regression).
+      const location: string[] = [];
+      if (s.hucCd) location.push(`**HUC:** ${s.hucCd}`);
+      if (s.stateCd) location.push(`**State:** ${s.stateCd}`);
+      if (s.countyCd) location.push(`**County:** ${s.countyCd}`);
+      if (location.length > 0) lines.push(location.join(' | '));
       // Render each scalar metric iff it is individually present. altitude populates in both basic
       // and expanded mode, but drainageArea/contributingArea only in expanded — so gating altitude
       // behind a drainageArea check silently dropped it from content[] for basic-mode sites that

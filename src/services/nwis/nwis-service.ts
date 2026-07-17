@@ -191,13 +191,15 @@ function mapSiteRow(r: Record<string, string>, fallbackSiteNo?: string): NwisSit
     latitude: parseFloat_(r['dec_lat_va']) ?? 0,
     longitude: parseFloat_(r['dec_long_va']) ?? 0,
     // state_cd, county_cd, drain_area_va, contrib_drain_area_va are only present in siteOutput=expanded;
-    // alt_va is present in basic mode too, so altitude populates regardless of siteOutput.
+    // alt_va and huc_cd are present in basic mode too, so they populate regardless of siteOutput —
+    // but NWIS leaves huc_cd blank for some sites, so omit it (like every sibling) rather than
+    // backfilling an empty string that renders as a bare "HUC:" label.
     ...(r['state_cd'] !== undefined && r['state_cd'] !== '' ? { stateCd: r['state_cd'] } : {}),
     ...(r['county_cd'] !== undefined && r['county_cd'] !== '' ? { countyCd: r['county_cd'] } : {}),
     ...(drainageArea !== null ? { drainageArea } : {}),
     ...(altitude !== null ? { altitude } : {}),
     ...(contributingArea !== null ? { contributingArea } : {}),
-    hucCd: r['huc_cd'] ?? '',
+    ...(r['huc_cd'] !== undefined && r['huc_cd'] !== '' ? { hucCd: r['huc_cd'] } : {}),
   };
 }
 

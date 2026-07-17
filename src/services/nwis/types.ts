@@ -17,8 +17,9 @@ export interface NwisSite {
    * Hydrologic Unit Code of the watershed containing the site. Length varies by the level NWIS
    * assigned — 8-digit (HUC8) and 12-digit (HUC12) values are both common, so no fixed width can
    * be assumed. Not directly reusable as a `huc` query filter, which accepts 2 or 8 digits only.
+   * Omitted when NWIS assigns the site no HUC (present in both basic and expanded modes otherwise).
    */
-  hucCd: string;
+  hucCd?: string;
   /** Decimal latitude. */
   latitude: number;
   /** Decimal longitude. */
