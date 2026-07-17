@@ -190,7 +190,8 @@ function mapSiteRow(r: Record<string, string>, fallbackSiteNo?: string): NwisSit
     siteType: r['site_tp_cd'] ?? '',
     latitude: parseFloat_(r['dec_lat_va']) ?? 0,
     longitude: parseFloat_(r['dec_long_va']) ?? 0,
-    // state_cd, county_cd, drain_area_va, alt_va, contrib_drain_area_va only present in siteOutput=expanded
+    // state_cd, county_cd, drain_area_va, contrib_drain_area_va are only present in siteOutput=expanded;
+    // alt_va is present in basic mode too, so altitude populates regardless of siteOutput.
     ...(r['state_cd'] !== undefined && r['state_cd'] !== '' ? { stateCd: r['state_cd'] } : {}),
     ...(r['county_cd'] !== undefined && r['county_cd'] !== '' ? { countyCd: r['county_cd'] } : {}),
     ...(drainageArea !== null ? { drainageArea } : {}),

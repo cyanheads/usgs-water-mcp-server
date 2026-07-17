@@ -5,7 +5,7 @@
 
 /** A single USGS monitoring site returned from the site service. */
 export interface NwisSite {
-  /** Altitude of the gage datum in feet above sea level. Present only when fetched with siteOutput=expanded. */
+  /** Altitude of the gage datum in feet above sea level. Present in both basic and expanded modes when USGS records an altitude for the site. */
   altitude?: number;
   /** Contributing drainage area in square miles. Present only when fetched with siteOutput=expanded. */
   contributingArea?: number;

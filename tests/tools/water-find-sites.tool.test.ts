@@ -186,6 +186,31 @@ describe('waterFindSites', () => {
     });
   });
 
+  it('echoes countyCd in both filter enrichment and the rendered trailer', async () => {
+    mockFindSites.mockResolvedValue(MOCK_SITES);
+    const ctx = createMockContext({ errors: waterFindSites.errors });
+    const input = waterFindSites.input.parse({
+      stateCd: 'VA',
+      countyCd: '51013',
+      siteType: 'ST',
+    });
+    await waterFindSites.handler(input, ctx);
+
+    // structuredContent path: the enrichment object carries countyCd
+    expect(getEnrichment(ctx)).toMatchObject({
+      filters: expect.objectContaining({ countyCd: '51013' }),
+    });
+
+    // content[] path: the trailer renderer surfaces countyCd
+    const rendered = waterFindSites.enrichmentTrailer!.filters!.render!({
+      stateCd: 'VA',
+      countyCd: '51013',
+      siteType: 'ST',
+      siteOutput: 'basic',
+    });
+    expect(rendered).toContain('countyCd=51013');
+  });
+
   it('passes through optional filters to findSites', async () => {
     mockFindSites.mockResolvedValue(MOCK_SITES);
     const ctx = createMockContext({ errors: waterFindSites.errors });

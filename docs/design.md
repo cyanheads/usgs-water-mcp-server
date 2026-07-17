@@ -6,7 +6,7 @@
 
 | Name | Description | Key Inputs | Annotations |
 |:-----|:------------|:-----------|:------------|
-| `water_find_sites` | Find USGS monitoring sites by bounding box, state, county, or HUC. Filter by site type and parameter availability. Returns site number, name, type, coordinates, and available parameter codes. Required discovery step — downstream tools key on site numbers, and parameter availability varies. Note: NWIS has no limit param; scope results geographically (bbox) or by state/county/HUC. | `bbox`, `stateCd`, `countyCd`, `huc`, `siteType`, `parameterCd`, `hasDataTypeCd`, `siteOutput` | `readOnlyHint: true`, `idempotentHint: true`, `openWorldHint: true` |
+| `water_find_sites` | Find USGS monitoring sites by bounding box, state, county, or HUC. Filter by site type and parameter availability. Returns site number, name, type, coordinates, and drainage area (expanded mode only) — altitude is included in both modes when recorded. Required discovery step — downstream tools key on site numbers, and parameter availability varies. Note: NWIS has no limit param; scope results geographically (bbox) or by state/county/HUC. | `bbox`, `stateCd`, `countyCd`, `huc`, `siteType`, `parameterCd`, `hasDataTypeCd`, `siteOutput` | `readOnlyHint: true`, `idempotentHint: true`, `openWorldHint: true` |
 | `water_get_readings` | Get the latest instantaneous values (real-time, ~15 min) for one or more sites. Returns per-site results each including the siteNumber, parameter code, timestamp, value, unit, and provisional/approved qualifier. Accepts up to 100 site numbers in one call. Each series is capped at its 10 most recent records with the true count in `totalValues` and `truncated` flagging the cap — `water_get_series` is the tool for a full series. Requested sites NWIS returns nothing for are named in `missingSites`, so a partial batch is visible rather than inferred. | `sites` (array), `parameterCd` (array), `period` (ISO 8601 duration, e.g. `PT2H`, `P7D`) | `readOnlyHint: true`, `idempotentHint: true`, `openWorldHint: true` |
 | `water_get_series` | Get a time series of daily or instantaneous values for a site and parameter over a date range. Returns `siteNumber`, `parameterCd`, and value records (date/time, value, qualifiers). Large result sets (>500 rows) spill to DataCanvas — response includes `canvas_id` and `truncated` flag when canvas is available. | `site`, `parameterCd`, `startDate` (YYYY-MM-DD), `endDate` (YYYY-MM-DD), `seriesType` (`daily` \| `instantaneous`) | `readOnlyHint: true`, `idempotentHint: true`, `openWorldHint: true` |
 | `water_get_conditions` | Get current conditions at a site placed in historical context: today's value ranked against the site's daily percentile record for the same calendar day. Returns the current reading alongside the percentile class (`record-high` / `above-normal` / `normal` / `below-normal` / `low` / `record-low`), a `percentileLabel` stating that class's threshold in plain language, and a `comparisonBasis` disclosing that an instantaneous reading is ranked against approved daily-mean percentiles. A "how unusual is this reading" ranking — not a flood-stage or drought determination, which need authoritative thresholds this tool does not fetch. | `site`, `parameterCd` | `readOnlyHint: true`, `idempotentHint: true`, `openWorldHint: true` |
@@ -16,7 +16,7 @@
 
 | URI Template | Description | Pagination |
 |:-------------|:------------|:-----------|
-| `usgs-water://site/{siteId}` | Site metadata: name, coordinates, type, HUC, altitude, available parameters. Stable URI for a known site number. | No |
+| `usgs-water://site/{siteId}` | Site metadata: name, coordinates, type, HUC, state, county, drainage area, and altitude. Stable URI for a known site number. | No |
 | `usgs-water://parameters` | Full parameter code catalog (the same data as `water_list_parameters`). Injectable context for clients that support resources. | No |
 
 ### Prompts
@@ -64,7 +64,7 @@ No OGC API service at launch. The OGC API (`api.waterdata.usgs.gov/ogcapi/v0`) i
 | Env Var | Required | Description |
 |:--------|:---------|:------------|
 | `CANVAS_PROVIDER_TYPE` | No | Set to `duckdb` to enable DataCanvas spillover for large series. Optional — without it, `water_get_series` returns a truncated preview. |
-| `USGS_USER_AGENT` | No | Custom User-Agent string for USGS requests. USGS requests a descriptive User-Agent per their terms; defaults to `usgs-water-mcp-server/0.1.10 (contact: https://github.com/cyanheads/usgs-water-mcp-server)`. |
+| `USGS_USER_AGENT` | No | Custom User-Agent string for USGS requests. USGS requests a descriptive User-Agent per their terms; defaults to `usgs-water-mcp-server/0.1.11 (contact: https://github.com/cyanheads/usgs-water-mcp-server)`. |
 | `MCP_TRANSPORT_TYPE` | No | `stdio` (default) or `http`. Framework-managed. |
 | `PORT` | No | HTTP port when transport is `http`. Default `3000`. Framework-managed. |
 
@@ -128,7 +128,7 @@ The stat call is captured, not awaited-to-throw, so an operational stat failure 
 
 ## Error Contracts
 
-Typed failure contracts for the four network-calling tools. `water_list_parameters` is static — no contract needed.
+Typed failure contracts for the four network-calling tools and the `usgs-water://site/{siteId}` resource. `water_list_parameters` is static — no contract needed.
 
 **Classification is code-based, not message-based.** `nwis-service` already types every failure it raises — an HTML 400 becomes a `validationError`, a 5xx becomes a `serviceUnavailable` — and `classifyNwisFailure()` maps that code onto the reason vocabulary below. Tools never re-match the error prose to guess a field.
 
@@ -170,6 +170,16 @@ A batch where *some* sites return data is a success, not an error: the returned 
 | `upstream_error` | `ServiceUnavailable` | NWIS IV or stat endpoint returns 5xx or network timeout | Yes — retry after backoff |
 
 Note: absence of stat data is **not** an error — `water_get_conditions` returns the current reading with `historicalContext: null` and a note. `historicalContextStatus` discriminates *why* it is absent: `no_record` (empty table — new site or record too short), `no_matching_day` (rows exist but none for the observation's calendar day), or `unavailable` (the stat call failed — transient and retryable, kept distinct from a sparse site). A stat-side failure is caught inline, so it never turns an IV success into a throw; only an IV-side 5xx/timeout surfaces as `upstream_error`. This is partial-success, not a throw.
+
+### `usgs-water://site/{siteId}` (resource)
+
+| reason | code | when | retryable |
+|:-------|:-----|:-----|:----------|
+| `not_found` | `NotFound` | No site exists for the given (well-formed) site number | No — verify the site number via `water_find_sites` |
+| `invalid_request` | `ValidationError` | NWIS returned HTML 400 for a value that passed the 8–15 digit edge schema | No — read the NWIS message in the error; it names the field |
+| `upstream_error` | `ServiceUnavailable` | NWIS returns 5xx or network timeout | Yes — retry after backoff |
+
+The `siteId` param carries the shared 8–15 digit `SiteNumberSchema`, so a malformed site number is rejected at the resource edge before any NWIS call — the same edge validation the four tools apply.
 
 ---
 

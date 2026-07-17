@@ -22,7 +22,7 @@ export const waterFindSites = tool('water_find_sites', {
   description:
     'Find USGS water monitoring sites by bounding box, state, county, or HUC watershed code. ' +
     'Filter by site type (stream gage, groundwater well, lake) and parameter availability. ' +
-    'Returns site numbers, names, coordinates, types, and (in expanded mode) drainage area and altitude. ' +
+    'Returns site numbers, names, coordinates, types, altitude, and (in expanded mode) drainage area. ' +
     'Call this first to discover site numbers — water_get_readings, water_get_series, and ' +
     'water_get_conditions all require a site number. ' +
     'To check which parameters or data types a site carries, use the parameterCd or hasDataTypeCd filters. ' +
@@ -133,7 +133,7 @@ export const waterFindSites = tool('water_find_sites', {
               .optional()
               .describe(
                 'Altitude of the gage datum in feet above sea level (NAVD 88 or NGVD 29). ' +
-                  'Populated only when siteOutput="expanded"; absent in basic mode.',
+                  'Present in both basic and expanded modes when USGS records an altitude for the site.',
               ),
             contributingArea: z
               .number()
@@ -168,6 +168,7 @@ export const waterFindSites = tool('water_find_sites', {
     filters: z
       .object({
         stateCd: z.string().optional().describe('State filter applied, if any.'),
+        countyCd: z.string().optional().describe('County FIPS filter applied, if any.'),
         siteType: z.string().optional().describe('Site type filter applied, if any.'),
         parameterCd: z.string().optional().describe('Parameter code filter applied, if any.'),
         bbox: z.string().optional().describe('Bounding box filter applied, if any.'),
@@ -191,6 +192,7 @@ export const waterFindSites = tool('water_find_sites', {
       render(v) {
         const parts: string[] = [];
         if (v.stateCd) parts.push(`state=${v.stateCd}`);
+        if (v.countyCd) parts.push(`countyCd=${v.countyCd}`);
         if (v.siteType) parts.push(`siteType=${v.siteType}`);
         if (v.parameterCd) parts.push(`parameterCd=${v.parameterCd}`);
         if (v.bbox) parts.push(`bbox=${v.bbox}`);
@@ -264,6 +266,7 @@ export const waterFindSites = tool('water_find_sites', {
     ctx.enrich({
       filters: {
         stateCd: input.stateCd,
+        countyCd: input.countyCd,
         siteType: input.siteType,
         parameterCd: input.parameterCd,
         bbox: input.bbox,
