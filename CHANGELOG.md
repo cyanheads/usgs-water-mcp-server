@@ -2,6 +2,10 @@
 
 All notable changes to this project. Each entry links to its full per-version file in [changelog/](changelog/).
 
+## [0.1.13](changelog/0.1.x/0.1.13.md) — 2026-07-16
+
+Rendering-correctness fixes: water_get_series renders every returned value (not just the last 20) and its spillover notice reports the real preview count instead of a fixed 500; water_find_sites renders basic-mode altitude independently of drainageArea and no longer leaks a literal notice: undefined into content[].
+
 ## [0.1.12](changelog/0.1.x/0.1.12.md) — 2026-07-16
 
 water_find_sites stages its full match set to a DuckDB DataCanvas when a query exceeds the 500-site inline cap and a canvas provider is enabled, returning canvas_id and table_name to retrieve every match past the cap via water_dataframe_query. An optional canvas_id input reuses an existing canvas.
