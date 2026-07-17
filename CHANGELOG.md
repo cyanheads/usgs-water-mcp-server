@@ -2,6 +2,10 @@
 
 All notable changes to this project. Each entry links to its full per-version file in [changelog/](changelog/).
 
+## [0.1.11](changelog/0.1.x/0.1.11.md) — 2026-07-16
+
+water_find_sites echoes the countyCd filter in its enrichment and trailer; the usgs-water://site/{siteId} resource validates siteId at the edge and declares a typed error contract; and stale site-metadata documentation — the removed available-data-types claim and altitude's mode boundary — is corrected.
+
 ## [0.1.10](changelog/0.1.x/0.1.10.md) — 2026-07-16
 
 water_get_conditions validates site and parameterCd at the schema edge, reports why historical context is missing via a new historicalContextStatus enum, and drops the flood/drought framing for an explicit instantaneous-vs-daily-mean disclosure.
