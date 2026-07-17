@@ -337,6 +337,11 @@ export const waterFindSites = tool('water_find_sites', {
         : `Result capped at ${SITE_CAP} of ${upstreamTotal} matching sites. Add bbox, countyCd, huc, siteType, parameterCd, or hasDataTypeCd filters to narrow the query, or enable DataCanvas (CANVAS_PROVIDER_TYPE=duckdb) to retrieve all matches via water_dataframe_query.`;
     }
 
+    // Spread `notice` in only when set: passing `notice: undefined` puts the key on the enrichment
+    // store, and the framework's default scalar trailer renderer stringifies it as literal
+    // "undefined" in content[] (no notice.render() is declared). Omitting the key keeps optional
+    // enrichment absent from both surfaces — mirroring how water_get_series enriches notice only on
+    // the truncated path.
     ctx.enrich({
       filters: {
         stateCd: input.stateCd,
@@ -348,7 +353,7 @@ export const waterFindSites = tool('water_find_sites', {
         hasDataTypeCd: input.hasDataTypeCd,
         siteOutput: input.siteOutput,
       },
-      notice,
+      ...(notice ? { notice } : {}),
     });
 
     ctx.log.info('Sites found', {
@@ -389,10 +394,16 @@ export const waterFindSites = tool('water_find_sites', {
         `**Type:** ${s.siteType} | **Lat/Lon:** ${s.latitude}, ${s.longitude}`,
         `**HUC:** ${s.hucCd}${s.stateCd ? ` | **State:** ${s.stateCd}` : ''}${s.countyCd ? ` | **County:** ${s.countyCd}` : ''}`,
       );
-      if (s.drainageArea !== undefined)
-        lines.push(
-          `**Drainage area:** ${s.drainageArea} mi²${s.altitude !== undefined ? ` | **Altitude:** ${s.altitude} ft` : ''}${s.contributingArea !== undefined ? ` | **Contributing area:** ${s.contributingArea} mi²` : ''}`,
-        );
+      // Render each scalar metric iff it is individually present. altitude populates in both basic
+      // and expanded mode, but drainageArea/contributingArea only in expanded — so gating altitude
+      // behind a drainageArea check silently dropped it from content[] for basic-mode sites that
+      // carry an altitude. Decoupling keeps content[] in parity with structuredContent per-field.
+      const metrics: string[] = [];
+      if (s.drainageArea !== undefined) metrics.push(`**Drainage area:** ${s.drainageArea} mi²`);
+      if (s.altitude !== undefined) metrics.push(`**Altitude:** ${s.altitude} ft`);
+      if (s.contributingArea !== undefined)
+        metrics.push(`**Contributing area:** ${s.contributingArea} mi²`);
+      if (metrics.length > 0) lines.push(metrics.join(' | '));
       lines.push('');
     }
     return [{ type: 'text', text: lines.join('\n') }];

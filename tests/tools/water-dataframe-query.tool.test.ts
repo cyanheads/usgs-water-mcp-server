@@ -149,6 +149,31 @@ describe('waterDataframeQuery', () => {
     expect(text).toContain('5000');
   });
 
+  it('caps the rendered table at 50 rows with an accurate "showing 50 of N" caption at worst case (regression: #16 sub-case 2)', () => {
+    // Rows can reach the 10,000-row tool cap, so a render cap is legitimate (10k markdown rows is
+    // not viable) — this is honest capping, not a silent drop. The requirement is ACCURACY: the
+    // caption's stated count must equal what is actually emitted, and the header must disclose the
+    // real total. Worst case: the query matched more than the 10,000-row cap, so rows returned =
+    // 10,000 (capped) and row_count = the larger matched total. format-parity can't measure this —
+    // its synthetic sample is a single row.
+    const rows = Array.from({ length: 10_000 }, (_, i) => ({
+      date_time: `2024-01-01T00:${String(i % 60).padStart(2, '0')}:00`,
+      value: String(i),
+    }));
+    const result = { rows, row_count: 25_000 };
+    const blocks = waterDataframeQuery.format!(result);
+    const text = blocks[0]?.text ?? '';
+
+    // Header honestly discloses both the matched total and the returned (capped) count.
+    expect(text).toContain('25000 row(s)');
+    expect(text).toContain('(10000 returned)');
+    // Exactly 50 data rows emitted: table = column-header + separator + 50 data rows = 52 lines.
+    const tableLines = text.split('\n').filter((l) => l.startsWith('| '));
+    expect(tableLines).toHaveLength(52);
+    // The caption's stated rendered count matches what was actually rendered.
+    expect(text).toContain('showing 50 of 10000');
+  });
+
   it('formats empty result set gracefully', () => {
     const result = { rows: [], row_count: 0 };
     const blocks = waterDataframeQuery.format!(result);

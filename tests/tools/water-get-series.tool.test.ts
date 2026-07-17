@@ -9,7 +9,7 @@ import {
   serviceUnavailable,
   validationError,
 } from '@cyanheads/mcp-ts-core/errors';
-import { createMockContext } from '@cyanheads/mcp-ts-core/testing';
+import { createMockContext, getEnrichment } from '@cyanheads/mcp-ts-core/testing';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { waterGetSeries } from '@/mcp-server/tools/definitions/water-get-series.tool.js';
 import type { NwisTimeSeries } from '@/services/nwis/types.js';
@@ -137,6 +137,16 @@ describe('waterGetSeries', () => {
     expect(result.canvas_id).toBe('canvas0001xx');
     expect(result.table_name).toBe('water_series_01646500_00060');
     expect(result.values).toHaveLength(5);
+
+    // #19 regression: the spillover notice must report the ACTUAL preview count
+    // (previewRows.length — 5 here), not the fixed SPILLOVER_THRESHOLD (500). spillover() sizes its
+    // preview by a character budget, so the real count varies and this test's mock (5 rows against a
+    // 500 threshold) is exactly the mismatch the old hardcoded notice got wrong.
+    const notice = getEnrichment(ctx).notice as string;
+    expect(notice).toContain('5 preview records');
+    expect(notice).not.toContain('500 preview records');
+    expect(notice).toContain('600 records'); // totalRecords named accurately
+
     // Verify spillover was called with the correct source rows
     expect(mockSpillover).toHaveBeenCalledWith(
       expect.objectContaining({
@@ -377,6 +387,36 @@ describe('waterGetSeries', () => {
     expect(text).toContain('00060');
     expect(text).toContain('Streamflow');
     expect(text).toContain('5');
+  });
+
+  it('renders every value record in content[], mirroring structuredContent.values (regression: #16)', () => {
+    // 500 records = the no-canvas cap ceiling and well past the old inline 20-record preview slice.
+    // format-parity cannot catch this: it synthesizes a 1-element array, so a formatter that only
+    // rendered the last 20 passed trivially. Measure real format() output against a worst-case set.
+    const series = makeSeries(500);
+    const result = {
+      siteNumber: '01646500',
+      siteName: 'POTOMAC RIVER',
+      parameterCd: '00060',
+      parameterName: 'Streamflow, ft³/s',
+      unitCode: 'ft3/s',
+      seriesType: 'daily' as const,
+      values: series.values,
+      totalRecords: 500,
+      truncated: false,
+      canvas_id: undefined,
+      table_name: undefined,
+    };
+    const blocks = waterGetSeries.format!(result);
+    const text = blocks[0]?.text ?? '';
+
+    // The first record — dropped by the old `slice(-20)` — is now present in content[].
+    expect(text).toContain('2024-01-01T00:00:00');
+    // Every value renders as its own bullet line: content[] carries all 500, not a 20-record preview.
+    const valueLines = text.split('\n').filter((l) => l.startsWith('- '));
+    expect(valueLines).toHaveLength(500);
+    // The stale "showing 20 of N inline records" caption is gone (it no longer applies).
+    expect(text).not.toContain('showing 20 of');
   });
 
   it('formats truncated canvas result with canvas_id reference', () => {

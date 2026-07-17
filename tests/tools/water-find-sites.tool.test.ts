@@ -245,6 +245,32 @@ describe('waterFindSites', () => {
     expect(text).not.toContain('Drainage area');
   });
 
+  it('renders altitude in basic mode when drainageArea is absent (regression: #16 sub-case 3)', () => {
+    // altitude populates in BOTH basic and expanded mode; drainageArea only in expanded. The old
+    // formatter gated altitude behind `drainageArea !== undefined`, so a basic-mode site with an
+    // altitude silently dropped it from content[] while structuredContent kept it. format-parity
+    // can't catch this — it always synthesizes both siblings populated together, never the real
+    // "drainageArea absent, altitude present" combination basic mode produces.
+    const basicSiteWithAltitude: NwisSite = {
+      siteNumber: '363319076253301',
+      siteName: 'GROUNDWATER WELL NEAR SUFFOLK, VA',
+      siteType: 'GW',
+      latitude: 36.55,
+      longitude: -76.42,
+      hucCd: '03010205',
+      altitude: 22,
+      // drainageArea, contributingArea, stateCd, countyCd all absent — basic mode.
+    };
+    const result = { sites: [basicSiteWithAltitude], total: 1, truncated: false, upstreamTotal: 1 };
+    const blocks = waterFindSites.format!(result);
+    const text = blocks[0]?.text ?? '';
+
+    expect(text).toContain('**Altitude:** 22 ft');
+    // The decoupled fields that are absent must not render their labels.
+    expect(text).not.toContain('Drainage area');
+    expect(text).not.toContain('Contributing area');
+  });
+
   it('formats truncated result with cap notice', () => {
     const result = { sites: makeSites(500), total: 500, truncated: true, upstreamTotal: 800 };
     const blocks = waterFindSites.format!(result);

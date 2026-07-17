@@ -298,7 +298,7 @@ export const waterGetSeries = tool('water_get_series', {
 
       if (spillResult.spilled) {
         ctx.enrich({
-          notice: `Result truncated to ${SPILLOVER_THRESHOLD} preview records — query the full ${totalRecords} records via water_dataframe_query using canvas_id.`,
+          notice: `Result truncated to ${spillResult.previewRows.length} preview records — query the full ${totalRecords} records via water_dataframe_query using canvas_id.`,
         });
       }
 
@@ -369,13 +369,13 @@ export const waterGetSeries = tool('water_get_series', {
     }
 
     lines.push('');
-    const preview = result.values.slice(-20);
-    for (const v of preview) {
+    // Render every record in result.values so content[] mirrors structuredContent.values exactly.
+    // The set is already bounded upstream — the character-budgeted canvas preview, or the last 500
+    // on the no-canvas path — so there is no secondary inline cap to disclose here; the truncation
+    // caption above covers the values-vs-totalRecords relationship.
+    for (const v of result.values) {
       const qualifier = v.qualifiers.length > 0 ? ` [${v.qualifiers.join(',')}]` : '';
       lines.push(`- ${v.dateTime}: **${v.value}** ${result.unitCode}${qualifier}`);
-    }
-    if (result.values.length > 20) {
-      lines.push(`*(showing 20 of ${result.values.length} inline records)*`);
     }
 
     return [{ type: 'text', text: lines.join('\n') }];
