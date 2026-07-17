@@ -1,6 +1,6 @@
 # usgs-water-mcp-server - Directory Structure
 
-Generated on: 2026-07-16 01:50:32
+Generated on: 2026-07-17 07:05:41
 
 ```text
 usgs-water-mcp-server/
@@ -22,6 +22,7 @@ usgs-water-mcp-server/
 │   └── settings.json
 ├── changelog/
 │   ├── 0.1.x/
+│   ├── 0.2.x/
 │   └── template.md
 ├── docs/
 │   ├── design.md

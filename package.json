@@ -1,6 +1,6 @@
 {
   "name": "@cyanheads/usgs-water-mcp-server",
-  "version": "0.1.13",
+  "version": "0.2.0",
   "description": "Query real-time and historical water data from ~8,000 USGS stream gages and groundwater wells via MCP. STDIO or Streamable HTTP.",
   "mcpName": "io.github.cyanheads/usgs-water-mcp-server",
   "type": "module",

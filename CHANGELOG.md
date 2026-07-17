@@ -2,6 +2,10 @@
 
 All notable changes to this project. Each entry links to its full per-version file in [changelog/](changelog/).
 
+## [0.2.0](changelog/0.2.x/0.2.0.md) — 2026-07-17 · ⚠️ Breaking
+
+BREAKING: hucCd is now optional on water_find_sites sites[].hucCd and the usgs-water://site/{siteId} resource. It is omitted for sites USGS NWIS assigns no Hydrologic Unit Code, where the prior release backfilled an empty string that printed a bare HUC label. Consumers must treat hucCd as possibly-absent.
+
 ## [0.1.13](changelog/0.1.x/0.1.13.md) — 2026-07-16
 
 Rendering-correctness fixes: water_get_series renders every returned value (not just the last 20) and its spillover notice reports the real preview count instead of a fixed 500; water_find_sites renders basic-mode altitude independently of drainageArea and no longer leaks a literal notice: undefined into content[].
