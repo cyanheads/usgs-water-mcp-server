@@ -2,6 +2,10 @@
 
 All notable changes to this project. Each entry links to its full per-version file in [changelog/](changelog/).
 
+## [0.2.1](changelog/0.2.x/0.2.1.md) — 2026-07-19
+
+Definition-language pass over every tool and resource: concatenated description strings collapse to single strings, and inaccurate ones are corrected — the water_dataframe_* tools now name water_find_sites as a canvas producer, row_count describes what it actually counts, and water_get_conditions explains both of its data-gap cases.
+
 ## [0.2.0](changelog/0.2.x/0.2.0.md) — 2026-07-17 · ⚠️ Breaking
 
 BREAKING: hucCd is now optional on water_find_sites sites[].hucCd and the usgs-water://site/{siteId} resource. It is omitted for sites USGS NWIS assigns no Hydrologic Unit Code, where the prior release backfilled an empty string that printed a bare HUC label. Consumers must treat hucCd as possibly-absent.
