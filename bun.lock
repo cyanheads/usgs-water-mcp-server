@@ -11,7 +11,7 @@
         "zod": "^4.4.3",
       },
       "devDependencies": {
-        "@biomejs/biome": "2.5.4",
+        "@biomejs/biome": "^2.5.4",
         "@socketsecurity/bun-security-scanner": "^1.1.2",
         "@types/node": "^26.1.1",
         "depcheck": "^1.4.7",
