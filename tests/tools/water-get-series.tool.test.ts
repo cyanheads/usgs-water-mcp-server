@@ -13,6 +13,9 @@ import { createMockContext, getEnrichment } from '@cyanheads/mcp-ts-core/testing
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { waterGetSeries } from '@/mcp-server/tools/definitions/water-get-series.tool.js';
 import type { NwisTimeSeries } from '@/services/nwis/types.js';
+import { declaredRecovery } from '../helpers/error-contract.js';
+
+const recovery = (reason: string) => declaredRecovery(waterGetSeries.errors, reason);
 
 // Stub the network calls; keep the real classifyNwisFailure — it is pure, and it is the mapping
 // under test here.
@@ -211,7 +214,7 @@ describe('waterGetSeries', () => {
     };
     await expect(waterGetSeries.handler(input, ctx)).rejects.toMatchObject({
       code: JsonRpcErrorCode.ValidationError,
-      data: { reason: 'invalid_date_range' },
+      data: { reason: 'invalid_date_range', recovery: recovery('invalid_date_range') },
     });
   });
 
@@ -226,7 +229,7 @@ describe('waterGetSeries', () => {
     };
     await expect(waterGetSeries.handler(input, ctx)).rejects.toMatchObject({
       code: JsonRpcErrorCode.ValidationError,
-      data: { reason: 'invalid_date_range' },
+      data: { reason: 'invalid_date_range', recovery: recovery('invalid_date_range') },
     });
   });
 
@@ -240,7 +243,7 @@ describe('waterGetSeries', () => {
     });
     await expect(waterGetSeries.handler(input, ctx)).rejects.toMatchObject({
       code: JsonRpcErrorCode.ValidationError,
-      data: { reason: 'invalid_date_range' },
+      data: { reason: 'invalid_date_range', recovery: recovery('invalid_date_range') },
     });
   });
 
@@ -257,7 +260,7 @@ describe('waterGetSeries', () => {
     });
     await expect(waterGetSeries.handler(input, ctx)).rejects.toMatchObject({
       code: JsonRpcErrorCode.NotFound,
-      data: { reason: 'no_data_for_range' },
+      data: { reason: 'no_data_for_range', recovery: recovery('no_data_for_range') },
     });
   });
 
@@ -272,7 +275,7 @@ describe('waterGetSeries', () => {
     });
     await expect(waterGetSeries.handler(input, ctx)).rejects.toMatchObject({
       code: JsonRpcErrorCode.NotFound,
-      data: { reason: 'no_data_for_range' },
+      data: { reason: 'no_data_for_range', recovery: recovery('no_data_for_range') },
     });
   });
 
@@ -294,7 +297,7 @@ describe('waterGetSeries', () => {
     });
     await expect(waterGetSeries.handler(input, ctx)).rejects.toMatchObject({
       code: JsonRpcErrorCode.ValidationError,
-      data: { reason: 'invalid_request' },
+      data: { reason: 'invalid_request', recovery: recovery('invalid_request') },
       message: expect.stringContaining('ParameterCd'),
     });
   });
@@ -310,7 +313,7 @@ describe('waterGetSeries', () => {
       endDate: '2024-01-01',
     });
     await expect(waterGetSeries.handler(input, ctx)).rejects.toMatchObject({
-      data: { reason: 'invalid_date_range' },
+      data: { reason: 'invalid_date_range', recovery: recovery('invalid_date_range') },
     });
     expect(mockGetSeries).not.toHaveBeenCalled();
   });
@@ -328,7 +331,7 @@ describe('waterGetSeries', () => {
     });
     await expect(waterGetSeries.handler(input, ctx)).rejects.toMatchObject({
       code: JsonRpcErrorCode.ServiceUnavailable,
-      data: { reason: 'upstream_error' },
+      data: { reason: 'upstream_error', recovery: recovery('upstream_error') },
     });
   });
 

@@ -13,6 +13,9 @@ import { createMockContext, getEnrichment } from '@cyanheads/mcp-ts-core/testing
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { waterGetReadings } from '@/mcp-server/tools/definitions/water-get-readings.tool.js';
 import type { NwisTimeSeries } from '@/services/nwis/types.js';
+import { declaredRecovery } from '../helpers/error-contract.js';
+
+const recovery = (reason: string) => declaredRecovery(waterGetReadings.errors, reason);
 
 // Stub the network calls; keep the real classifyNwisFailure — it is pure, and it is the mapping
 // under test here.
@@ -85,7 +88,7 @@ describe('waterGetReadings', () => {
     const input = waterGetReadings.input.parse({ sites: ['99999999'] });
     await expect(waterGetReadings.handler(input, ctx)).rejects.toMatchObject({
       code: JsonRpcErrorCode.NotFound,
-      data: { reason: 'no_data_for_parameter' },
+      data: { reason: 'no_data_for_parameter', recovery: recovery('no_data_for_parameter') },
     });
   });
 
@@ -95,7 +98,7 @@ describe('waterGetReadings', () => {
     const input = waterGetReadings.input.parse({ sites: ['01646500'], parameterCd: ['99999'] });
     await expect(waterGetReadings.handler(input, ctx)).rejects.toMatchObject({
       code: JsonRpcErrorCode.NotFound,
-      data: { reason: 'no_data_for_parameter' },
+      data: { reason: 'no_data_for_parameter', recovery: recovery('no_data_for_parameter') },
     });
   });
 
@@ -111,7 +114,7 @@ describe('waterGetReadings', () => {
     const input = waterGetReadings.input.parse({ sites: ['01646500'] });
     await expect(waterGetReadings.handler(input, ctx)).rejects.toMatchObject({
       code: JsonRpcErrorCode.ValidationError,
-      data: { reason: 'invalid_request' },
+      data: { reason: 'invalid_request', recovery: recovery('invalid_request') },
       message: expect.stringContaining('period: Invalid format'),
     });
   });
@@ -124,7 +127,7 @@ describe('waterGetReadings', () => {
     const input = waterGetReadings.input.parse({ sites: ['01646500'] });
     await expect(waterGetReadings.handler(input, ctx)).rejects.toMatchObject({
       code: JsonRpcErrorCode.ServiceUnavailable,
-      data: { reason: 'upstream_error' },
+      data: { reason: 'upstream_error', recovery: recovery('upstream_error') },
     });
   });
 

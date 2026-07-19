@@ -136,12 +136,6 @@ export const waterGetSeries = tool('water_get_series', {
 
   errors: [
     {
-      reason: 'site_not_found',
-      code: JsonRpcErrorCode.NotFound,
-      when: 'The site number returned no time series.',
-      recovery: 'Verify the site number using water_find_sites.',
-    },
-    {
       reason: 'no_data_for_range',
       code: JsonRpcErrorCode.NotFound,
       when: 'The site and parameter combination has no data in the requested date range.',
@@ -182,12 +176,14 @@ export const waterGetSeries = tool('water_get_series', {
       throw ctx.fail(
         'invalid_date_range',
         `Invalid startDate "${input.startDate}" — not a real calendar date. Use YYYY-MM-DD (e.g. month must be 01–12, day must be valid for the month).`,
+        ctx.recoveryFor('invalid_date_range'),
       );
     }
     if (Number.isNaN(endParsed.getTime()) || toUtcDate(endParsed) !== input.endDate) {
       throw ctx.fail(
         'invalid_date_range',
         `Invalid endDate "${input.endDate}" — not a real calendar date. Use YYYY-MM-DD (e.g. month must be 01–12, day must be valid for the month).`,
+        ctx.recoveryFor('invalid_date_range'),
       );
     }
     // Validate date range order
@@ -195,6 +191,7 @@ export const waterGetSeries = tool('water_get_series', {
       throw ctx.fail(
         'invalid_date_range',
         `startDate (${input.startDate}) must be before endDate (${input.endDate}).`,
+        ctx.recoveryFor('invalid_date_range'),
       );
     }
 
@@ -220,7 +217,10 @@ export const waterGetSeries = tool('water_get_series', {
       );
     } catch (err: unknown) {
       const failure = classifyNwisFailure(err);
-      if (failure) throw ctx.fail(failure.reason, failure.message, undefined, { cause: err });
+      if (failure)
+        throw ctx.fail(failure.reason, failure.message, ctx.recoveryFor(failure.reason), {
+          cause: err,
+        });
       throw err;
     }
 
@@ -232,12 +232,14 @@ export const waterGetSeries = tool('water_get_series', {
       throw ctx.fail(
         'no_data_for_range',
         `No data returned for site ${input.site} parameter ${input.parameterCd} — site may not exist, or no data in the requested date range (${input.startDate} to ${input.endDate}).`,
+        ctx.recoveryFor('no_data_for_range'),
       );
     }
     if (ts.values.length === 0) {
       throw ctx.fail(
         'no_data_for_range',
         `No data for site ${input.site} parameter ${input.parameterCd} in the requested date range.`,
+        ctx.recoveryFor('no_data_for_range'),
       );
     }
 

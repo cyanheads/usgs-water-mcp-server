@@ -49,12 +49,18 @@ export const waterSiteResource = resource('usgs-water://site/{siteId}', {
       site = await getSiteInfo(params.siteId, ctx.signal);
     } catch (err: unknown) {
       const failure = classifyNwisFailure(err);
-      if (failure) throw ctx.fail(failure.reason, failure.message, undefined, { cause: err });
+      if (failure)
+        throw ctx.fail(failure.reason, failure.message, ctx.recoveryFor(failure.reason), {
+          cause: err,
+        });
       throw err;
     }
 
     if (!site) {
-      throw ctx.fail('not_found', `Site ${params.siteId} not found.`, { siteId: params.siteId });
+      throw ctx.fail('not_found', `Site ${params.siteId} not found.`, {
+        siteId: params.siteId,
+        ...ctx.recoveryFor('not_found'),
+      });
     }
 
     return site;

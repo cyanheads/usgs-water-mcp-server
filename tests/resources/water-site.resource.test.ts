@@ -13,6 +13,9 @@ import { createMockContext } from '@cyanheads/mcp-ts-core/testing';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { waterSiteResource } from '@/mcp-server/resources/definitions/water-site.resource.js';
 import type { NwisSite } from '@/services/nwis/types.js';
+import { declaredRecovery } from '../helpers/error-contract.js';
+
+const recovery = (reason: string) => declaredRecovery(waterSiteResource.errors, reason);
 
 // Stub only the network call; keep the real classifyNwisFailure — it is pure, and it is the
 // mapping the resource's catch block runs, exercised by the error tests below.
@@ -59,7 +62,8 @@ describe('waterSiteResource', () => {
     });
     await expect(waterSiteResource.handler({ siteId: '99999999' }, ctx)).rejects.toMatchObject({
       code: JsonRpcErrorCode.NotFound,
-      data: { reason: 'not_found' },
+      // The pre-existing siteId payload survives alongside the recovery hint (regression: #24).
+      data: { reason: 'not_found', siteId: '99999999', recovery: recovery('not_found') },
     });
   });
 
@@ -73,7 +77,7 @@ describe('waterSiteResource', () => {
     });
     await expect(waterSiteResource.handler({ siteId: '01646500' }, ctx)).rejects.toMatchObject({
       code: JsonRpcErrorCode.ServiceUnavailable,
-      data: { reason: 'upstream_error' },
+      data: { reason: 'upstream_error', recovery: recovery('upstream_error') },
     });
   });
 
@@ -91,7 +95,7 @@ describe('waterSiteResource', () => {
     });
     await expect(waterSiteResource.handler({ siteId: '00000000' }, ctx)).rejects.toMatchObject({
       code: JsonRpcErrorCode.ValidationError,
-      data: { reason: 'invalid_request' },
+      data: { reason: 'invalid_request', recovery: recovery('invalid_request') },
     });
   });
 

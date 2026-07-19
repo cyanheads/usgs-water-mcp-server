@@ -244,12 +244,19 @@ export const waterFindSites = tool('water_find_sites', {
       sites = await findSites(params, ctx.signal);
     } catch (err: unknown) {
       const failure = classifyNwisFailure(err);
-      if (failure) throw ctx.fail(failure.reason, failure.message, undefined, { cause: err });
+      if (failure)
+        throw ctx.fail(failure.reason, failure.message, ctx.recoveryFor(failure.reason), {
+          cause: err,
+        });
       throw err;
     }
 
     if (sites.length === 0) {
-      throw ctx.fail('no_sites_found', 'No USGS sites match the specified filters.');
+      throw ctx.fail(
+        'no_sites_found',
+        'No USGS sites match the specified filters.',
+        ctx.recoveryFor('no_sites_found'),
+      );
     }
 
     const upstreamTotal = sites.length;

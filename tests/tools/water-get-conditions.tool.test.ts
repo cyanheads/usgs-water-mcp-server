@@ -13,6 +13,9 @@ import { createMockContext } from '@cyanheads/mcp-ts-core/testing';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { waterGetConditions } from '@/mcp-server/tools/definitions/water-get-conditions.tool.js';
 import type { NwisStatResult, NwisStatRow, NwisTimeSeries } from '@/services/nwis/types.js';
+import { declaredRecovery } from '../helpers/error-contract.js';
+
+const recovery = (reason: string) => declaredRecovery(waterGetConditions.errors, reason);
 
 // Stub the network calls; keep the real classifyNwisFailure — it is pure, and the handler's IV-side
 // error mapping under test here depends on it.
@@ -262,7 +265,7 @@ describe('waterGetConditions', () => {
     const input = waterGetConditions.input.parse({ site: '99999999', parameterCd: '00060' });
     await expect(waterGetConditions.handler(input, ctx)).rejects.toMatchObject({
       code: JsonRpcErrorCode.NotFound,
-      data: { reason: 'no_data_for_parameter' },
+      data: { reason: 'no_data_for_parameter', recovery: recovery('no_data_for_parameter') },
     });
   });
 
@@ -274,7 +277,7 @@ describe('waterGetConditions', () => {
     const input = waterGetConditions.input.parse({ site: '01646500', parameterCd: '99999' });
     await expect(waterGetConditions.handler(input, ctx)).rejects.toMatchObject({
       code: JsonRpcErrorCode.NotFound,
-      data: { reason: 'no_data_for_parameter' },
+      data: { reason: 'no_data_for_parameter', recovery: recovery('no_data_for_parameter') },
     });
   });
 
@@ -291,7 +294,7 @@ describe('waterGetConditions', () => {
     const input = waterGetConditions.input.parse({ site: '01646500', parameterCd: '00060' });
     await expect(waterGetConditions.handler(input, ctx)).rejects.toMatchObject({
       code: JsonRpcErrorCode.ServiceUnavailable,
-      data: { reason: 'upstream_error' },
+      data: { reason: 'upstream_error', recovery: recovery('upstream_error') },
     });
   });
 
@@ -308,7 +311,7 @@ describe('waterGetConditions', () => {
     const input = waterGetConditions.input.parse({ site: '01646500', parameterCd: '00060' });
     await expect(waterGetConditions.handler(input, ctx)).rejects.toMatchObject({
       code: JsonRpcErrorCode.ValidationError,
-      data: { reason: 'invalid_request' },
+      data: { reason: 'invalid_request', recovery: recovery('invalid_request') },
       message: expect.stringContaining('parameterCd: Invalid format'),
     });
   });

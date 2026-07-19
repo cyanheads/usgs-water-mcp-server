@@ -13,6 +13,9 @@ import { createMockContext, getEnrichment } from '@cyanheads/mcp-ts-core/testing
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { waterFindSites } from '@/mcp-server/tools/definitions/water-find-sites.tool.js';
 import type { NwisSite } from '@/services/nwis/types.js';
+import { declaredRecovery } from '../helpers/error-contract.js';
+
+const recovery = (reason: string) => declaredRecovery(waterFindSites.errors, reason);
 
 // Stub the network calls; keep the real classifyNwisFailure — it is pure, and it is the mapping
 // under test here.
@@ -197,8 +200,22 @@ describe('waterFindSites', () => {
     const input = waterFindSites.input.parse({ stateCd: 'AK', siteType: 'OC' });
     await expect(waterFindSites.handler(input, ctx)).rejects.toMatchObject({
       code: JsonRpcErrorCode.NotFound,
-      data: { reason: 'no_sites_found' },
+      data: { reason: 'no_sites_found', recovery: recovery('no_sites_found') },
     });
+  });
+
+  it('delivers the declared recovery hint on the wire, not just in the contract (regression: #24)', async () => {
+    // The issue's repro: a bbox over open ocean matching nothing. The authored recovery has to
+    // reach error.data so both structuredContent and the mirrored content[] text carry it.
+    mockFindSites.mockResolvedValue([]);
+    const ctx = createMockContext({ errors: waterFindSites.errors });
+    const input = waterFindSites.input.parse({ bbox: '-160.0,5.0,-159.9,5.1' });
+    const error = (await waterFindSites.handler(input, ctx).catch((e: unknown) => e)) as {
+      data?: { recovery?: { hint?: string } };
+    };
+    expect(error.data?.recovery?.hint).toBe(
+      'Broaden the bounding box, remove parameterCd or siteType filters, or try a different state/HUC.',
+    );
   });
 
   it('maps an NWIS rejection to invalid_request, surfacing the field NWIS named', async () => {
@@ -215,7 +232,7 @@ describe('waterFindSites', () => {
     const input = waterFindSites.input.parse({ stateCd: 'ZZ' });
     await expect(waterFindSites.handler(input, ctx)).rejects.toMatchObject({
       code: JsonRpcErrorCode.ValidationError,
-      data: { reason: 'invalid_request' },
+      data: { reason: 'invalid_request', recovery: recovery('invalid_request') },
       message: expect.stringContaining('stateCd not found'),
     });
   });
@@ -228,7 +245,7 @@ describe('waterFindSites', () => {
     const input = waterFindSites.input.parse({ stateCd: 'VA' });
     await expect(waterFindSites.handler(input, ctx)).rejects.toMatchObject({
       code: JsonRpcErrorCode.ServiceUnavailable,
-      data: { reason: 'upstream_error' },
+      data: { reason: 'upstream_error', recovery: recovery('upstream_error') },
     });
   });
 
