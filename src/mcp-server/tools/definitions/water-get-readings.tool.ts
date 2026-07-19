@@ -51,29 +51,18 @@ const ReadingResultSchema = z.object({
       ValueRecordSchema.describe('A single instantaneous reading for this site and parameter.'),
     )
     .describe(
-      `Time-ordered value records for this site and parameter, capped at the most recent ${VALUES_PER_SERIES_CAP}. ` +
-        'Compare with totalValues to see whether the period held more; use water_get_series for the full series.',
+      `Time-ordered value records for this site and parameter, capped at the most recent ${VALUES_PER_SERIES_CAP}. Compare with totalValues to see whether the period held more; use water_get_series for the full series.`,
     ),
   totalValues: z
     .number()
     .int()
     .describe(
-      'Number of value records NWIS returned for this site and parameter over the requested period, ' +
-        `before the ${VALUES_PER_SERIES_CAP}-record cap. Equals values.length when nothing was capped.`,
+      `Number of value records NWIS returned for this site and parameter over the requested period, before the ${VALUES_PER_SERIES_CAP}-record cap. Equals values.length when nothing was capped.`,
     ),
 });
 
 export const waterGetReadings = tool('water_get_readings', {
-  description:
-    'Get the latest instantaneous values (~15 min real-time updates) for one or more USGS monitoring ' +
-    'sites. Returns per-site, per-parameter records including timestamp, value, unit, and ' +
-    'provisional/approved qualifiers. Accepts up to 100 site numbers in one call. ' +
-    'Use water_find_sites first to discover valid site numbers and available parameter codes. ' +
-    'Groundwater depth is available via parameterCd=72019 (Depth to water level, ft below land surface). ' +
-    `Each series carries only its ${VALUES_PER_SERIES_CAP} most recent records — totalValues reports how ` +
-    'many the period actually held, and truncated=true means at least one series was capped. ' +
-    'For a date-range time series, use water_get_series instead. ' +
-    'Requested sites that NWIS returns no series for are listed in missingSites rather than dropped silently.',
+  description: `Get the latest instantaneous (~15-min, real-time) values for up to 100 USGS sites in one call — per-site, per-parameter records with timestamp, value, unit, and provisional/approved qualifiers. Each series returns only its ${VALUES_PER_SERIES_CAP} most recent records (totalValues reports the true count; truncated=true if any were capped); use water_get_series for a full date-range series. Sites NWIS returns nothing for are listed in missingSites, not dropped silently. Use water_find_sites first to discover site numbers and available parameters.`,
   annotations: { readOnlyHint: true, idempotentHint: true, openWorldHint: true },
   input: z.object({
     sites: z
@@ -87,14 +76,10 @@ export const waterGetReadings = tool('water_get_readings', {
       )
       .optional()
       .describe(
-        'Parameter codes to return. Omit to get all parameters available at each site. ' +
-          'Use water_list_parameters to discover codes.',
+        'Parameter codes to return. Omit to get all parameters available at each site. Use water_list_parameters to discover codes.',
       ),
     period: PeriodSchema.default('PT2H').describe(
-      'ISO 8601 duration for the lookback period (e.g. "PT2H" = last 2 hours, "P1D" = last 1 day, ' +
-        '"P7D" = last 7 days). Default: "PT2H" (last 2 hours of readings). ' +
-        `Widening it raises totalValues, but each series still returns only its ${VALUES_PER_SERIES_CAP} ` +
-        'most recent records — use water_get_series to retrieve a full series.',
+      `ISO 8601 duration for the lookback period (e.g. "PT2H" = last 2 hours, "P1D" = last 1 day, "P7D" = last 7 days). Default: "PT2H" (last 2 hours of readings). Widening it raises totalValues, but each series still returns only its ${VALUES_PER_SERIES_CAP} most recent records — use water_get_series to retrieve a full series.`,
     ),
   }),
   output: z.object({
@@ -105,15 +90,12 @@ export const waterGetReadings = tool('water_get_readings', {
     truncated: z
       .boolean()
       .describe(
-        `True when at least one series held more than ${VALUES_PER_SERIES_CAP} records and was capped. ` +
-          'Per-series counts are in readings[].totalValues; use water_get_series for the full series.',
+        `True when at least one series held more than ${VALUES_PER_SERIES_CAP} records and was capped. Per-series counts are in readings[].totalValues; use water_get_series for the full series.`,
       ),
     missingSites: z
       .array(z.string().describe('A requested USGS site number that returned no time series.'))
       .describe(
-        'Requested site numbers NWIS returned no series for — the site may not exist, or may not ' +
-          'measure the requested parameter(s) in the requested period. Empty when every requested ' +
-          'site returned data. Verify these with water_find_sites.',
+        'Requested site numbers NWIS returned no series for — the site may not exist, or may not measure the requested parameter(s) in the requested period. Empty when every requested site returned data. Verify these with water_find_sites.',
       ),
   }),
 
@@ -190,9 +172,7 @@ export const waterGetReadings = tool('water_get_readings', {
       // no data for the requested parameter — the two cases are indistinguishable from this call.
       throw ctx.fail(
         'no_data_for_parameter',
-        'No data returned for the given sites and parameters — the site(s) may not exist, ' +
-          'or may not measure the requested parameter(s) in the requested period. ' +
-          'Use water_find_sites with a parameterCd filter to verify parameter availability at a site.',
+        'No data returned for the given sites and parameters — the site(s) may not exist, or may not measure the requested parameter(s) in the requested period. Use water_find_sites with a parameterCd filter to verify parameter availability at a site.',
       );
     }
 

@@ -53,18 +53,14 @@ const PARAMETERS: Array<z.infer<typeof ParameterSchema>> = [
 
 export const waterListParameters = tool('water_list_parameters', {
   description:
-    'Static lookup of well-known USGS parameter codes with human-readable names, units, and ' +
-    'thematic domain. No network call. Use this first to discover that 00060 = "Discharge" (ft³/s), ' +
-    '00065 = "Gage height" (ft), 00010 = "Temperature, water" (°C), 72019 = "Depth to water level" ' +
-    '(ft), etc. Filter by group to narrow results.',
+    'List well-known USGS parameter codes with human-readable names, units, and thematic domain — a static, built-in catalog. Use this first to discover that 00060 = "Discharge" (ft³/s), 00065 = "Gage height" (ft), 00010 = "Temperature, water" (°C), 72019 = "Depth to water level" (ft), etc. Filter by group to narrow results.',
   annotations: { readOnlyHint: true, idempotentHint: true, openWorldHint: false },
   input: z.object({
     group: z
       .enum(GROUP_VALUES)
       .default('all')
       .describe(
-        'Filter by thematic domain: "streamflow", "groundwater", "temperature", ' +
-          '"meteorological", "water-quality", or "all" (default) for the full catalog.',
+        'Filter by thematic domain: "streamflow", "groundwater", "temperature", "meteorological", "water-quality", or "all" (default) for the full catalog.',
       ),
   }),
   output: z.object({

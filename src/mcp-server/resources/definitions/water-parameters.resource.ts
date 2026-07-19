@@ -43,9 +43,7 @@ const PARAMETERS: Array<z.infer<typeof ParameterRecord>> = [
 export const waterParametersResource = resource('usgs-water://parameters', {
   name: 'usgs-water-parameters',
   description:
-    'Full USGS parameter code catalog — injectable context for clients that support resources. ' +
-    'Lists well-known parameter codes with human-readable names, units, and thematic domain. ' +
-    'The same data is also available via the water_list_parameters tool.',
+    'Full USGS parameter code catalog — injectable context for clients that support resources. Lists well-known parameter codes with human-readable names, units, and thematic domain. The same data is also available via the water_list_parameters tool.',
   mimeType: 'application/json',
   params: z.object({}).describe('No parameters — returns the full catalog.'),
 

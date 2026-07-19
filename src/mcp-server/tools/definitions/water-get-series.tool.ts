@@ -33,22 +33,14 @@ const ValueRecordSchema = z.object({
 
 export const waterGetSeries = tool('water_get_series', {
   description:
-    'Get a time series of daily or instantaneous values for a USGS site and parameter over a date ' +
-    'range. Returns siteNumber, parameterCd, and time-ordered value records. ' +
-    'When the server has DataCanvas enabled, large result sets (>500 records) spill to a canvas — ' +
-    'the response includes canvas_id and table_name for SQL analysis via water_dataframe_query. ' +
-    'Without DataCanvas, returns the most recent 500 records with truncated=true. ' +
-    'Use water_find_sites to discover valid site numbers. Use water_list_parameters for parameter codes.',
+    'Get a daily or instantaneous time series for one USGS site and parameter over a date range, as time-ordered value records. Large sets (>500 records) return the most recent 500 with truncated=true; with DataCanvas enabled they instead spill to a canvas (canvas_id/table_name) for SQL via water_dataframe_query. Use water_find_sites and water_list_parameters to resolve inputs.',
   annotations: { readOnlyHint: true, idempotentHint: true, openWorldHint: true },
   input: z.object({
     site: SiteNumberSchema.describe(
-      'USGS site number (8–15 digits, e.g. "01646500" for Potomac River at Little Falls). ' +
-        'Use water_find_sites to discover valid site numbers.',
+      'USGS site number (8–15 digits, e.g. "01646500" for Potomac River at Little Falls). Use water_find_sites to discover valid site numbers.',
     ),
     parameterCd: ParameterCdSchema.describe(
-      'A single 5-digit USGS parameter code (e.g. "00060" for discharge, "00065" for gage height). ' +
-        'One code per call — this tool returns one series. ' +
-        'Use water_list_parameters to discover available codes.',
+      'A single 5-digit USGS parameter code (e.g. "00060" for discharge, "00065" for gage height). One code per call — this tool returns one series. Use water_list_parameters to discover available codes.',
     ),
     startDate: z
       .string()
@@ -62,16 +54,13 @@ export const waterGetSeries = tool('water_get_series', {
       .enum(['daily', 'instantaneous'])
       .default('daily')
       .describe(
-        '"daily" returns one value per day (DV service, typically mean/max/min). ' +
-          '"instantaneous" returns ~15-minute readings (IV service). ' +
-          'Default: "daily". Use "instantaneous" for high-resolution analysis.',
+        '"daily" returns one value per day (DV service, typically mean/max/min). "instantaneous" returns ~15-minute readings (IV service). Default: "daily". Use "instantaneous" for high-resolution analysis.',
       ),
     canvas_id: z
       .string()
       .optional()
       .describe(
-        'Canvas ID from a prior water_get_series call to append data to an existing canvas rather ' +
-          'than creating a new one. Omit to start a fresh canvas.',
+        'Canvas ID from a prior water_get_series call to append data to an existing canvas rather than creating a new one. Omit to start a fresh canvas.',
       ),
   }),
   output: z.object({
@@ -94,8 +83,7 @@ export const waterGetSeries = tool('water_get_series', {
         ValueRecordSchema.describe('A single value record with date-time, value, and qualifiers.'),
       )
       .describe(
-        'Time-ordered value records. Contains all records when not truncated, ' +
-          'or the most recent 500 when truncated (no canvas) or a preview slice (with canvas).',
+        'Time-ordered value records. Contains all records when not truncated, or the most recent 500 when truncated (no canvas) or a preview slice (with canvas).',
       ),
     totalRecords: z
       .number()
@@ -116,8 +104,7 @@ export const waterGetSeries = tool('water_get_series', {
       .string()
       .optional()
       .describe(
-        'DuckDB table name in the canvas holding all records. Present when canvas_id is present. ' +
-          'Use as the FROM target in water_dataframe_query SQL.',
+        'DuckDB table name in the canvas holding all records. Present when canvas_id is present. Use as the FROM target in water_dataframe_query SQL.',
       ),
   }),
 
@@ -244,8 +231,7 @@ export const waterGetSeries = tool('water_get_series', {
       // may be the issue; callers can retry with a narrower range.
       throw ctx.fail(
         'no_data_for_range',
-        `No data returned for site ${input.site} parameter ${input.parameterCd} — ` +
-          `site may not exist, or no data in the requested date range (${input.startDate} to ${input.endDate}).`,
+        `No data returned for site ${input.site} parameter ${input.parameterCd} — site may not exist, or no data in the requested date range (${input.startDate} to ${input.endDate}).`,
       );
     }
     if (ts.values.length === 0) {

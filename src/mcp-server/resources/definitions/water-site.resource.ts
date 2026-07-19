@@ -12,8 +12,7 @@ import { classifyNwisFailure, getSiteInfo } from '@/services/nwis/nwis-service.j
 export const waterSiteResource = resource('usgs-water://site/{siteId}', {
   name: 'usgs-water-site',
   description:
-    'Site metadata for a USGS monitoring site: name, coordinates, type, HUC watershed code, ' +
-    'state, county, drainage area, and altitude. Use water_find_sites to discover site numbers.',
+    'Site metadata for a USGS monitoring site: name, coordinates, type, HUC watershed code, state, county, drainage area, and altitude. Use water_find_sites to discover site numbers.',
   mimeType: 'application/json',
   params: z.object({
     siteId: SiteNumberSchema.describe('USGS site number (8–15 digits, e.g. "01646500").'),

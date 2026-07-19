@@ -57,9 +57,7 @@ const PERCENTILE_LABELS: Record<PercentileClass, string> = {
  * the raw structuredContent value is read where schema description text is not.
  */
 const COMPARISON_BASIS =
-  'The current value is an instantaneous reading, but these percentiles are computed from approved ' +
-  "daily-mean values for this calendar day, so an instantaneous peak can rank above the same day's " +
-  'daily mean. Treat percentileClass as an approximate ranking, not a like-for-like comparison.';
+  "The current value is an instantaneous reading, but these percentiles are computed from approved daily-mean values for this calendar day, so an instantaneous peak can rank above the same day's daily mean. Treat percentileClass as an approximate ranking, not a like-for-like comparison.";
 
 /**
  * Read the observation's own calendar month and day out of an NWIS timestamp.
@@ -81,26 +79,14 @@ function parseObservationDate(dateTime: string): { day: number; month: number } 
 
 export const waterGetConditions = tool('water_get_conditions', {
   description:
-    'Get current hydrologic conditions at a USGS site, placed in historical context. ' +
-    "Returns today's current reading alongside a percentile classification (record-high, above-normal, " +
-    'normal, below-normal, low, record-low) derived from the full period-of-record daily statistics. ' +
-    "The classification ranks how unusual the reading is for this calendar day against the site's " +
-    'approved daily-mean percentiles — a "how unusual is this" ranking, not a flood-stage or drought ' +
-    'determination (those need authoritative thresholds this tool does not fetch). The reading is ' +
-    'instantaneous while the percentiles are daily-mean; historicalContext.comparisonBasis states that ' +
-    'approximation. ' +
-    'Use water_find_sites to discover site numbers; use water_list_parameters to find parameter codes. ' +
-    'When the site has insufficient record history, returns the current reading with ' +
-    'historicalContext=null rather than an error.',
+    'Get a USGS site\'s current reading ranked against its full period-of-record daily-mean percentiles for the same calendar day — a "how unusual is this" percentileClass (record-high to record-low), not a flood-stage or drought determination (this tool fetches no authoritative thresholds). The reading is instantaneous but the percentiles are daily-mean, so the ranking is approximate (see historicalContext.comparisonBasis). When the record is too short to rank, returns the reading with historicalContext=null instead of an error. Use water_find_sites and water_list_parameters to resolve inputs.',
   annotations: { readOnlyHint: true, idempotentHint: true, openWorldHint: true },
   input: z.object({
     site: SiteNumberSchema.describe(
-      'USGS site number (8–15 digits, e.g. "01646500" for Potomac River at Little Falls). ' +
-        'Use water_find_sites to discover valid site numbers.',
+      'USGS site number (8–15 digits, e.g. "01646500" for Potomac River at Little Falls). Use water_find_sites to discover valid site numbers.',
     ),
     parameterCd: ParameterCdSchema.describe(
-      '5-digit USGS parameter code (e.g. "00060" for discharge, "00065" for gage height). ' +
-        'Use water_list_parameters to discover codes.',
+      '5-digit USGS parameter code (e.g. "00060" for discharge, "00065" for gage height). Use water_list_parameters to discover codes.',
     ),
   }),
   output: z.object({
@@ -139,19 +125,12 @@ export const waterGetConditions = tool('water_get_conditions', {
             'unknown',
           ])
           .describe(
-            'Classification relative to the full period-of-record: ' +
-              'record-high (≥ p95), above-normal (p75–p95), normal (p25–p75), ' +
-              'below-normal (p10–p25), low (p05–p10), record-low (< p05). ' +
-              'See percentileLabel for the threshold in plain language.',
+            'Classification relative to the full period-of-record: record-high (≥ p95), above-normal (p75–p95), normal (p25–p75), below-normal (p10–p25), low (p05–p10), record-low (< p05). See percentileLabel for the threshold in plain language.',
           ),
         percentileLabel: z
           .string()
           .describe(
-            'Plain-language threshold for percentileClass (e.g. "25th–75th percentile"). ' +
-              'The record-high and record-low classes mark percentile-of-record extremes ' +
-              '(≥ p95 / < p05), not verified all-time records — this field says so where the ' +
-              'class name does not. Report this alongside percentileClass rather than the ' +
-              'class name alone.',
+            'Plain-language threshold for percentileClass (e.g. "25th–75th percentile"). The record-high and record-low classes mark percentile-of-record extremes (≥ p95 / < p05), not verified all-time records — this field says so where the class name does not.',
           ),
         p05: z
           .number()
@@ -191,26 +170,17 @@ export const waterGetConditions = tool('water_get_conditions', {
         comparisonBasis: z
           .string()
           .describe(
-            'Fixed disclosure that percentileClass ranks an instantaneous reading against approved ' +
-              'daily-mean percentiles — a cross-granularity approximation, not a flood-stage or drought ' +
-              'determination. Present whenever historicalContext is non-null; carried as its own field ' +
-              'because schema description text is invisible wherever the raw value is read.',
+            'Fixed disclosure that percentileClass ranks an instantaneous reading against approved daily-mean percentiles — a cross-granularity approximation, not a flood-stage or drought determination. Present whenever historicalContext is non-null.',
           ),
       })
       .nullable()
       .describe(
-        "Historical percentile context for the observation's calendar day. Non-null only when " +
-          'historicalContextStatus is "available"; see that field for why it is otherwise absent.',
+        'Historical percentile context for the observation\'s calendar day. Non-null only when historicalContextStatus is "available"; see that field for why it is otherwise absent.',
       ),
     historicalContextStatus: z
       .enum(['available', 'no_matching_day', 'no_record', 'unavailable'])
       .describe(
-        'Why historicalContext is or is not populated. ' +
-          "'available': percentiles for the observation's calendar day are present. " +
-          "'no_matching_day': the stat table has rows but none for that calendar day. " +
-          "'no_record': the stat table is empty — a new site, or a record too short to compute percentiles. " +
-          "'unavailable': the statistics service call failed — a transient upstream error, not a statement " +
-          "about the site's record; retry shortly.",
+        "Why historicalContext is or is not populated. 'available': percentiles for the observation's calendar day are present. 'no_matching_day': the stat table has rows but none for that calendar day. 'no_record': the stat table is empty — a new site, or a record too short to compute percentiles. 'unavailable': the statistics service call failed — a transient upstream error, not a statement about the site's record; retry shortly.",
       ),
     note: z
       .string()
@@ -277,9 +247,7 @@ export const waterGetConditions = tool('water_get_conditions', {
       // site-existence check.
       throw ctx.fail(
         'no_data_for_parameter',
-        `No data returned for site ${input.site} parameter ${input.parameterCd} — ` +
-          'the site may not exist, or may not measure this parameter. ' +
-          'Use water_find_sites with a parameterCd filter to verify parameter availability.',
+        `No data returned for site ${input.site} parameter ${input.parameterCd} — the site may not exist, or may not measure this parameter. Use water_find_sites with a parameterCd filter to verify parameter availability.`,
       );
     }
 
@@ -288,7 +256,7 @@ export const waterGetConditions = tool('water_get_conditions', {
     if (!latest) {
       throw ctx.fail(
         'no_data_for_parameter',
-        `No current reading for site ${input.site} parameter ${input.parameterCd}.`,
+        `No current reading for site ${input.site} parameter ${input.parameterCd} in the last 2 hours — the site reports this parameter but returned no value in the current period. Use water_get_series for historical values.`,
       );
     }
     const currentValue = latest.value;
@@ -316,8 +284,7 @@ export const waterGetConditions = tool('water_get_conditions', {
     if (!statOutcome.ok) {
       historicalContextStatus = 'unavailable';
       note =
-        'Historical percentile context could not be retrieved — the statistics service call failed. ' +
-        "This is a transient upstream error, not a statement about the site's record; retry shortly.";
+        "Historical percentile context could not be retrieved — the statistics service call failed. This is a transient upstream error, not a statement about the site's record; retry shortly.";
       ctx.log.warning('Stat lookup failed; returning reading without historical context', {
         site: input.site,
         parameterCd: input.parameterCd,
@@ -329,8 +296,7 @@ export const waterGetConditions = tool('water_get_conditions', {
     } else if (statOutcome.result.rows.length === 0) {
       historicalContextStatus = 'no_record';
       note =
-        'No historical percentile data available for this site and parameter. ' +
-        'The site may be new, or the parameter record may be too short to compute percentiles.';
+        'No historical percentile data available for this site and parameter. NWIS may publish no daily-statistics percentile product for this parameter (common for gage height, 00065), or the record may be too new or too short to compute percentiles.';
     } else {
       // Match on the observation's own calendar day, not the runtime's — see parseObservationDate.
       const observed = parseObservationDate(currentDateTime);

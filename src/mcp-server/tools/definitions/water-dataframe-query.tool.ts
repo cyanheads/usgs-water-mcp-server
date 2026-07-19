@@ -11,23 +11,18 @@ import { getCanvas } from '@/services/canvas/canvas-accessor.js';
 
 export const waterDataframeQuery = tool('water_dataframe_query', {
   description:
-    'Run a read-only SQL SELECT against water time-series tables staged on a DataCanvas by water_get_series. ' +
-    'Workflow: water_get_series (get canvas_id + table_name) → water_dataframe_describe (confirm schema) → ' +
-    'water_dataframe_query (SQL analysis). Only SELECT statements are permitted. ' +
-    'Results are capped at 10,000 rows; use WHERE and LIMIT clauses to stay within budget. ' +
-    'Requires DataCanvas to be enabled on this server instance. Returns an error if DataCanvas is not available.',
+    'Run a read-only SQL SELECT against water data tables staged on a DataCanvas by water_get_series or water_find_sites. Workflow: run water_get_series or water_find_sites (get canvas_id + table_name) → water_dataframe_describe (confirm the table and its columns) → water_dataframe_query (SQL analysis). Only SELECT statements are permitted. At most 10,000 rows are returned, and a query matching more is truncated silently (no error) — scope with WHERE/LIMIT, and use SELECT COUNT(*) or water_dataframe_describe to learn the true match count. Requires DataCanvas to be enabled on this server instance. Returns an error if DataCanvas is not available.',
   annotations: { readOnlyHint: true, idempotentHint: true, openWorldHint: false },
   input: z.object({
     canvas_id: z
       .string()
-      .describe('Canvas ID returned by water_get_series. Identifies the canvas holding the data.'),
+      .describe(
+        'Canvas ID returned by water_get_series or water_find_sites. Identifies the canvas holding the data.',
+      ),
     sql: z
       .string()
       .describe(
-        'Read-only SELECT statement. Reference tables by the names returned in water_get_series table_name. ' +
-          'Columns available: date_time (VARCHAR), value (VARCHAR), qualifiers (VARCHAR), ' +
-          'site_number (VARCHAR), parameter_cd (VARCHAR), unit_code (VARCHAR). ' +
-          'Example: SELECT date_time, value FROM water_series_01646500_00060 ORDER BY date_time DESC LIMIT 10',
+        'Read-only SELECT statement. Reference the table by the table_name from water_get_series or water_find_sites; columns vary by source table, so run water_dataframe_describe first for the exact schema. Example: SELECT date_time, value FROM water_series_01646500_00060 ORDER BY date_time DESC LIMIT 10',
       ),
   }),
   output: z.object({
@@ -45,7 +40,7 @@ export const waterDataframeQuery = tool('water_dataframe_query', {
       .number()
       .int()
       .describe(
-        'Total rows matched by the query before the 10,000-row cap. When row_count > rows.length, add WHERE or LIMIT clauses to retrieve specific subsets.',
+        'Number of rows returned in the rows array (up to the 10,000-row cap), not the total matched by the query. A query matching more than 10,000 rows is truncated silently, so row_count then equals the returned count and undercounts the true total. To get the true match count run SELECT COUNT(*) with the same filter, or call water_dataframe_describe for the full row count of the staged table; page large results with LIMIT/OFFSET.',
       ),
   }),
 

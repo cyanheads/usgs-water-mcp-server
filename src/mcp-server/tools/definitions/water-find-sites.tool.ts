@@ -23,71 +23,47 @@ const SITE_CAP = 500;
 
 export const waterFindSites = tool('water_find_sites', {
   description:
-    'Find USGS water monitoring sites by bounding box, state, county, or HUC watershed code. ' +
-    'Filter by site type (stream gage, groundwater well, lake) and parameter availability. ' +
-    'Returns site numbers, names, coordinates, types, altitude, and (in expanded mode) drainage area. ' +
-    'Call this first to discover site numbers — water_get_readings, water_get_series, and ' +
-    'water_get_conditions all require a site number. ' +
-    'To check which parameters or data types a site carries, use the parameterCd or hasDataTypeCd filters. ' +
-    'Results are capped at 500 sites inline; when truncated=true the full upstream count is in upstreamTotal. ' +
-    'When the server has DataCanvas enabled, the full match set is staged to a canvas — the response then ' +
-    'includes canvas_id and table_name to retrieve every match (including those past the 500 cap) via water_dataframe_query. ' +
-    'Without DataCanvas, narrow the query with bbox, countyCd, huc, siteType, parameterCd, or hasDataTypeCd to get all matches.',
+    'Find USGS water monitoring sites by bounding box, state, county, or HUC watershed code, filtered by site type and parameter availability. Returns site numbers, names, coordinates, types, altitude, and (in expanded mode) drainage area. Call this first — water_get_readings, water_get_series, and water_get_conditions all require a site number. Capped at 500 sites inline; when truncated=true, upstreamTotal holds the full count and, if DataCanvas is enabled, the complete match set stages to a canvas (canvas_id/table_name) for retrieval via water_dataframe_query — otherwise narrow the filters to get all matches.',
   annotations: { readOnlyHint: true, idempotentHint: true, openWorldHint: true },
   input: z.object({
     bbox: BboxSchema.optional().describe(
-      'Bounding box as "west,south,east,north" in decimal degrees ' +
-        '(e.g. "-77.5,38.5,-76.5,39.5" for the DC metro area). ' +
-        'Mutually exclusive with stateCd/countyCd/huc.',
+      'Bounding box as "west,south,east,north" in decimal degrees (e.g. "-77.5,38.5,-76.5,39.5" for the DC metro area). Mutually exclusive with stateCd/countyCd/huc.',
     ),
     stateCd: StateCdSchema.optional().describe(
-      '2-character US state abbreviation (e.g. "VA", "WA"). ' +
-        'Returns all sites in the state for the given filters.',
+      '2-character US state abbreviation (e.g. "VA", "WA"). Returns all sites in the state for the given filters.',
     ),
     countyCd: CountyCdSchema.optional().describe(
-      'FIPS county code(s) as bare 5-digit numbers — state and county digits concatenated, ' +
-        'no separator (e.g. "51013" for Arlington, VA). ' +
-        'Comma-separate up to 20 (e.g. "51059,51061"). Use with stateCd for clarity.',
+      'FIPS county code(s) as bare 5-digit numbers — state and county digits concatenated, no separator (e.g. "51013" for Arlington, VA). Comma-separate up to 20 (e.g. "51059,51061"). Use with stateCd for clarity.',
     ),
     huc: HucSchema.optional().describe(
-      'Hydrologic Unit Code (HUC) scoping results to a watershed. ' +
-        'Either a 2-digit major HUC (e.g. "02" for the Mid-Atlantic region) or an 8-digit minor HUC ' +
-        '(e.g. "02070008" for the Middle Potomac). NWIS accepts no other lengths.',
+      'Hydrologic Unit Code (HUC) scoping results to a watershed. Either a 2-digit major HUC (e.g. "02" for the Mid-Atlantic region) or an 8-digit minor HUC (e.g. "02070008" for the Middle Potomac). NWIS accepts no other lengths.',
     ),
     siteType: z
       .string()
       .optional()
       .describe(
-        'Site type filter. Common codes: "ST" (stream), "GW" (groundwater well), "LK" (lake/reservoir), ' +
-          '"SP" (spring), "AT" (atmosphere), "OC" (ocean), "ES" (estuary). ' +
-          'Comma-separate multiple types (e.g. "ST,GW").',
+        'Site type filter. Common codes: "ST" (stream), "GW" (groundwater well), "LK" (lake/reservoir), "SP" (spring), "AT" (atmosphere), "OC" (ocean), "ES" (estuary). Comma-separate multiple types (e.g. "ST,GW").',
       ),
     parameterCd: ParameterCdListSchema.optional().describe(
-      '5-digit parameter code to require at each returned site (e.g. "00060" for discharge). ' +
-        'Use water_list_parameters to discover codes. ' +
-        'Comma-separate multiple codes with no spaces (e.g. "00060,00065").',
+      '5-digit parameter code to require at each returned site (e.g. "00060" for discharge). Use water_list_parameters to discover codes. Comma-separate multiple codes with no spaces (e.g. "00060,00065").',
     ),
     hasDataTypeCd: z
       .string()
       .optional()
       .describe(
-        'Require sites with data of this type. Common values: "iv" (real-time/instantaneous), ' +
-          '"dv" (daily values), "gw" (groundwater). Comma-separate multiple types.',
+        'Require sites with data of this type. Common values: "iv" (real-time/instantaneous), "dv" (daily values), "gw" (groundwater). Comma-separate multiple types.',
       ),
     siteOutput: z
       .enum(['basic', 'expanded'])
       .default('basic')
       .describe(
-        '"basic" returns core identification fields. ' +
-          '"expanded" adds drainage area, altitude, contributing area, and other metadata.',
+        '"basic" returns core identification fields. "expanded" adds drainage area, altitude, contributing area, and other metadata.',
       ),
     canvas_id: z
       .string()
       .optional()
       .describe(
-        'Canvas ID from a prior call to stage the full match set into an existing canvas rather ' +
-          'than creating a new one. Applies only when the result is truncated and DataCanvas is ' +
-          'enabled. Omit to start a fresh canvas.',
+        'Canvas ID from a prior call to stage the full match set into an existing canvas rather than creating a new one. Applies only when the result is truncated and DataCanvas is enabled. Omit to start a fresh canvas.',
       ),
   }),
   output: z.object({
@@ -114,55 +90,43 @@ export const waterFindSites = tool('water_find_sites', {
               .string()
               .optional()
               .describe(
-                '2-digit FIPS state code (e.g. "51" for Virginia). ' +
-                  'Populated only when siteOutput="expanded"; absent in basic mode.',
+                '2-digit FIPS state code (e.g. "51" for Virginia). Populated only when siteOutput="expanded"; absent in basic mode.',
               ),
             countyCd: z
               .string()
               .optional()
               .describe(
-                '3-digit FIPS county code within the state (zero-padded, e.g. "013"). ' +
-                  'Populated only when siteOutput="expanded"; absent in basic mode.',
+                '3-digit FIPS county code within the state (zero-padded, e.g. "013"). Populated only when siteOutput="expanded"; absent in basic mode.',
               ),
             hucCd: z
               .string()
               .optional()
               .describe(
-                'Hydrologic Unit Code (HUC) of the watershed containing this site. ' +
-                  'Length varies by the level NWIS assigned the site — 8-digit (HUC8) and ' +
-                  '12-digit (HUC12, e.g. "020700081005") values are both common, so do not ' +
-                  'assume a fixed width. Absent when NWIS assigns the site no HUC. ' +
-                  'Do not pass this value straight back as the huc input ' +
-                  'filter, which takes 2 or 8 digits only; HUC codes nest, so the first 8 digits ' +
-                  'are the containing HUC8 subbasin and are what that filter accepts.',
+                'Hydrologic Unit Code of the watershed containing this site; width varies (8-digit HUC8 and 12-digit HUC12, e.g. "020700081005", are both common — do not assume a fixed width), and absent when NWIS assigns none. Do not pass it straight back to the huc filter (which takes 2 or 8 digits); HUCs nest, so its first 8 digits are the containing HUC8 that filter accepts.',
               ),
             drainageArea: z
               .number()
               .optional()
               .describe(
-                'Total drainage area in square miles. ' +
-                  'Populated only when siteOutput="expanded"; absent in basic mode.',
+                'Total drainage area in square miles. Populated only when siteOutput="expanded"; absent in basic mode.',
               ),
             altitude: z
               .number()
               .optional()
               .describe(
-                'Altitude of the gage datum in feet above sea level (NAVD 88 or NGVD 29). ' +
-                  'Present in both basic and expanded modes when USGS records an altitude for the site.',
+                'Altitude of the gage datum in feet above sea level (NAVD 88 or NGVD 29). Present in both basic and expanded modes when USGS records an altitude for the site.',
               ),
             contributingArea: z
               .number()
               .optional()
               .describe(
-                'Contributing drainage area in square miles (may differ from drainageArea for regulated basins). ' +
-                  'Populated only when siteOutput="expanded"; absent in basic mode.',
+                'Contributing drainage area in square miles (may differ from drainageArea for regulated basins). Populated only when siteOutput="expanded"; absent in basic mode.',
               ),
           })
           .describe('A USGS monitoring site with location, type, and available data.'),
       )
       .describe(
-        'Matching USGS monitoring sites (capped at 500 inline; when truncated, upstreamTotal holds the full count ' +
-          'and canvas_id/table_name point to the staged full set when DataCanvas is enabled).',
+        'Matching USGS monitoring sites (capped at 500 inline; when truncated, upstreamTotal holds the full count and canvas_id/table_name point to the staged full set when DataCanvas is enabled).',
       ),
     total: z
       .number()
@@ -171,30 +135,25 @@ export const waterFindSites = tool('water_find_sites', {
     truncated: z
       .boolean()
       .describe(
-        'True when the upstream result set exceeded the 500-site cap. ' +
-          'Query the full match set via water_dataframe_query when canvas_id is present, ' +
-          'or narrow filters (add bbox, countyCd, huc, siteType, parameterCd, or hasDataTypeCd) to retrieve all matches.',
+        'True when the upstream result set exceeded the 500-site cap. Query the full match set via water_dataframe_query when canvas_id is present, or narrow filters (add bbox, countyCd, huc, siteType, parameterCd, or hasDataTypeCd) to retrieve all matches.',
       ),
     upstreamTotal: z
       .number()
       .int()
       .describe(
-        'Total number of sites matching the query upstream, before the 500-site cap was applied. ' +
-          'Equals total when truncated=false.',
+        'Total number of sites matching the query upstream, before the 500-site cap was applied. Equals total when truncated=false.',
       ),
     canvas_id: z
       .string()
       .optional()
       .describe(
-        'Canvas ID for the DataCanvas holding the full, uncapped match set. Present only when truncated=true ' +
-          'and DataCanvas is enabled. Pass to water_dataframe_describe then water_dataframe_query to retrieve sites beyond the inline cap.',
+        'Canvas ID for the DataCanvas holding the full, uncapped match set. Present only when truncated=true and DataCanvas is enabled. Pass to water_dataframe_describe then water_dataframe_query to retrieve sites beyond the inline cap.',
       ),
     table_name: z
       .string()
       .optional()
       .describe(
-        'DuckDB table name in the canvas holding all matching sites. Present when canvas_id is present. ' +
-          'Use as the FROM target in water_dataframe_query SQL.',
+        'DuckDB table name in the canvas holding all matching sites. Present when canvas_id is present. Use as the FROM target in water_dataframe_query SQL.',
       ),
   }),
 
@@ -217,8 +176,7 @@ export const waterFindSites = tool('water_find_sites', {
       .string()
       .optional()
       .describe(
-        'Advisory when results were capped — points to the staged canvas when DataCanvas is enabled, ' +
-          'otherwise to narrowing filters, for retrieving all matches.',
+        'Advisory when results were capped — points to the staged canvas when DataCanvas is enabled, otherwise to narrowing filters, for retrieving all matches.',
       ),
   },
 

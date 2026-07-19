@@ -197,7 +197,7 @@ describe('waterGetConditions', () => {
     });
   });
 
-  it('reports no_record when the stat table is empty (new site)', async () => {
+  it('reports no_record when the stat table is empty', async () => {
     mockGetReadings.mockResolvedValue(MOCK_IV);
     mockGetStats.mockResolvedValue({ siteNumber: '01646500', parameterCd: '00060', rows: [] });
 
@@ -210,8 +210,10 @@ describe('waterGetConditions', () => {
     expect(result.historicalContext).toBeNull();
     expect(result.historicalContextStatus).toBe('no_record');
     expect(result.note).toContain('No historical');
-    // An empty table is attributed to the site's own record — a new or short-record gage.
-    expect(result.note).toContain('site may be new');
+    // An empty stat table is not evidence of a deficient gage — NWIS publishes no percentile
+    // product at all for some parameters, so the note offers that cause alongside a short record.
+    expect(result.note).toContain('no daily-statistics percentile product');
+    expect(result.note).toContain('too new or too short');
   });
 
   it('reports unavailable (not no_record) when the stat service throws — partial success', async () => {
