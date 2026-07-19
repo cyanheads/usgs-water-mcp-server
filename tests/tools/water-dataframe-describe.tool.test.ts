@@ -4,16 +4,33 @@
  * @module tests/tools/water-dataframe-describe.tool.test
  */
 
-import { JsonRpcErrorCode } from '@cyanheads/mcp-ts-core/errors';
+import { JsonRpcErrorCode, notFound } from '@cyanheads/mcp-ts-core/errors';
 import { createMockContext } from '@cyanheads/mcp-ts-core/testing';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { waterDataframeDescribe } from '@/mcp-server/tools/definitions/water-dataframe-describe.tool.js';
+import { declaredRecovery } from '../helpers/error-contract.js';
 
 let mockCanvasInstance: unknown;
 
 vi.mock('@/services/canvas/canvas-accessor.js', () => ({
   getCanvas: () => mockCanvasInstance,
 }));
+
+const recovery = (reason: string) => declaredRecovery(waterDataframeDescribe.errors, reason);
+
+/**
+ * The error the canvas registry raises for an unknown or expired canvas_id, copied from
+ * `CanvasRegistry.canvasNotFound()` in @cyanheads/mcp-ts-core. It is a structured `McpError`
+ * carrying `data.reason`, not a plain Error whose prose happens to say "not found".
+ */
+const canvasNotFound = (canvasId: string) =>
+  notFound('Canvas not found or expired.', {
+    reason: 'canvas_not_found',
+    canvasId,
+    recovery: {
+      hint: 'Re-run the tool that produced this canvas_id to stage fresh data, or verify the id was copied correctly.',
+    },
+  });
 
 const MOCK_TABLE_INFO = [
   {
@@ -43,7 +60,7 @@ describe('waterDataframeDescribe', () => {
     const input = waterDataframeDescribe.input.parse({ canvas_id: 'canvas0001xx' });
     await expect(waterDataframeDescribe.handler(input, ctx)).rejects.toMatchObject({
       code: JsonRpcErrorCode.InvalidRequest,
-      data: { reason: 'canvas_disabled' },
+      data: { reason: 'canvas_disabled', recovery: recovery('canvas_disabled') },
     });
   });
 
@@ -59,16 +76,27 @@ describe('waterDataframeDescribe', () => {
     expect(error.message).not.toContain('CANVAS_PROVIDER_TYPE');
   });
 
-  it('throws canvas_not_found when acquire throws not found', async () => {
+  it('throws canvas_not_found when acquire rejects a stale canvas_id', async () => {
     mockCanvasInstance = {
-      acquire: vi.fn().mockRejectedValue(new Error('canvas not found or expired')),
+      acquire: vi.fn().mockRejectedValue(canvasNotFound('stalecanvas1')),
     };
     const ctx = createMockContext({ errors: waterDataframeDescribe.errors });
     const input = waterDataframeDescribe.input.parse({ canvas_id: 'stalecanvas1' });
     await expect(waterDataframeDescribe.handler(input, ctx)).rejects.toMatchObject({
       code: JsonRpcErrorCode.NotFound,
-      data: { reason: 'canvas_not_found' },
+      data: { reason: 'canvas_not_found', recovery: recovery('canvas_not_found') },
     });
+  });
+
+  it('re-throws an unrecognized acquire failure instead of mislabelling it canvas_not_found', async () => {
+    mockCanvasInstance = {
+      acquire: vi.fn().mockRejectedValue(new Error('DuckDB connection pool exhausted')),
+    };
+    const ctx = createMockContext({ errors: waterDataframeDescribe.errors });
+    const input = waterDataframeDescribe.input.parse({ canvas_id: 'canvas0001xx' });
+    await expect(waterDataframeDescribe.handler(input, ctx)).rejects.toThrow(
+      'DuckDB connection pool exhausted',
+    );
   });
 
   it('returns tables with columns and row count', async () => {

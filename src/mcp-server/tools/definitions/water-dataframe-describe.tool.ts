@@ -6,7 +6,7 @@
 
 import { tool, z } from '@cyanheads/mcp-ts-core';
 import type { CanvasInstance } from '@cyanheads/mcp-ts-core/canvas';
-import { JsonRpcErrorCode } from '@cyanheads/mcp-ts-core/errors';
+import { JsonRpcErrorCode, McpError } from '@cyanheads/mcp-ts-core/errors';
 import { getCanvas } from '@/services/canvas/canvas-accessor.js';
 
 export const waterDataframeDescribe = tool('water_dataframe_describe', {
@@ -75,7 +75,11 @@ export const waterDataframeDescribe = tool('water_dataframe_describe', {
       ctx.log.info(
         'DataCanvas not enabled; set CANVAS_PROVIDER_TYPE=duckdb to enable SQL queries over staged series.',
       );
-      throw ctx.fail('canvas_disabled', 'DataCanvas is not enabled on this server instance.');
+      throw ctx.fail(
+        'canvas_disabled',
+        'DataCanvas is not enabled on this server instance.',
+        ctx.recoveryFor('canvas_disabled'),
+      );
     }
 
     ctx.log.info('Describing canvas', { canvas_id: input.canvas_id });
@@ -84,9 +88,13 @@ export const waterDataframeDescribe = tool('water_dataframe_describe', {
     try {
       instance = await canvas.acquire(input.canvas_id, ctx);
     } catch (err: unknown) {
-      const msg = err instanceof Error ? err.message : String(err);
-      if (msg.includes('NotFound') || msg.includes('not found') || msg.includes('expired')) {
-        throw ctx.fail('canvas_not_found', `Canvas ${input.canvas_id} not found or expired.`);
+      if (err instanceof McpError && err.data?.['reason'] === 'canvas_not_found') {
+        throw ctx.fail(
+          'canvas_not_found',
+          `Canvas ${input.canvas_id} not found or expired.`,
+          ctx.recoveryFor('canvas_not_found'),
+          { cause: err },
+        );
       }
       throw err;
     }
