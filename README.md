@@ -7,7 +7,7 @@
 
 <div align="center">
 
-[![Version](https://img.shields.io/badge/Version-0.2.1-blue.svg?style=flat-square)](./CHANGELOG.md) [![License](https://img.shields.io/badge/License-Apache%202.0-orange.svg?style=flat-square)](./LICENSE) [![Docker](https://img.shields.io/badge/Docker-ghcr.io-2496ED?style=flat-square&logo=docker&logoColor=white)](https://github.com/users/cyanheads/packages/container/package/usgs-water-mcp-server) [![MCP SDK](https://img.shields.io/badge/MCP%20SDK-^1.29.0-green.svg?style=flat-square)](https://modelcontextprotocol.io/) [![npm](https://img.shields.io/npm/v/@cyanheads/usgs-water-mcp-server?style=flat-square&logo=npm&logoColor=white)](https://www.npmjs.com/package/@cyanheads/usgs-water-mcp-server) [![TypeScript](https://img.shields.io/badge/TypeScript-^6.0.3-3178C6.svg?style=flat-square)](https://www.typescriptlang.org/) [![Bun](https://img.shields.io/badge/Bun-v1.3.14-blueviolet.svg?style=flat-square)](https://bun.sh/)
+[![Version](https://img.shields.io/badge/Version-0.2.2-blue.svg?style=flat-square)](./CHANGELOG.md) [![License](https://img.shields.io/badge/License-Apache%202.0-orange.svg?style=flat-square)](./LICENSE) [![Docker](https://img.shields.io/badge/Docker-ghcr.io-2496ED?style=flat-square&logo=docker&logoColor=white)](https://github.com/users/cyanheads/packages/container/package/usgs-water-mcp-server) [![MCP SDK](https://img.shields.io/badge/MCP%20SDK-^1.29.0-green.svg?style=flat-square)](https://modelcontextprotocol.io/) [![npm](https://img.shields.io/npm/v/@cyanheads/usgs-water-mcp-server?style=flat-square&logo=npm&logoColor=white)](https://www.npmjs.com/package/@cyanheads/usgs-water-mcp-server) [![TypeScript](https://img.shields.io/badge/TypeScript-^6.0.3-3178C6.svg?style=flat-square)](https://www.typescriptlang.org/) [![Bun](https://img.shields.io/badge/Bun-v1.3.14-blueviolet.svg?style=flat-square)](https://bun.sh/)
 
 </div>
 
@@ -114,7 +114,7 @@ In-conversation SQL analytics over the dataframes that `water_get_series` and `w
 2. Call `water_dataframe_describe` with the `canvas_id` to confirm the table schema — series tables carry `date_time`, `value`, `qualifiers`, `site_number`, `parameter_cd`, `unit_code`; site tables carry `site_number`, `site_name`, `site_type`, `latitude`, `longitude`, `huc_cd`, and the expanded fields
 3. Call `water_dataframe_query` with the `canvas_id` and a SELECT statement to run aggregates, filter, or join
 
-Read-only by default — only SELECT statements are permitted. Results are capped at 10,000 rows. Requires `CANVAS_PROVIDER_TYPE=duckdb` in the server environment.
+Read-only by default — only SELECT statements are permitted. Results are capped at 10,000 rows; a query matching more comes back with `truncated: true`. Requires `CANVAS_PROVIDER_TYPE=duckdb` in the server environment.
 
 ## Resources and prompts
 
@@ -273,7 +273,7 @@ cp .env.example .env
 | Variable | Description | Default |
 |:---------|:------------|:--------|
 | `CANVAS_PROVIDER_TYPE` | Set to `duckdb` to enable DataCanvas spillover for large results from `water_get_series` and `water_find_sites`. | — |
-| `USGS_USER_AGENT` | Custom User-Agent string sent to USGS NWIS. USGS requests a descriptive User-Agent per their terms. | `usgs-water-mcp-server/0.2.1 (contact: https://github.com/cyanheads/usgs-water-mcp-server)` |
+| `USGS_USER_AGENT` | Custom User-Agent string sent to USGS NWIS. USGS requests a descriptive User-Agent per their terms. | `usgs-water-mcp-server/0.2.2 (contact: https://github.com/cyanheads/usgs-water-mcp-server)` |
 | `USGS_REQUEST_TIMEOUT_MS` | HTTP request timeout in milliseconds for NWIS calls. | `30000` |
 | `MCP_TRANSPORT_TYPE` | Transport: `stdio` or `http`. | `stdio` |
 | `MCP_HTTP_PORT` | Port for HTTP server. | `3010` |

@@ -1,6 +1,6 @@
 # usgs-water-mcp-server - Directory Structure
 
-Generated on: 2026-07-17 07:05:41
+Generated on: 2026-07-19 11:51:48
 
 ```text
 usgs-water-mcp-server/
@@ -158,6 +158,8 @@ usgs-water-mcp-server/
 │   │       └── types.ts
 │   └── index.ts
 ├── tests/
+│   ├── helpers/
+│   │   └── error-contract.ts
 │   ├── prompts/
 │   ├── resources/
 │   │   ├── water-parameters.resource.test.ts

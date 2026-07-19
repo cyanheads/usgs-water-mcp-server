@@ -2,6 +2,10 @@
 
 All notable changes to this project. Each entry links to its full per-version file in [changelog/](changelog/).
 
+## [0.2.2](changelog/0.2.x/0.2.2.md) — 2026-07-19
+
+Wire declared error recovery hints through to callers on every tool and resource, surface water_dataframe_query's truncation flag as an output field, scope its non-SELECT rejection to what callers can invoke, and drop water_get_series's unreachable site_not_found reason.
+
 ## [0.2.1](changelog/0.2.x/0.2.1.md) — 2026-07-19
 
 Definition-language pass over every tool and resource: concatenated description strings collapse to single strings, and inaccurate ones are corrected — the water_dataframe_* tools now name water_find_sites as a canvas producer, row_count describes what it actually counts, and water_get_conditions explains both of its data-gap cases.
