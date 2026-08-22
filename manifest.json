@@ -3,11 +3,7 @@
   "name": "usgs-water-mcp-server",
   "version": "0.2.3",
   "description": "Query real-time and historical USGS water data from ~8,000 stream gages and groundwater wells.",
-  "author": {
-    "name": "Casey Hand",
-    "email": "casey@caseyjhand.com",
-    "url": "https://caseyjhand.com"
-  },
+  "author": { "name": "cyanheads" },
   "repository": {
     "type": "git",
     "url": "https://github.com/cyanheads/usgs-water-mcp-server"
