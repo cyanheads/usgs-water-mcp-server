@@ -1,10 +1,9 @@
 # usgs-water-mcp-server - Directory Structure
 
-Generated on: 2026-07-19 11:51:48
+Generated on: 2026-08-22 21:14:01
 
 ```text
 usgs-water-mcp-server/
-├── .claude/
 ├── .claude-plugin/
 │   └── plugin.json
 ├── .codex-plugin/
@@ -15,6 +14,8 @@ usgs-water-mcp-server/
 │   │   ├── bug_report.yml
 │   │   ├── config.yml
 │   │   └── feature_request.yml
+│   ├── CODE_OF_CONDUCT.md
+│   ├── CONTRIBUTING.md
 │   ├── FUNDING.yml
 │   └── SECURITY.md
 ├── .vscode/
@@ -159,6 +160,7 @@ usgs-water-mcp-server/
 │   └── index.ts
 ├── tests/
 │   ├── helpers/
+│   │   ├── content-block.ts
 │   │   └── error-contract.ts
 │   ├── prompts/
 │   ├── resources/

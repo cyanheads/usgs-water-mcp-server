@@ -1,10 +1,10 @@
 # Developer Protocol
 
 **Server:** usgs-water-mcp-server
-**Version:** 0.2.2
-**Framework:** [@cyanheads/mcp-ts-core](https://www.npmjs.com/package/@cyanheads/mcp-ts-core) `^0.10.14`
+**Version:** 0.2.3
+**Framework:** [@cyanheads/mcp-ts-core](https://www.npmjs.com/package/@cyanheads/mcp-ts-core) `^0.12.3`
 **Engines:** Bun ≥1.3.0, Node ≥24.0.0
-**MCP SDK:** `@modelcontextprotocol/sdk` ^1.29.0
+**MCP SDK:** `@modelcontextprotocol/server` ^2.0.0
 **Zod:** ^4.4.3
 
 > **Read the framework docs first:** `node_modules/@cyanheads/mcp-ts-core/CLAUDE.md` contains the full API reference — builders, Context, error codes, exports, patterns. This file covers server-specific conventions only.
@@ -16,7 +16,7 @@
 - **Logic throws, framework catches.** Tool/resource handlers are pure — throw on failure, no `try/catch`. Plain `Error` is fine; the framework catches, classifies, and formats. Use error factories (`notFound()`, `validationError()`, etc.) when the error code matters.
 - **Use `ctx.log`** for request-scoped logging. No `console` calls.
 - **Use `ctx.state`** for tenant-scoped storage. Never access persistence directly.
-- **Check `ctx.elicit` / `ctx.sample`** for presence before calling.
+- **Need input the caller didn't supply?** `return ctx.requestInput(...)` and read `ctx.inputs` when the handler is re-entered. Never `await` for user input mid-handler.
 - **Secrets in env vars only** — never hardcoded.
 - **Close the loop on issues.** When implementing work tracked by a GitHub issue, comment on the issue with what landed and close it. Do both — a comment without a close leaves stale issues open; a close without a comment leaves no record of what shipped. The comment is for future readers — state the concrete changes, not the conversation that produced them.
 
@@ -57,8 +57,8 @@ export const waterFindSites = tool('water_find_sites', {
   ],
 
   async handler(input, ctx) {
-    const sites = await findSites({ stateCd: input.stateCd, siteType: input.siteType }, ctx.signal);
-    if (sites.length === 0) throw ctx.fail('no_sites_found', 'No USGS sites match the specified filters.');
+    const sites = await findSites({ stateCd: input.stateCd, siteType: input.siteType }, ctx);
+    if (sites.length === 0) throw ctx.fail('no_sites_found', 'No USGS sites match the specified filters.', ctx.recoveryFor('no_sites_found'));
     ctx.log.info('Sites found', { count: sites.length });
     return { sites, total: sites.length };
   },
@@ -98,7 +98,7 @@ export const waterSiteResource = resource('usgs-water://site/{siteId}', {
   mimeType: 'application/json',
   params: z.object({ siteId: z.string().describe('USGS site number (8–15 digits).') }),
   async handler(params, ctx) {
-    const site = await getSiteInfo(params.siteId, ctx.signal);
+    const site = await getSiteInfo(params.siteId, ctx);
     if (!site) throw notFound(`Site ${params.siteId} not found.`, { siteId: params.siteId });
     return site;
   },
@@ -114,7 +114,7 @@ import { z } from '@cyanheads/mcp-ts-core';
 import { parseEnvConfig } from '@cyanheads/mcp-ts-core/config';
 
 const ServerConfigSchema = z.object({
-  userAgent: z.string().default('usgs-water-mcp-server/0.2.2 (contact: https://github.com/cyanheads/usgs-water-mcp-server)')
+  userAgent: z.string().default('usgs-water-mcp-server/0.2.3 (contact: https://github.com/cyanheads/usgs-water-mcp-server)')
     .describe('User-Agent header sent to USGS NWIS.'),
   requestTimeoutMs: z.coerce.number().default(30_000).describe('HTTP request timeout in milliseconds.'),
 });
@@ -137,11 +137,9 @@ Handlers receive a unified `ctx` object. Key properties used in this server:
 
 | Property | Description |
 |:---------|:------------|
-| `ctx.log` | Request-scoped logger — `.debug()`, `.info()`, `.notice()`, `.warning()`, `.error()`. Auto-correlates requestId, traceId, tenantId. |
-| `ctx.state` | Tenant-scoped KV — `.get(key)`, `.set(key, value, { ttl? })`, `.delete(key)`, `.list(prefix, { cursor, limit })`. Accepts any serializable value. |
+| `ctx.log` | Request-scoped logger — `.debug()`, `.info()`, `.notice()`, `.warning()`, `.error()`. Auto-correlates requestId, traceId, tenantId and also reaches clients through `notifications/message`. |
+| `ctx.enrich` | Success-path agent context declared through a definition's `enrichment` block. |
 | `ctx.signal` | `AbortSignal` for cancellation. |
-| `ctx.requestId` | Unique request ID. |
-| `ctx.tenantId` | Tenant ID from JWT or `'default'` for stdio. |
 
 ---
 
@@ -149,7 +147,7 @@ Handlers receive a unified `ctx` object. Key properties used in this server:
 
 Handlers throw — the framework catches, classifies, and formats.
 
-**Typed error contract (preferred).** Declare `errors: [{ reason, code, when, recovery, retryable? }]` on `tool()` / `resource()` to receive `ctx.fail(reason, …)` typed against the reason union. TypeScript catches typos at compile time, `data.reason` is auto-populated for observability.
+**Typed error contract (preferred).** Declare `errors: [{ reason, code, when, recovery, retryable? }]` inline on each `tool()` / `resource()` to receive `ctx.fail(reason, …)` typed against the reason union. TypeScript catches typos, `data.reason` is auto-populated, and the linter enforces conformance. Pass `ctx.recoveryFor('reason')` as the throw data so the declared recovery hint reaches the wire.
 
 **Fallback:** throw via factories or plain `Error`.
 
@@ -197,7 +195,7 @@ src/
 | What | Convention | Example |
 |:-----|:-----------|:--------|
 | Files | kebab-case with suffix | `water-find-sites.tool.ts` |
-| Tool/resource names | snake_case | `water_find_sites` |
+| Tool/resource/prompt names | snake_case | `water_find_sites` |
 | Directories | kebab-case | `src/services/nwis/` |
 | Descriptions | Single string or template literal, no `+` concatenation | `'Find USGS water monitoring sites by bounding box.'` |
 
@@ -205,7 +203,7 @@ src/
 
 ## Skills
 
-Skills are modular instructions in `skills/` at the project root. Read them directly when a task matches — e.g., `skills/add-tool/SKILL.md` when adding a tool.
+Skills are modular instructions in `skills/` at the project root. Read them directly when a task matches — e.g., `skills/add-tool/SKILL.md` when adding a tool. `bun run list-skills` prints the full registry.
 
 **Agent skill directory:** Copy skills into the directory your agent discovers (Claude Code: `.claude/skills/`, others: equivalent). Skills then load as context without referencing `skills/` paths. After framework updates, run the `maintenance` skill — Phase B re-syncs the agent directory.
 
@@ -225,7 +223,6 @@ Available skills:
 | `tool-defs-analysis` | Read-only audit of MCP definition language across the surface — voice, leaks, defaults, recovery hints, output descriptions |
 | `security-pass` | Audit server for MCP-flavored security gaps: output injection, scope blast radius, input sinks, tenant isolation |
 | `code-simplifier` | Post-session cleanup against `git diff` — modernize syntax, consolidate duplication, align with the codebase |
-| `devcheck` | Lint, format, typecheck, audit |
 | `polish-docs-meta` | Finalize docs, README, metadata, and agent protocol for shipping |
 | `git-wrapup` | Land working-tree changes as a versioned commit + annotated tag — version bump, changelog, verify, tag. Local only. |
 | `release-and-publish` | Push + npm + MCP Registry + GH Release + Docker. Picks up from `git-wrapup` |
@@ -236,14 +233,16 @@ Available skills:
 | `api-auth` | Auth modes, scopes, JWT/OAuth |
 | `api-canvas` | DataCanvas: register tabular data, run SQL, export, plus the `spillover()` helper for big result sets — Tier 3 opt-in |
 | `api-config` | AppConfig, parseConfig, env vars |
-| `api-context` | Context interface, logger, state, progress |
+| `api-context` | Context interface, logger, state, and multi-round-trip input |
 | `api-errors` | McpError, JsonRpcErrorCode, error patterns |
 | `api-linter` | Definition linter rule catalog — invoked by `bun run lint:mcp` and `devcheck` |
+| `api-mirror` | MirrorService for a persistent self-refreshing local mirror — Tier 3 opt-in |
 | `api-services` | LLM, Speech, Graph services |
 | `api-testing` | createMockContext, test patterns |
 | `api-utils` | Formatting, parsing, security, pagination, scheduling, telemetry helpers |
 | `api-telemetry` | OTel catalog: spans, metrics, completion logs, env config, cardinality rules |
 | `api-workers` | Cloudflare Workers runtime |
+| `techniques` | Response/data-shaping techniques for overflow, payload shaping, and retrieval patterns |
 
 When you complete a skill's checklist, check the boxes and add a completion timestamp at the end (e.g., `Completed: 2026-06-05`).
 
@@ -251,31 +250,33 @@ When you complete a skill's checklist, check the boxes and add a completion time
 
 ## Commands
 
-**Runtime:** Scripts use `tsx` — both `npm run <cmd>` and `bun run <cmd>` work. `bun` is slightly faster for script invocation but not required.
+**Runtime:** Scripts use Bun's native TypeScript execution. `bun run <cmd>` is the standard invocation.
 
 | Command | Purpose |
 |:--------|:--------|
-| `npm run build` | Compile TypeScript |
-| `npm run rebuild` | Clean + build |
-| `npm run clean` | Remove build artifacts |
-| `npm run devcheck` | Lint + format + typecheck + security + changelog sync |
+| `bun run build` | Compile TypeScript |
+| `bun run rebuild` | Clean + build |
+| `bun run clean` | Remove build artifacts |
+| `bun run devcheck` | Lint + format + typecheck + security + changelog sync |
 | `bun run audit:refresh` | Delete `bun.lock`, reinstall, and re-run `bun audit`. Use when `devcheck` flags a transitive advisory. |
-| `npm run tree` | Generate directory structure doc |
-| `npm run format` | Auto-fix formatting (safe fixes only) |
-| `npm run format:unsafe` | Also apply Biome's unsafe autofixes — review the diff; they can change behavior |
-| `npm test` | Run tests |
-| `npm run start:stdio` | Production mode (stdio) |
-| `npm run start:http` | Production mode (HTTP) |
-| `npm run changelog:build` | Regenerate `CHANGELOG.md` from `changelog/*.md` |
-| `npm run changelog:check` | Verify `CHANGELOG.md` is in sync (used by devcheck) |
-| `npm run bundle` | Build and pack as `.mcpb` for one-click Claude Desktop install |
-| `npm run publish-mcp` | Publish to the MCP Registry via mcp-publisher |
+| `bun run lint:mcp` | Run the MCP definition linter standalone |
+| `bun run lint:packaging` | Check packaging identity, env-var alignment, and bundle contents |
+| `bun run list-skills` | Print the skill registry |
+| `bun run tree` | Generate directory structure doc |
+| `bun run format` | Auto-fix formatting (safe fixes only) |
+| `bun run format:unsafe` | Also apply Biome's unsafe autofixes — review the diff; they can change behavior |
+| `bun run test` | Run tests with Vitest; do not use `bun test` |
+| `bun run start:stdio` | Production mode (stdio) |
+| `bun run start:http` | Production mode (HTTP) |
+| `bun run changelog:build` | Regenerate `CHANGELOG.md` from `changelog/*.md` |
+| `bun run changelog:check` | Verify `CHANGELOG.md` is in sync (used by devcheck) |
+| `bun run bundle` | Build, pack, and clean a portable `.mcpb` bundle |
 
 ---
 
 ## Bundling
 
-`npm run bundle` produces a `.mcpb` extension bundle for one-click install in Claude Desktop. MCPB is stdio-only — HTTP and Cloudflare Workers deployments are unaffected.
+`bun run bundle` produces a `.mcpb` extension bundle for one-click install in Claude Desktop. The cleanup step prunes dev dependencies, agent docs, and platform-specific native bindings so the bundle stays portable. DataCanvas remains an optional peer loaded lazily; a bundle without the DuckDB native still runs every non-canvas tool. MCPB is stdio-only — HTTP and Cloudflare Workers deployments are unaffected.
 
 **Adding an env var requires both files:** `server.json` (registry discovery, `environmentVariables[]`) and `manifest.json` (bundle install UX, `mcp_config.env` + `user_config`). `lint:packaging` (run by `devcheck`) verifies the env var names match.
 
@@ -283,7 +284,7 @@ When you complete a skill's checklist, check the boxes and add a completion time
 
 ## Changelog
 
-Directory-based. Source of truth: `changelog/<major.minor>.x/<version>.md` (e.g. `changelog/0.1.x/0.1.0.md`) — one file per release. `changelog/template.md` is a **pristine format reference** — never edited or moved. `CHANGELOG.md` is a **navigation index** regenerated by `npm run changelog:build` — devcheck hard-fails on drift; never hand-edit it.
+Directory-based. Source of truth: `changelog/<major.minor>.x/<version>.md` (e.g. `changelog/0.1.x/0.1.0.md`) — one file per release with `summary`, `breaking`, and `security` frontmatter. Optional `agent-notes` carries downstream adoption steps and is not rendered. `changelog/template.md` is a **pristine format reference** — never edited or moved. `CHANGELOG.md` is a **navigation index** regenerated by `bun run changelog:build` — devcheck hard-fails on drift; never hand-edit it.
 
 ---
 
@@ -306,14 +307,14 @@ import { getCanvas } from '@/services/canvas/canvas-accessor.js';
 ## Checklist
 
 - [ ] Zod schemas: all fields have `.describe()`, only JSON-Schema-serializable types
-- [ ] Optional nested objects: handler guards for empty inner values from form-based clients
+- [ ] Optional nested objects: handler guards for empty inner values from form-based clients; validators accept an empty literal when form clients may submit it
 - [ ] JSDoc `@fileoverview` + `@module` on every file
 - [ ] `ctx.log` for logging, `ctx.state` for storage
 - [ ] Handlers throw on failure — error factories or plain `Error`, no try/catch
 - [ ] `format()` renders all data the LLM needs — both `structuredContent` and `content[]` must carry the same data
-- [ ] If wrapping external API: raw/domain/output schemas reviewed against real upstream sparsity/nullability
+- [ ] If wrapping external API: raw/domain/output schemas reviewed against real upstream sparsity/nullability, normalization preserves uncertainty, and tests cover a sparse payload
 - [ ] Registered in `createApp()` arrays (directly or via barrel exports)
 - [ ] Tests use `createMockContext()` from `@cyanheads/mcp-ts-core/testing`
-- [ ] `.codex-plugin/plugin.json` populated and in sync with `package.json`
+- [ ] `.codex-plugin/plugin.json` and `.codex-plugin/mcp.json` populated and in sync with `package.json`
 - [ ] `.claude-plugin/plugin.json` populated and in sync with `package.json`
-- [ ] `npm run devcheck` passes
+- [ ] `bun run devcheck` passes
