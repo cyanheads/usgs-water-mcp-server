@@ -22,3 +22,14 @@ export function declaredRecovery(
   if (!entry) throw new Error(`No errors[] entry declares reason "${reason}".`);
   return { hint: entry.recovery };
 }
+
+/** Captures the error raised by a handler that may return either synchronously or asynchronously. */
+export async function captureError(operation: () => unknown | Promise<unknown>): Promise<unknown> {
+  try {
+    await operation();
+  } catch (error) {
+    return error;
+  }
+
+  throw new Error('Expected operation to throw.');
+}

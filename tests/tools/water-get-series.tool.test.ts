@@ -13,6 +13,7 @@ import { createMockContext, getEnrichment } from '@cyanheads/mcp-ts-core/testing
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { waterGetSeries } from '@/mcp-server/tools/definitions/water-get-series.tool.js';
 import type { NwisTimeSeries } from '@/services/nwis/types.js';
+import { textContent } from '../helpers/content-block.js';
 import { declaredRecovery } from '../helpers/error-contract.js';
 
 const recovery = (reason: string) => declaredRecovery(waterGetSeries.errors, reason);
@@ -119,7 +120,12 @@ describe('waterGetSeries', () => {
     mockSpillover.mockResolvedValue({
       spilled: true,
       previewRows,
-      handle: { tableName: 'water_series_01646500_00060' },
+      handle: {
+        tableName: 'water_series_01646500_00060',
+        columns: ['date_time', 'value', 'qualifiers', 'site_number', 'parameter_cd', 'unit_code'],
+        rowCount: 600,
+      },
+      truncated: true,
     } as Awaited<ReturnType<typeof spillover>>);
 
     const mockInstance = { canvasId: 'canvas0001xx', expiresAt: '2026-07-01T00:00:00Z' };
@@ -385,7 +391,7 @@ describe('waterGetSeries', () => {
       table_name: undefined,
     };
     const blocks = waterGetSeries.format!(result);
-    const text = blocks[0]?.text ?? '';
+    const text = textContent(blocks[0]);
     expect(text).toContain('01646500');
     expect(text).toContain('00060');
     expect(text).toContain('Streamflow');
@@ -411,7 +417,7 @@ describe('waterGetSeries', () => {
       table_name: undefined,
     };
     const blocks = waterGetSeries.format!(result);
-    const text = blocks[0]?.text ?? '';
+    const text = textContent(blocks[0]);
 
     // The first record — dropped by the old `slice(-20)` — is now present in content[].
     expect(text).toContain('2024-01-01T00:00:00');
@@ -437,7 +443,7 @@ describe('waterGetSeries', () => {
       table_name: 'water_series_01646500_00060',
     };
     const blocks = waterGetSeries.format!(result);
-    const text = blocks[0]?.text ?? '';
+    const text = textContent(blocks[0]);
     expect(text).toContain('canvas0001xx');
     expect(text).toContain('water_series_01646500_00060');
     expect(text).toContain('water_dataframe_query');

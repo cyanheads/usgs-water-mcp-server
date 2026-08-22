@@ -8,7 +8,8 @@ import { JsonRpcErrorCode, notFound, validationError } from '@cyanheads/mcp-ts-c
 import { createMockContext } from '@cyanheads/mcp-ts-core/testing';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { waterDataframeQuery } from '@/mcp-server/tools/definitions/water-dataframe-query.tool.js';
-import { declaredRecovery } from '../helpers/error-contract.js';
+import { textContent } from '../helpers/content-block.js';
+import { captureError, declaredRecovery } from '../helpers/error-contract.js';
 
 let mockCanvasInstance: unknown;
 
@@ -130,7 +131,7 @@ describe('waterDataframeQuery', () => {
       canvas_id: 'canvas0001xx',
       sql: 'SELECT * FROM water_series_01646500_00060 LIMIT 10',
     });
-    const error = (await waterDataframeQuery.handler(input, ctx).catch((e: unknown) => e)) as Error;
+    const error = (await captureError(() => waterDataframeQuery.handler(input, ctx))) as Error;
     expect(error).toBeInstanceOf(Error);
     expect(error.message).toBe('DataCanvas is not enabled on this server instance.');
     expect(error.message).not.toContain('CANVAS_PROVIDER_TYPE');
@@ -160,7 +161,7 @@ describe('waterDataframeQuery', () => {
       canvas_id: 'canvas0001xx',
       sql: 'SELECT valu FROM water_series_01646500_00060',
     });
-    const error = (await waterDataframeQuery.handler(input, ctx).catch((e: unknown) => e)) as Error;
+    const error = (await captureError(() => waterDataframeQuery.handler(input, ctx))) as Error;
     expect(error).toMatchObject({
       code: JsonRpcErrorCode.ValidationError,
       data: { reason: 'invalid_sql', recovery: recovery('invalid_sql') },
@@ -176,7 +177,7 @@ describe('waterDataframeQuery', () => {
       canvas_id: 'canvas0001xx',
       sql: "SELECT * FROM read_csv('/etc/passwd')",
     });
-    const error = (await waterDataframeQuery.handler(input, ctx).catch((e: unknown) => e)) as Error;
+    const error = (await captureError(() => waterDataframeQuery.handler(input, ctx))) as Error;
     expect(error).toMatchObject({
       code: JsonRpcErrorCode.ValidationError,
       data: { reason: 'invalid_sql' },
@@ -191,7 +192,7 @@ describe('waterDataframeQuery', () => {
       canvas_id: 'canvas0001xx',
       sql: 'DELETE FROM water_series_01646500_00060',
     });
-    const error = (await waterDataframeQuery.handler(input, ctx).catch((e: unknown) => e)) as Error;
+    const error = (await captureError(() => waterDataframeQuery.handler(input, ctx))) as Error;
     expect(error).toMatchObject({
       code: JsonRpcErrorCode.ValidationError,
       data: { reason: 'invalid_sql', recovery: recovery('invalid_sql') },
@@ -210,7 +211,7 @@ describe('waterDataframeQuery', () => {
       canvas_id: 'canvas0001xx',
       sql: 'SELECT * FROM information_schema.tables',
     });
-    const error = (await waterDataframeQuery.handler(input, ctx).catch((e: unknown) => e)) as Error;
+    const error = (await captureError(() => waterDataframeQuery.handler(input, ctx))) as Error;
     // Its own contract reason, not invalid_sql: the SELECT-only/no-read_csv recovery invalid_sql
     // declares does not address a catalog reference, and a mismatched hint is the #24 defect.
     expect(error).toMatchObject({
@@ -233,7 +234,7 @@ describe('waterDataframeQuery', () => {
       canvas_id: 'canvas0001xx',
       sql: 'SELECT * FROM water_series_09380000_00060',
     });
-    const error = (await waterDataframeQuery.handler(input, ctx).catch((e: unknown) => e)) as Error;
+    const error = (await captureError(() => waterDataframeQuery.handler(input, ctx))) as Error;
     expect(error).toMatchObject({
       code: JsonRpcErrorCode.NotFound,
       data: { reason: 'table_not_found', recovery: recovery('table_not_found') },
@@ -333,7 +334,7 @@ describe('waterDataframeQuery', () => {
       truncated: false,
     };
     const blocks = waterDataframeQuery.format!(result);
-    const text = blocks[0]?.text ?? '';
+    const text = textContent(blocks[0]);
     expect(text).toContain('2 row(s)');
     expect(text).toContain('date_time');
     expect(text).toContain('2024-01-01');
@@ -348,14 +349,14 @@ describe('waterDataframeQuery', () => {
       row_count: 10_000,
       truncated: true,
     });
-    expect(capped[0]?.text ?? '').toMatch(/truncated/i);
+    expect(textContent(capped[0])).toMatch(/truncated/i);
 
     const complete = waterDataframeQuery.format!({
       rows: MOCK_QUERY_RESULT.rows,
       row_count: 2,
       truncated: false,
     });
-    expect(complete[0]?.text ?? '').toContain('not truncated');
+    expect(textContent(complete[0])).toContain('not truncated');
   });
 
   it('caps the rendered table at 50 rows with an accurate "showing 50 of N" caption at worst case (regression: #16 sub-case 2)', () => {
@@ -371,7 +372,7 @@ describe('waterDataframeQuery', () => {
     }));
     const result = { rows, row_count: 25_000, truncated: true };
     const blocks = waterDataframeQuery.format!(result);
-    const text = blocks[0]?.text ?? '';
+    const text = textContent(blocks[0]);
 
     // Header honestly discloses both the matched total and the returned (capped) count.
     expect(text).toContain('25000 row(s)');
@@ -386,7 +387,7 @@ describe('waterDataframeQuery', () => {
   it('formats empty result set gracefully', () => {
     const result = { rows: [], row_count: 0, truncated: false };
     const blocks = waterDataframeQuery.format!(result);
-    const text = blocks[0]?.text ?? '';
+    const text = textContent(blocks[0]);
     expect(text).toContain('0 row(s)');
   });
 });

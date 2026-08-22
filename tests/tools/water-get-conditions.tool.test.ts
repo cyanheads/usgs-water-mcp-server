@@ -13,6 +13,7 @@ import { createMockContext } from '@cyanheads/mcp-ts-core/testing';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { waterGetConditions } from '@/mcp-server/tools/definitions/water-get-conditions.tool.js';
 import type { NwisStatResult, NwisStatRow, NwisTimeSeries } from '@/services/nwis/types.js';
+import { textContent } from '../helpers/content-block.js';
 import { declaredRecovery } from '../helpers/error-contract.js';
 
 const recovery = (reason: string) => declaredRecovery(waterGetConditions.errors, reason);
@@ -351,7 +352,7 @@ describe('waterGetConditions', () => {
       note: undefined,
     };
     const blocks = waterGetConditions.format!(result);
-    const text = blocks[0]?.text ?? '';
+    const text = textContent(blocks[0]);
     expect(text).toContain('01646500');
     expect(text).toContain('6000');
     expect(text).toContain('[A]');
@@ -381,7 +382,7 @@ describe('waterGetConditions', () => {
       note: 'Historical percentile context could not be retrieved.',
     };
     const blocks = waterGetConditions.format!(result);
-    const text = blocks[0]?.text ?? '';
+    const text = textContent(blocks[0]);
     expect(text).toContain('No historical context');
     // The discriminator is rendered so a content-only client can tell why context is absent (#20).
     expect(text).toContain('unavailable');

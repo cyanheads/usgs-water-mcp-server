@@ -13,6 +13,7 @@ import { createMockContext, getEnrichment } from '@cyanheads/mcp-ts-core/testing
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { waterGetReadings } from '@/mcp-server/tools/definitions/water-get-readings.tool.js';
 import type { NwisTimeSeries } from '@/services/nwis/types.js';
+import { textContent } from '../helpers/content-block.js';
 import { declaredRecovery } from '../helpers/error-contract.js';
 
 const recovery = (reason: string) => declaredRecovery(waterGetReadings.errors, reason);
@@ -146,7 +147,7 @@ describe('waterGetReadings', () => {
       missingSites: [],
     };
     const blocks = waterGetReadings.format!(result);
-    const text = blocks[0]?.text ?? '';
+    const text = textContent(blocks[0]);
     expect(text).toContain('01646500');
     expect(text).toContain('Streamflow');
     expect(text).toContain('00060');
@@ -230,7 +231,7 @@ describe('waterGetReadings', () => {
       const ctx = createMockContext({ errors: waterGetReadings.errors });
       const input = waterGetReadings.input.parse({ sites: ['01646500'], period: 'P1D' });
       const result = await waterGetReadings.handler(input, ctx);
-      const text = waterGetReadings.format!(result)[0]?.text ?? '';
+      const text = textContent(waterGetReadings.format!(result)[0]);
 
       expect(text).toContain(`showing the latest ${VALUES_CAP} of 277 records`);
       expect(text).toContain('truncated');
@@ -257,7 +258,7 @@ describe('waterGetReadings', () => {
       const ctx = createMockContext({ errors: waterGetReadings.errors });
       const input = waterGetReadings.input.parse({ sites: ['01646500', '99999999'] });
       const result = await waterGetReadings.handler(input, ctx);
-      const text = waterGetReadings.format!(result)[0]?.text ?? '';
+      const text = textContent(waterGetReadings.format!(result)[0]);
 
       expect(text).toContain('99999999');
       expect(text).toContain('No data returned for');

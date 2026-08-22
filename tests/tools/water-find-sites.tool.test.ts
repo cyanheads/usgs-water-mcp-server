@@ -13,7 +13,8 @@ import { createMockContext, getEnrichment } from '@cyanheads/mcp-ts-core/testing
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { waterFindSites } from '@/mcp-server/tools/definitions/water-find-sites.tool.js';
 import type { NwisSite } from '@/services/nwis/types.js';
-import { declaredRecovery } from '../helpers/error-contract.js';
+import { textContent } from '../helpers/content-block.js';
+import { captureError, declaredRecovery } from '../helpers/error-contract.js';
 
 const recovery = (reason: string) => declaredRecovery(waterFindSites.errors, reason);
 
@@ -210,7 +211,7 @@ describe('waterFindSites', () => {
     mockFindSites.mockResolvedValue([]);
     const ctx = createMockContext({ errors: waterFindSites.errors });
     const input = waterFindSites.input.parse({ bbox: '-160.0,5.0,-159.9,5.1' });
-    const error = (await waterFindSites.handler(input, ctx).catch((e: unknown) => e)) as {
+    const error = (await captureError(() => waterFindSites.handler(input, ctx))) as {
       data?: { recovery?: { hint?: string } };
     };
     expect(error.data?.recovery?.hint).toBe(
@@ -252,7 +253,7 @@ describe('waterFindSites', () => {
   it('formats sites as structured markdown with site number, type, coords', () => {
     const result = { sites: MOCK_SITES, total: 1, truncated: false, upstreamTotal: 1 };
     const blocks = waterFindSites.format!(result);
-    const text = blocks[0]?.text ?? '';
+    const text = textContent(blocks[0]);
     expect(text).toContain('01646500');
     expect(text).toContain('POTOMAC');
     expect(text).toContain('ST');
@@ -268,15 +269,16 @@ describe('waterFindSites', () => {
 
   it('formats sites without state/county when absent (basic mode)', () => {
     const basicSite: NwisSite = {
-      ...MOCK_SITES[0]!,
-      stateCd: undefined,
-      countyCd: undefined,
-      drainageArea: undefined,
-      altitude: undefined,
+      siteNumber: '01646500',
+      siteName: 'POTOMAC RIVER AT LITTLE FALLS PUMP STA NEAR WASHINGTON, DC',
+      siteType: 'ST',
+      latitude: 38.9495,
+      longitude: -77.1273,
+      hucCd: '020700081005',
     };
     const result = { sites: [basicSite], total: 1, truncated: false, upstreamTotal: 1 };
     const blocks = waterFindSites.format!(result);
-    const text = blocks[0]?.text ?? '';
+    const text = textContent(blocks[0]);
     expect(text).toContain('01646500');
     // Should not show empty state/county or drainage labels
     expect(text).not.toContain('State: undefined');
@@ -302,7 +304,7 @@ describe('waterFindSites', () => {
     };
     const result = { sites: [basicSiteWithAltitude], total: 1, truncated: false, upstreamTotal: 1 };
     const blocks = waterFindSites.format!(result);
-    const text = blocks[0]?.text ?? '';
+    const text = textContent(blocks[0]);
 
     expect(text).toContain('**Altitude:** 22 ft');
     // The decoupled fields that are absent must not render their labels.
@@ -323,7 +325,7 @@ describe('waterFindSites', () => {
       // hucCd, stateCd, countyCd, drainageArea, contributingArea all absent — basic-mode GW site.
     };
     const result = { sites: [noHucSite], total: 1, truncated: false, upstreamTotal: 1 };
-    const text = waterFindSites.format!(result)[0]?.text ?? '';
+    const text = textContent(waterFindSites.format!(result)[0]);
 
     expect(text).toContain('60B 27');
     expect(text).toContain('**Altitude:** 16 ft');
@@ -346,7 +348,7 @@ describe('waterFindSites', () => {
       // hucCd absent.
     };
     const result = { sites: [site], total: 1, truncated: false, upstreamTotal: 1 };
-    const text = waterFindSites.format!(result)[0]?.text ?? '';
+    const text = textContent(waterFindSites.format!(result)[0]);
 
     expect(text).toContain('**State:** 24');
     expect(text).toContain('**County:** 031');
@@ -356,7 +358,7 @@ describe('waterFindSites', () => {
   it('formats truncated result with cap notice', () => {
     const result = { sites: makeSites(500), total: 500, truncated: true, upstreamTotal: 800 };
     const blocks = waterFindSites.format!(result);
-    const text = blocks[0]?.text ?? '';
+    const text = textContent(blocks[0]);
     expect(text).toContain('800');
     expect(text).toContain('truncated');
   });
@@ -371,7 +373,7 @@ describe('waterFindSites', () => {
       table_name: 'water_sites_KS_GW',
     };
     const blocks = waterFindSites.format!(result);
-    const text = blocks[0]?.text ?? '';
+    const text = textContent(blocks[0]);
     expect(text).toContain('canvas_sites01');
     expect(text).toContain('water_sites_KS_GW');
     expect(text).toContain('water_dataframe_query');

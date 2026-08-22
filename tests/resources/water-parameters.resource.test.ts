@@ -8,9 +8,9 @@ import { describe, expect, it } from 'vitest';
 import { waterParametersResource } from '@/mcp-server/resources/definitions/water-parameters.resource.js';
 
 describe('waterParametersResource', () => {
-  it('returns the full parameter catalog', () => {
+  it('returns the full parameter catalog', async () => {
     const ctx = createMockContext({ uri: new URL('usgs-water://parameters') });
-    const result = waterParametersResource.handler({}, ctx) as {
+    const result = (await waterParametersResource.handler({}, ctx)) as {
       parameters: unknown[];
       total: number;
     };
@@ -18,9 +18,9 @@ describe('waterParametersResource', () => {
     expect(result.parameters.length).toBe(result.total);
   });
 
-  it('includes key parameter codes (00060, 00065, 72019)', () => {
+  it('includes key parameter codes (00060, 00065, 72019)', async () => {
     const ctx = createMockContext({ uri: new URL('usgs-water://parameters') });
-    const result = waterParametersResource.handler({}, ctx) as {
+    const result = (await waterParametersResource.handler({}, ctx)) as {
       parameters: Array<{ code: string }>;
       total: number;
     };
@@ -30,9 +30,9 @@ describe('waterParametersResource', () => {
     expect(codes).toContain('72019');
   });
 
-  it('returns records with required fields', () => {
+  it('returns records with required fields', async () => {
     const ctx = createMockContext({ uri: new URL('usgs-water://parameters') });
-    const result = waterParametersResource.handler({}, ctx) as {
+    const result = (await waterParametersResource.handler({}, ctx)) as {
       parameters: Array<{ code: string; name: string; unit: string; group: string }>;
       total: number;
     };
@@ -50,17 +50,17 @@ describe('waterParametersResource', () => {
     }
   });
 
-  it('list() returns the parameters URI entry', () => {
-    const listing = waterParametersResource.list!();
+  it('list() returns the parameters URI entry', async () => {
+    const listing = await waterParametersResource.list!(null as never);
     expect(listing.resources).toHaveLength(1);
     expect(listing.resources[0]?.uri).toBe('usgs-water://parameters');
     expect(listing.resources[0]?.mimeType).toBe('application/json');
   });
 
-  it('handler returns same data regardless of how many times called (idempotent)', () => {
+  it('handler returns same data regardless of how many times called (idempotent)', async () => {
     const ctx = createMockContext({ uri: new URL('usgs-water://parameters') });
-    const r1 = waterParametersResource.handler({}, ctx) as { total: number };
-    const r2 = waterParametersResource.handler({}, ctx) as { total: number };
+    const r1 = (await waterParametersResource.handler({}, ctx)) as { total: number };
+    const r2 = (await waterParametersResource.handler({}, ctx)) as { total: number };
     expect(r1.total).toBe(r2.total);
   });
 });

@@ -8,7 +8,8 @@ import { JsonRpcErrorCode, notFound } from '@cyanheads/mcp-ts-core/errors';
 import { createMockContext } from '@cyanheads/mcp-ts-core/testing';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { waterDataframeDescribe } from '@/mcp-server/tools/definitions/water-dataframe-describe.tool.js';
-import { declaredRecovery } from '../helpers/error-contract.js';
+import { textContent } from '../helpers/content-block.js';
+import { captureError, declaredRecovery } from '../helpers/error-contract.js';
 
 let mockCanvasInstance: unknown;
 
@@ -68,9 +69,7 @@ describe('waterDataframeDescribe', () => {
     mockCanvasInstance = undefined;
     const ctx = createMockContext({ errors: waterDataframeDescribe.errors });
     const input = waterDataframeDescribe.input.parse({ canvas_id: 'canvas0001xx' });
-    const error = (await waterDataframeDescribe
-      .handler(input, ctx)
-      .catch((e: unknown) => e)) as Error;
+    const error = (await captureError(() => waterDataframeDescribe.handler(input, ctx))) as Error;
     expect(error).toBeInstanceOf(Error);
     expect(error.message).toBe('DataCanvas is not enabled on this server instance.');
     expect(error.message).not.toContain('CANVAS_PROVIDER_TYPE');
@@ -154,7 +153,7 @@ describe('waterDataframeDescribe', () => {
       ],
     };
     const blocks = waterDataframeDescribe.format!(result);
-    const text = blocks[0]?.text ?? '';
+    const text = textContent(blocks[0]);
     expect(text).toContain('canvas0001xx');
     expect(text).toContain('water_series_01646500_00060');
     expect(text).toContain('600');

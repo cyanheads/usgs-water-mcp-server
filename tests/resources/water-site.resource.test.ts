@@ -47,7 +47,10 @@ describe('waterSiteResource', () => {
 
   it('returns site metadata for a valid site number', async () => {
     mockGetSiteInfo.mockResolvedValue(MOCK_SITE);
-    const ctx = createMockContext({ uri: new URL('usgs-water://site/01646500') });
+    const ctx = createMockContext({
+      uri: new URL('usgs-water://site/01646500'),
+      errors: waterSiteResource.errors,
+    });
     const result = await waterSiteResource.handler({ siteId: '01646500' }, ctx);
     expect((result as NwisSite).siteNumber).toBe('01646500');
     expect((result as NwisSite).siteName).toContain('POTOMAC');
@@ -101,7 +104,10 @@ describe('waterSiteResource', () => {
 
   it('passes siteId through to getSiteInfo', async () => {
     mockGetSiteInfo.mockResolvedValue(MOCK_SITE);
-    const ctx = createMockContext({ uri: new URL('usgs-water://site/01646500') });
+    const ctx = createMockContext({
+      uri: new URL('usgs-water://site/01646500'),
+      errors: waterSiteResource.errors,
+    });
     await waterSiteResource.handler({ siteId: '01646500' }, ctx);
     expect(mockGetSiteInfo).toHaveBeenCalledWith('01646500', expect.anything());
   });
@@ -126,8 +132,8 @@ describe('waterSiteResource', () => {
     });
   });
 
-  it('list() returns known example sites', () => {
-    const listing = waterSiteResource.list!();
+  it('list() returns known example sites', async () => {
+    const listing = await waterSiteResource.list!(null as never);
     expect(listing.resources.length).toBeGreaterThan(0);
     expect(listing.resources.some((r) => r.uri.includes('01646500'))).toBe(true);
     expect(listing.resources.every((r) => r.mimeType === 'application/json')).toBe(true);
