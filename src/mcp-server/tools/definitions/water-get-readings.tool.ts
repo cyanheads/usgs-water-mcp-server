@@ -160,7 +160,7 @@ export const waterGetReadings = tool('water_get_readings', {
         period: input.period,
       };
       if (input.parameterCd?.length) readingsParams.parameterCds = input.parameterCd;
-      series = await getReadings(readingsParams, ctx.signal);
+      series = await getReadings(readingsParams, ctx);
     } catch (err: unknown) {
       const failure = classifyNwisFailure(err);
       if (failure)

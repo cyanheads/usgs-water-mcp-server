@@ -46,7 +46,7 @@ export const waterSiteResource = resource('usgs-water://site/{siteId}', {
 
     let site: Awaited<ReturnType<typeof getSiteInfo>>;
     try {
-      site = await getSiteInfo(params.siteId, ctx.signal);
+      site = await getSiteInfo(params.siteId, ctx);
     } catch (err: unknown) {
       const failure = classifyNwisFailure(err);
       if (failure)

@@ -213,7 +213,7 @@ export const waterGetSeries = tool('water_get_series', {
           endDate: input.endDate,
           seriesType: input.seriesType,
         },
-        ctx.signal,
+        ctx,
       );
     } catch (err: unknown) {
       const failure = classifyNwisFailure(err);

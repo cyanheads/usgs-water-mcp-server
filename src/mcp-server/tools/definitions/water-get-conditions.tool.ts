@@ -228,9 +228,9 @@ export const waterGetConditions = tool('water_get_conditions', {
       [ivResult, statOutcome] = await Promise.all([
         getReadings(
           { sites: [input.site], parameterCds: [input.parameterCd], period: 'PT2H' },
-          ctx.signal,
+          ctx,
         ),
-        getStats(input.site, input.parameterCd, ctx.signal)
+        getStats(input.site, input.parameterCd, ctx)
           .then((result) => ({ ok: true as const, result }))
           .catch((error: unknown) => ({ ok: false as const, error })),
       ]);

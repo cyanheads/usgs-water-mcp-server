@@ -4,13 +4,9 @@
  * @module services/nwis/nwis-service
  */
 
-import {
-  JsonRpcErrorCode,
-  McpError,
-  serviceUnavailable,
-  validationError,
-} from '@cyanheads/mcp-ts-core/errors';
-import { withRetry } from '@cyanheads/mcp-ts-core/utils';
+import type { Context } from '@cyanheads/mcp-ts-core';
+import { JsonRpcErrorCode, McpError, validationError } from '@cyanheads/mcp-ts-core/errors';
+import { fetchWithTimeout, withRetry } from '@cyanheads/mcp-ts-core/utils';
 import { getServerConfig } from '@/config/server-config.js';
 import type {
   NwisSite,
@@ -23,25 +19,6 @@ import type {
 const BASE_URL = 'https://waterservices.usgs.gov/nwis';
 
 // ── HTTP helpers ──────────────────────────────────────────────────────────────
-
-/** Fetch a URL, enforcing a timeout via AbortController. */
-async function fetchWithTimeout(url: string, signal?: AbortSignal): Promise<Response> {
-  const cfg = getServerConfig();
-  const controller = new AbortController();
-  const tid = setTimeout(() => controller.abort(), cfg.requestTimeoutMs);
-
-  // Chain with caller's signal if provided
-  const combined = signal ? AbortSignal.any([signal, controller.signal]) : controller.signal;
-
-  try {
-    return await fetch(url, {
-      headers: { 'User-Agent': cfg.userAgent, Accept: '*/*' },
-      signal: combined,
-    });
-  } finally {
-    clearTimeout(tid);
-  }
-}
 
 /**
  * Detect whether a response body looks like an NWIS HTML error page.
@@ -66,40 +43,49 @@ function extractHtmlError(html: string): string {
 const MAX_ERROR_BODY_BYTES = 4_096;
 
 /** Fetch text from a URL, throwing on HTTP/network errors. */
-async function fetchText(url: string, signal?: AbortSignal): Promise<string> {
-  const resp = await fetchWithTimeout(url, signal);
+async function fetchText(url: string, ctx: Context): Promise<string> {
+  const cfg = getServerConfig();
 
-  // 5xx → ServiceUnavailable (retryable)
-  if (resp.status >= 500) {
-    throw serviceUnavailable(`NWIS returned HTTP ${resp.status}: ${resp.statusText}`, {
-      status: resp.status,
+  try {
+    const resp = await fetchWithTimeout(url, cfg.requestTimeoutMs, ctx, {
+      headers: { 'User-Agent': cfg.userAgent, Accept: '*/*' },
+      signal: ctx.signal,
+      expectedStatuses: [400, 404],
+      errorBodyLimit: MAX_ERROR_BODY_BYTES,
     });
-  }
+    return await resp.text();
+  } catch (err: unknown) {
+    if (!(err instanceof McpError)) throw err;
 
-  // Cap body reads for error responses to bound memory usage during HTML/text parsing.
-  const text = resp.ok
-    ? await resp.text()
-    : (await resp.text().catch(() => '')).slice(0, MAX_ERROR_BODY_BYTES);
+    const status = typeof err.data?.status === 'number' ? err.data.status : undefined;
+    const body = typeof err.data?.body === 'string' ? err.data.body : '';
+    if (status === undefined || status < 400 || status >= 500) throw err;
 
-  // 400-class errors
-  if (!resp.ok) {
     // NWIS returns HTTP 404 with empty body when no data matches the query (valid filters, zero
     // results). Treat this as empty content so callers can surface the appropriate "not found"
     // contract error rather than a misleading ValidationError.
-    if (resp.status === 404 && text.trim() === '') {
+    if (status === 404 && body.trim() === '') {
       return '';
     }
     // HTML body → ValidationError with extracted message (not retryable)
-    if (looksLikeHtml(text)) {
-      const msg = extractHtmlError(text);
-      throw validationError(`NWIS rejected the request: ${msg}`, { httpStatus: resp.status });
+    if (looksLikeHtml(body)) {
+      const msg = extractHtmlError(body);
+      throw validationError(
+        `NWIS rejected the request: ${msg}`,
+        { httpStatus: status },
+        {
+          cause: err,
+        },
+      );
     }
-    throw validationError(`NWIS returned HTTP ${resp.status}: ${text.slice(0, 200)}`, {
-      httpStatus: resp.status,
-    });
+    throw validationError(
+      `NWIS returned HTTP ${status}: ${body.slice(0, 200)}`,
+      {
+        httpStatus: status,
+      },
+      { cause: err },
+    );
   }
-
-  return text;
 }
 
 // ── Failure classification ────────────────────────────────────────────────────
@@ -218,10 +204,7 @@ export interface FindSitesParams {
  * Find USGS monitoring sites via the NWIS site service.
  * Returns RDB-parsed site records.
  */
-export async function findSites(
-  params: FindSitesParams,
-  signal?: AbortSignal,
-): Promise<NwisSite[]> {
+export async function findSites(params: FindSitesParams, ctx: Context): Promise<NwisSite[]> {
   const qs = new URLSearchParams({ format: 'rdb' });
   if (params.bbox) qs.set('bBox', params.bbox);
   if (params.stateCd) qs.set('stateCd', params.stateCd);
@@ -234,10 +217,12 @@ export async function findSites(
 
   const url = `${BASE_URL}/site/?${qs}`;
 
-  const text = await withRetry(() => fetchText(url, signal), {
+  const text = await withRetry(() => fetchText(url, ctx), {
     maxRetries: 3,
     baseDelayMs: 500,
     operation: 'findSites',
+    context: ctx,
+    signal: ctx.signal,
   });
 
   const rows = parseRdb(text);
@@ -245,17 +230,16 @@ export async function findSites(
 }
 
 /** Get metadata for a single site. */
-export async function getSiteInfo(
-  siteNumber: string,
-  signal?: AbortSignal,
-): Promise<NwisSite | null> {
+export async function getSiteInfo(siteNumber: string, ctx: Context): Promise<NwisSite | null> {
   const qs = new URLSearchParams({ format: 'rdb', sites: siteNumber, siteOutput: 'expanded' });
   const url = `${BASE_URL}/site/?${qs}`;
 
-  const text = await withRetry(() => fetchText(url, signal), {
+  const text = await withRetry(() => fetchText(url, ctx), {
     maxRetries: 3,
     baseDelayMs: 500,
     operation: 'getSiteInfo',
+    context: ctx,
+    signal: ctx.signal,
   });
 
   const first = parseRdb(text)[0];
@@ -326,7 +310,7 @@ export interface GetReadingsParams {
 /** Get the latest instantaneous values for one or more sites. */
 export async function getReadings(
   params: GetReadingsParams,
-  signal?: AbortSignal,
+  ctx: Context,
 ): Promise<NwisTimeSeries[]> {
   const qs = new URLSearchParams({
     format: 'json',
@@ -338,10 +322,12 @@ export async function getReadings(
 
   const url = `${BASE_URL}/iv/?${qs}`;
 
-  const text = await withRetry(() => fetchText(url, signal), {
+  const text = await withRetry(() => fetchText(url, ctx), {
     maxRetries: 3,
     baseDelayMs: 500,
     operation: 'getReadings',
+    context: ctx,
+    signal: ctx.signal,
   });
 
   return parseWaterml(JSON.parse(text) as WatermlResponse);
@@ -358,10 +344,7 @@ export interface GetSeriesParams {
 }
 
 /** Get a time series of daily or instantaneous values. */
-export async function getSeries(
-  params: GetSeriesParams,
-  signal?: AbortSignal,
-): Promise<NwisTimeSeries[]> {
+export async function getSeries(params: GetSeriesParams, ctx: Context): Promise<NwisTimeSeries[]> {
   const endpoint = params.seriesType === 'daily' ? 'dv' : 'iv';
   const qs = new URLSearchParams({
     format: 'json',
@@ -373,10 +356,12 @@ export async function getSeries(
 
   const url = `${BASE_URL}/${endpoint}/?${qs}`;
 
-  const text = await withRetry(() => fetchText(url, signal), {
+  const text = await withRetry(() => fetchText(url, ctx), {
     maxRetries: 3,
     baseDelayMs: 500,
     operation: 'getSeries',
+    context: ctx,
+    signal: ctx.signal,
   });
 
   return parseWaterml(JSON.parse(text) as WatermlResponse);
@@ -388,7 +373,7 @@ export async function getSeries(
 export async function getStats(
   siteNumber: string,
   parameterCd: string,
-  signal?: AbortSignal,
+  ctx: Context,
 ): Promise<NwisStatResult> {
   const qs = new URLSearchParams({
     format: 'rdb',
@@ -400,10 +385,12 @@ export async function getStats(
 
   const url = `${BASE_URL}/stat/?${qs}`;
 
-  const text = await withRetry(() => fetchText(url, signal), {
+  const text = await withRetry(() => fetchText(url, ctx), {
     maxRetries: 3,
     baseDelayMs: 500,
     operation: 'getStats',
+    context: ctx,
+    signal: ctx.signal,
   });
 
   const rows = parseRdb(text);

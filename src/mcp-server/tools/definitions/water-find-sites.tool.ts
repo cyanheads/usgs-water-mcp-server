@@ -241,7 +241,7 @@ export const waterFindSites = tool('water_find_sites', {
       if (input.siteType) params.siteType = input.siteType;
       if (input.parameterCd) params.parameterCd = input.parameterCd;
       if (input.hasDataTypeCd) params.hasDataTypeCd = input.hasDataTypeCd;
-      sites = await findSites(params, ctx.signal);
+      sites = await findSites(params, ctx);
     } catch (err: unknown) {
       const failure = classifyNwisFailure(err);
       if (failure)
