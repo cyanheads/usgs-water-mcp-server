@@ -27,9 +27,11 @@
 
 ---
 
-## Tools
+## Overview
 
-Five tools for querying USGS water data, plus two for SQL analytics over the DuckDB-backed canvas dataframes that `water_get_series` and `water_find_sites` materialize:
+USGS NWIS water data — ~8,000 active stream gages and groundwater wells across the US and territories. Find monitoring sites, pull the latest readings or a historical time series, and rank current conditions against decades of percentile records from any MCP client. Runs as a stdio process, a local Streamable HTTP server, or the public hosted endpoint above.
+
+### Tools
 
 | Tool | Description |
 |:-----|:------------|
@@ -41,118 +43,108 @@ Five tools for querying USGS water data, plus two for SQL analytics over the Duc
 | `water_dataframe_describe` | List tables and columns staged on a DataCanvas by `water_get_series` or `water_find_sites`. |
 | `water_dataframe_query` | Run a read-only SQL SELECT against the time-series and site tables staged by `water_get_series` and `water_find_sites`. |
 
-### `water_list_parameters`
+### Resources
 
-Static lookup of well-known USGS parameter codes — no network call, instant response.
-
-- Discover that `00060` = Discharge (ft³/s), `00065` = Gage height (ft), `00010` = Temperature (°C), `72019` = Depth to water level (ft), and more
-- Filter by thematic domain: `streamflow`, `groundwater`, `temperature`, `meteorological`, `water-quality`, or `all`
-- Use this first — parameter codes are required by every other water tool
-
----
-
-### `water_find_sites`
-
-Discover USGS monitoring sites before calling data tools — all other tools require a site number.
-
-- Geographic scoping: bounding box (`"west,south,east,north"` decimal degrees), 2-letter state code, bare 5-digit FIPS county code (e.g. `51013`), or HUC watershed code — either a 2-digit major HUC (`02`) or an 8-digit minor HUC (`02070008`), the only two lengths NWIS accepts
-- Site type filtering: `ST` (stream), `GW` (groundwater well), `LK` (lake/reservoir), `SP` (spring), and more
-- Parameter filter: only return sites that have data for a specific parameter code — comma-separate to require several (e.g. `00060,00065`)
-- Data type filter: require sites with real-time (`iv`), daily (`dv`), or groundwater (`gw`) data
-- Returns site number, name, coordinates, type, state/county/HUC codes, and drainage area (expanded mode only) — altitude is included in both modes when USGS records it
-- Bounded result set: capped at 500 sites inline, with a `truncated` flag and `upstreamTotal` (the full upstream count) so an oversized query never overflows the response
-- **DataCanvas spillover:** when the result is truncated and `CANVAS_PROVIDER_TYPE=duckdb` is set, the full match set is staged to a DuckDB-backed canvas — the response includes `canvas_id` and `table_name` to retrieve every match past the 500 cap via `water_dataframe_query`. Without DataCanvas, narrow the query with additional filters (county, HUC, bbox, parameter, data type) to bring the result under the cap
-
----
-
-### `water_get_readings`
-
-Get the latest instantaneous (~15 min) values for one or more USGS monitoring sites.
-
-- Batch up to 100 site numbers in a single call
-- Accepts any parameter code discoverable via `water_list_parameters`
-- Configurable lookback period via ISO 8601 duration (e.g. `PT2H` = last 2 hours, `P7D` = last 7 days)
-- Returns per-site, per-parameter records with timestamp, value, unit, and provisional/approved qualifier
-- Bounded by design: each series carries its 10 most recent records, with `totalValues` reporting how many the period actually held and `truncated` flagging the cap. Use `water_get_series` when you need the full series
-- Partial batches are explicit: requested sites NWIS returns no data for are named in `missingSites` rather than dropped silently
-- Groundwater depth available via `parameterCd=72019` (the legacy `gwlevels` endpoint was decommissioned November 2025 — use the IV service instead)
-
----
-
-### `water_get_series`
-
-Get a historical time series for a site and parameter over a date range.
-
-- Daily values (DV service, one value per day) or instantaneous values (IV service, ~15 min resolution)
-- Returns site name, parameter name, unit code, and time-ordered value records with qualifiers
-- **DataCanvas spillover:** large date ranges (>500 records) automatically spill to a DuckDB-backed canvas when `CANVAS_PROVIDER_TYPE=duckdb` is set — response includes `canvas_id` and `table_name` for follow-up SQL via `water_dataframe_query`
-- Without DataCanvas, returns the most recent 500 records with a `truncated` flag and `totalRecords` count
-- Supports chaining: pass a prior `canvas_id` to append data to an existing canvas
-
----
-
-### `water_get_conditions`
-
-Get current hydrologic conditions placed in full historical context.
-
-- Fetches the current IV reading and the full daily percentile table in parallel
-- Classifies the reading: `record-high` (≥ p95), `above-normal` (p75–p95), `normal` (p25–p75), `below-normal` (p10–p25), `low` (p05–p10), `record-low` (< p05)
-- Pairs each class with a `percentileLabel` spelling out the threshold — `record-high` and `record-low` mark percentile-of-record extremes, not verified all-time records, and the label says so where the class name does not
-- Ranks against the observation's own calendar day, so a reading near midnight is not compared against the neighboring day's percentiles
-- Discloses the granularity approximation in `comparisonBasis`: the reading is instantaneous while the percentiles are approved daily-mean values, so the class is a "how unusual is this" ranking — not a flood-stage or drought determination, which need authoritative thresholds this tool does not fetch
-- Validates `site` and `parameterCd` at the schema edge; a well-formed value NWIS still rejects surfaces as the typed `invalid_request` reason rather than an opaque upstream error
-- Gracefully degrades when historical context is missing: returns the current reading with `historicalContext: null` and a `historicalContextStatus` saying why — `no_record` (new/short record), `no_matching_day` (no row for the date), or `unavailable` (stat call failed — transient and retryable, kept distinct from a sparse record)
-
----
-
-### `water_dataframe_describe` / `water_dataframe_query`
-
-In-conversation SQL analytics over the dataframes that `water_get_series` and `water_find_sites` materialize on a DuckDB-backed canvas — time-series tables from the former, full site match sets from the latter.
-
-**Workflow:**
-1. Call `water_get_series` with a large date range, or `water_find_sites` with a query that matches more than 500 sites — when DataCanvas is enabled, the response includes `canvas_id` and `table_name`
-2. Call `water_dataframe_describe` with the `canvas_id` to confirm the table schema — series tables carry `date_time`, `value`, `qualifiers`, `site_number`, `parameter_cd`, `unit_code`; site tables carry `site_number`, `site_name`, `site_type`, `latitude`, `longitude`, `huc_cd`, and the expanded fields
-3. Call `water_dataframe_query` with the `canvas_id` and a SELECT statement to run aggregates, filter, or join
-
-Read-only by default — only SELECT statements are permitted. Results are capped at 10,000 rows; a query matching more comes back with `truncated: true`. Requires `CANVAS_PROVIDER_TYPE=duckdb` in the server environment.
-
-## Resources and prompts
-
-| Type | Name | Description |
-|:-----|:-----|:------------|
-| Resource | `usgs-water://site/{siteId}` | Site metadata: name, coordinates, type, HUC, state, county, drainage area, and altitude |
-| Resource | `usgs-water://parameters` | Full parameter code catalog (same data as `water_list_parameters`) |
+| Resource | Description |
+|:---|:---|
+| `usgs-water://site/{siteId}` | Site metadata: name, coordinates, type, HUC, state, county, drainage area, and altitude |
+| `usgs-water://parameters` | Full parameter code catalog (same data as `water_list_parameters`) |
 
 All resource data is also reachable via tools. Use `water_find_sites` for geographic site discovery.
 
+## Capability reference
+
+### `water_list_parameters` <sub>tool</sub>
+
+- Static, built-in catalog — no network call — covering codes like `00060` (Discharge, ft³/s), `00065` (Gage height, ft), `00010` (Temperature, water, °C), and `72019` (Depth to water level, ft)
+- `group` filters by thematic domain: `streamflow`, `groundwater`, `temperature`, `meteorological`, `water-quality`, or `all` (default)
+- Required first step — every other tool's `parameterCd` input expects a code from this catalog
+
+---
+
+### `water_find_sites` <sub>tool</sub>
+
+- Geographic scoping: bounding box (`"west,south,east,north"`), 2-letter state code, comma-separated 5-digit FIPS county codes (up to 20), or a HUC watershed code — a 2-digit major HUC or an 8-digit minor HUC, the only two lengths NWIS accepts
+- Optional filters: `siteType` (`ST` stream, `GW` groundwater well, `LK` lake/reservoir, `SP` spring, and more — comma-separable), `parameterCd` (require data availability), and `hasDataTypeCd` (`iv` / `dv` / `gw`)
+- `siteOutput`: `basic` (default) or `expanded` (adds drainage area and contributing area); altitude appears in both modes when USGS records it
+- Capped at 500 sites inline — `truncated` and `upstreamTotal` report when more matched
+- With `CANVAS_PROVIDER_TYPE=duckdb` set, a truncated match set stages in full to a canvas (`canvas_id`/`table_name`) for `water_dataframe_query`; otherwise narrow the filters to bring the match under the cap
+
+---
+
+### `water_get_readings` <sub>tool</sub>
+
+- Batch up to 100 site numbers per call; optional `parameterCd` filter; `period` is an ISO 8601 lookback duration, default `PT2H`
+- Each series returns only its 10 most recent records — `totalValues` reports the true count and `truncated` flags any series that was capped; use `water_get_series` for full history
+- Every value carries qualifier codes (e.g. `P` provisional, `A` approved)
+- Sites NWIS returns nothing for are named in `missingSites` rather than dropped silently
+- Groundwater depth reads through this same IV service via parameter `72019` — the legacy `gwlevels` endpoint was decommissioned November 2025
+
+---
+
+### `water_get_series` <sub>tool</sub>
+
+- One site and one parameter code per call; `seriesType` is `daily` (DV service, one value/day, default) or `instantaneous` (IV service, ~15 min), over a `startDate`–`endDate` range
+- Without DataCanvas, a result over 500 records returns the most recent 500 with `truncated: true` and `totalRecords` holding the full count
+- With `CANVAS_PROVIDER_TYPE=duckdb` set, ranges over 500 records spill to a canvas (`canvas_id`/`table_name`) for SQL via `water_dataframe_query`; pass a prior `canvas_id` to append to an existing canvas
+
+---
+
+### `water_get_conditions` <sub>tool</sub>
+
+- Ranks the current IV reading against the full period-of-record daily-mean percentiles for the observation's own calendar day: `record-high` (≥p95), `above-normal` (p75–95), `normal` (p25–75), `below-normal` (p10–25), `low` (p05–10), `record-low` (<p05)
+- `percentileLabel` spells out each threshold in plain language — the `record-high`/`record-low` classes mark percentile-of-record extremes, not verified all-time records
+- `comparisonBasis` discloses the granularity mismatch: the reading is instantaneous while the percentiles are daily-mean, so the ranking is approximate, not a flood-stage or drought determination
+- Degrades gracefully when history is thin: returns the reading with `historicalContext: null` and a `historicalContextStatus` of `no_record`, `no_matching_day`, or `unavailable` (the last is a transient, retryable stat-service failure, not a statement about the site's record)
+
+---
+
+### `water_dataframe_describe` <sub>tool</sub>
+
+- Lists the tables/views staged by `water_get_series` or `water_find_sites`, with per-column name, DuckDB type, and nullability
+- `row_count` is a DuckDB estimate and may differ from the exact count
+- Requires `CANVAS_PROVIDER_TYPE=duckdb` — call before `water_dataframe_query` to confirm the exact table and column names
+
+---
+
+### `water_dataframe_query` <sub>tool</sub>
+
+- Read-only `SELECT` only, against tables staged by `water_get_series` or `water_find_sites`; non-SELECT statements, multiple statements, and system-catalog access (`information_schema`, `pg_catalog`, `duckdb_*`) are all rejected
+- Capped at 10,000 rows per query; `truncated: true` signals more matched — narrow with `WHERE`/`LIMIT`, or run `SELECT COUNT(*)` for the true total
+- Requires `CANVAS_PROVIDER_TYPE=duckdb`
+
+---
+
+### `usgs-water://site/{siteId}` <sub>resource</sub>
+
+- Returns `application/json` site metadata: name, coordinates, type, HUC watershed code, state, county, drainage area, and altitude
+- `siteId` is an 8–15 digit USGS site number — discover one via `water_find_sites`
+
+---
+
+### `usgs-water://parameters` <sub>resource</sub>
+
+- Full parameter code catalog as `application/json` — the same data as `water_list_parameters`
+- Takes no parameters; always returns the entire catalog
+
 ## Features
 
-Built on [`@cyanheads/mcp-ts-core`](https://www.npmjs.com/package/@cyanheads/mcp-ts-core):
+Built on [`@cyanheads/mcp-ts-core`](https://github.com/cyanheads/mcp-ts-core): stdio and Streamable HTTP transports, pluggable auth (`none` / `jwt` / `oauth`), swappable storage (`in-memory`, `filesystem`, `Supabase`, `Cloudflare KV/R2/D1`), structured logging with optional OpenTelemetry tracing.
 
-- Declarative tool and resource definitions — single file per primitive, framework handles registration and validation
-- Unified error handling — handlers throw, framework catches, classifies, and formats
-- Pluggable auth: `none`, `jwt`, `oauth`
-- Swappable storage backends: `in-memory`, `filesystem`, `Supabase`, `Cloudflare KV/R2/D1`
-- Structured logging with optional OpenTelemetry tracing
-- STDIO and Streamable HTTP transports
-
-USGS NWIS–specific:
+USGS Water-specific:
 
 - Wraps NWIS IV (instantaneous), DV (daily), site, and stat endpoints — no API key required, fully public
-- Input formats checked at the edge against what NWIS actually accepts — site numbers, parameter codes, ISO 8601 periods, HUC, FIPS county, state, and bbox all carry a validated pattern that is advertised in each tool's JSON Schema, so malformed values fail with a pointed message instead of an opaque upstream 400
-- HTML error detection: NWIS returns 400 with an HTML body for bad inputs; the service layer extracts NWIS's own message — which names the field it rejected — and maps it to a typed failure
-- Multi-site batching: `water_get_readings` accepts up to 100 site numbers in one call
-- Provisional vs. approved data qualifiers surfaced on every reading — not hidden from callers
-- DataCanvas spillover: `water_get_series` (long date ranges) and `water_find_sites` (match sets past the 500-site cap) stage the full result as a DuckDB-backed table queryable via `water_dataframe_query`
-- Groundwater via the IV service using parameter `72019` — the legacy `gwlevels` endpoint was decommissioned November 2025
+- Input formats are checked at the edge against what NWIS actually accepts — site numbers, parameter codes, ISO 8601 periods, HUC, FIPS county, state, and bbox each carry a validated pattern advertised in the tool's JSON Schema
+- HTML error detection: NWIS returns 400 with an HTML body for bad input, and the service layer extracts NWIS's own message and maps it to a typed failure
+- DataCanvas spillover: `water_get_series` (long date ranges) and `water_find_sites` (match sets past the 500-site cap) stage the full result as a DuckDB-backed table, queryable via `water_dataframe_query`
+- Groundwater depth reads through the standard IV service via parameter `72019` — the legacy `gwlevels` endpoint was decommissioned November 2025
 
 Agent-friendly output:
 
-- Percentile classification on every conditions response — callers get a `percentileClass` string (`record-high`, `normal`, `record-low`, etc.) they can act on directly without parsing numeric thresholds, plus a `percentileLabel` stating the threshold in plain language so the `record-*` classes are not mistaken for verified all-time records
-- Partial success on conditions: when percentiles are missing, the current reading still returns with `historicalContext: null` and a `historicalContextStatus` that separates an empty stat table (`no_record` / `no_matching_day`) from a failed stat call (`unavailable`, transient), rather than collapsing both into an error
-- Partial success on batches: `water_get_readings` returns the series it got and names the rest in `missingSites`, so a silently dropped site never reads as a complete answer
-- Truncation signals: `water_get_series` reports `totalRecords` and `truncated`, `water_find_sites` reports `upstreamTotal` and `truncated`, and `water_get_readings` reports per-series `totalValues` plus `truncated`, so callers know when a preview is incomplete. `canvas_id` / `table_name` tell them exactly how to retrieve the rest
-- Structured content and rendered text agree: every cap and count a tool applies is reported identically in `structuredContent` and in the markdown, so neither class of client sees a different answer
+- Percentile classification: `water_get_conditions` returns a `percentileClass` callers can act on directly, paired with a `percentileLabel` that states the threshold in plain language
+- Partial success over hard failure: `water_get_readings` returns the series it got and names the rest in `missingSites`; `water_get_conditions` separates an empty stat table (`no_record` / `no_matching_day`) from a failed stat call (`unavailable`, transient) instead of collapsing both into one error
+- Truncation signals: every capped response (`water_get_series`, `water_find_sites`, `water_get_readings`) reports its own count and a `truncated` flag, plus `canvas_id` / `table_name` when the rest is retrievable via SQL
+- Structured content and rendered text agree — every cap and count a tool applies appears identically in `structuredContent` and in the markdown
 
 ## Getting started
 
@@ -277,7 +269,7 @@ cp .env.example .env
 | `USGS_REQUEST_TIMEOUT_MS` | HTTP request timeout in milliseconds for NWIS calls. | `30000` |
 | `MCP_TRANSPORT_TYPE` | Transport: `stdio` or `http`. | `stdio` |
 | `MCP_HTTP_PORT` | Port for HTTP server. | `3010` |
-| `MCP_SESSION_MODE` | HTTP session mode. This project's `.env.example` and Docker runtime use `stateless`; `auto` resolves to `stateful`. | `stateless` |
+| `MCP_SESSION_MODE` | HTTP session mode. The server declares `stateless` in code, matching `.env.example` and the Docker runtime; setting this overrides that, and `auto` resolves to `stateful`. | `stateless` |
 | `MCP_AUTH_MODE` | Auth mode: `none`, `jwt`, or `oauth`. | `none` |
 | `MCP_LOG_LEVEL` | Log level (RFC 5424). | `info` |
 | `LOGS_DIR` | Directory for log files (Node.js only). | `<project-root>/logs` |
@@ -341,7 +333,7 @@ See [`CLAUDE.md`](./CLAUDE.md) for development guidelines and architectural rule
 
 ## Contributing
 
-Issues and pull requests are welcome. Run checks and tests before submitting:
+Issues are welcome. Run checks and tests before submitting:
 
 ```sh
 bun run devcheck
