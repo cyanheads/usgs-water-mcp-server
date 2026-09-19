@@ -2,10 +2,10 @@
 
 **Server:** usgs-water-mcp-server
 **Version:** 0.2.3
-**Framework:** [@cyanheads/mcp-ts-core](https://www.npmjs.com/package/@cyanheads/mcp-ts-core) `^0.12.3`
-**Engines:** Bun ≥1.3.0, Node ≥24.0.0
+**Framework:** [@cyanheads/mcp-ts-core](https://www.npmjs.com/package/@cyanheads/mcp-ts-core) `^0.13.6`
+**Engines:** Bun ≥1.4.0, Node ≥24.0.0
 **MCP SDK:** `@modelcontextprotocol/server` ^2.0.0
-**Zod:** ^4.4.3
+**Zod:** ^4.6.5
 
 > **Read the framework docs first:** `node_modules/@cyanheads/mcp-ts-core/CLAUDE.md` contains the full API reference — builders, Context, error codes, exports, patterns. This file covers server-specific conventions only.
 
@@ -129,6 +129,10 @@ export function getServerConfig() {
 }
 ```
 
+### Session posture
+
+`createApp({ sessionMode: 'stateless' })` in `src/index.ts` declares the HTTP posture in code rather than leaving it to a deployment's `MCP_SESSION_MODE`, which still wins whenever it carries a meaningful value. Stateless is correct here because no handler calls `ctx.requestInput` — every tool answers from the NWIS response alone. A tool that later asks the caller for input mid-handler needs `{ default: 'stateful', require: 'stateful' }`, so a stateless deployment fails at startup instead of serving a mode the caller can never answer in. Keep `.env.example`, the `Dockerfile`, and the README env table in step with whatever is declared here.
+
 ---
 
 ## Context
@@ -147,7 +151,7 @@ Handlers receive a unified `ctx` object. Key properties used in this server:
 
 Handlers throw — the framework catches, classifies, and formats.
 
-**Typed error contract (preferred).** Declare `errors: [{ reason, code, when, recovery, retryable? }]` inline on each `tool()` / `resource()` to receive `ctx.fail(reason, …)` typed against the reason union. TypeScript catches typos, `data.reason` is auto-populated, and the linter enforces conformance. Pass `ctx.recoveryFor('reason')` as the throw data so the declared recovery hint reaches the wire.
+**Typed error contract (preferred).** Declare `errors: [{ reason, code, when, recovery, retryable?, severity?, thrownBy? }]` inline on each `tool()` / `resource()` to receive `ctx.fail(reason, …)` typed against the reason union. TypeScript catches typos, `data.reason` is auto-populated, and the linter enforces conformance. Pass `ctx.recoveryFor('reason')` as the throw data so the declared recovery hint reaches the wire — forwarding it is lint-enforced per throw site (`error-contract-recovery-unforwarded`). Mark an entry the service layer throws with `thrownBy: 'service'` so `error-contract-unthrown` skips it; this server's NWIS tools use it for `invalid_request` and `upstream_error`, which `classifyNwisFailure()` produces. Baseline codes (`InternalError`, `ServiceUnavailable`, `Timeout`, `ValidationError`, `SerializationError`, `RequestCancelled`) bubble freely and don't need declaring.
 
 **Fallback:** throw via factories or plain `Error`.
 
@@ -203,9 +207,9 @@ src/
 
 ## Skills
 
-Skills are modular instructions in `skills/` at the project root. Read them directly when a task matches — e.g., `skills/add-tool/SKILL.md` when adding a tool. `bun run list-skills` prints the full registry.
+Skills are modular instructions in `framework-skills/` at the project root. Read them directly when a task matches — e.g., `framework-skills/add-tool/SKILL.md` when adding a tool. `bun run list-skills` prints the full registry. The directory is deliberately not `skills/`: Claude Code and Codex auto-load a plugin's root `skills/`, so a server that ships `.claude-plugin/` or `.codex-plugin/` would hand these development skills to every agent that installs it.
 
-**Agent skill directory:** Copy skills into the directory your agent discovers (Claude Code: `.claude/skills/`, others: equivalent). Skills then load as context without referencing `skills/` paths. After framework updates, run the `maintenance` skill — Phase B re-syncs the agent directory.
+**Agent skill directory:** Copy skills into the directory your agent discovers (Claude Code: `.claude/skills/`, others: equivalent). Skills then load as context without referencing `framework-skills/` paths. After framework updates, run the `maintenance` skill — Phase B re-syncs the agent directory.
 
 Available skills:
 
@@ -224,8 +228,9 @@ Available skills:
 | `security-pass` | Audit server for MCP-flavored security gaps: output injection, scope blast radius, input sinks, tenant isolation |
 | `code-simplifier` | Post-session cleanup against `git diff` — modernize syntax, consolidate duplication, align with the codebase |
 | `polish-docs-meta` | Finalize docs, README, metadata, and agent protocol for shipping |
-| `git-wrapup` | Land working-tree changes as a versioned commit + annotated tag — version bump, changelog, verify, tag. Local only. |
-| `release-and-publish` | Push + npm + MCP Registry + GH Release + Docker. Picks up from `git-wrapup` |
+| `git-wrapup` | Land working-tree changes as a commit stack — version bump, changelog, verify, commit by concern, release commit on top. Opens the release PR; no tag, no push to `main` |
+| `release-pr-review` | Review pass on an open release PR — simplifier + correctness review, fixes as ordinary commits on top of the stack, PR body kept in sync |
+| `release-and-publish` | Fast-forward merge + tag + push + npm + MCP Registry + GH Release + Docker. Picks up from `git-wrapup` |
 | `maintenance` | Investigate changelogs, adopt upstream changes, sync skills to agent dirs |
 | `orchestrations` | Chain task skills into a gated multi-phase pipeline — build-out, QA-fix, update-ship — when you can spawn sub-agents |
 | `report-issue-framework` | File a bug or feature request against `@cyanheads/mcp-ts-core` via `gh` CLI |
@@ -258,7 +263,8 @@ When you complete a skill's checklist, check the boxes and add a completion time
 | `bun run rebuild` | Clean + build |
 | `bun run clean` | Remove build artifacts |
 | `bun run devcheck` | Lint + format + typecheck + security + changelog sync |
-| `bun run audit:refresh` | Delete `bun.lock`, reinstall, and re-run `bun audit`. Use when `devcheck` flags a transitive advisory. |
+| `bun run audit:fix` | `bun audit fix` — upgrade vulnerable packages to the lowest safe version within existing ranges. First response when `devcheck` flags a transitive advisory; then `bun update <name>`, then `bun dedupe` |
+| `bun run audit:refresh` | Delete `bun.lock` and reinstall. Last resort — re-resolves every ranged dep, the `@cyanheads/mcp-ts-core` pin included |
 | `bun run lint:mcp` | Run the MCP definition linter standalone |
 | `bun run lint:packaging` | Check packaging identity, env-var alignment, and bundle contents |
 | `bun run list-skills` | Print the skill registry |
@@ -271,6 +277,8 @@ When you complete a skill's checklist, check the boxes and add a completion time
 | `bun run changelog:build` | Regenerate `CHANGELOG.md` from `changelog/*.md` |
 | `bun run changelog:check` | Verify `CHANGELOG.md` is in sync (used by devcheck) |
 | `bun run bundle` | Build, pack, and clean a portable `.mcpb` bundle |
+
+**CI is one file.** `.github/workflows/codeql.yml` is the only GitHub Actions workflow: CodeQL is GitHub-owned end to end, and the file runs only while the repo's CodeQL *default setup* is turned off. Verification — `devcheck`, tests, the release gates — runs locally; don't add a workflow that re-runs it.
 
 ---
 
@@ -285,6 +293,12 @@ When you complete a skill's checklist, check the boxes and add a completion time
 ## Changelog
 
 Directory-based. Source of truth: `changelog/<major.minor>.x/<version>.md` (e.g. `changelog/0.1.x/0.1.0.md`) — one file per release with `summary`, `breaking`, and `security` frontmatter. Optional `agent-notes` carries downstream adoption steps and is not rendered. `changelog/template.md` is a **pristine format reference** — never edited or moved. `CHANGELOG.md` is a **navigation index** regenerated by `bun run changelog:build` — devcheck hard-fails on drift; never hand-edit it.
+
+---
+
+## Publishing
+
+**Every release goes through a release PR, straight-through** — `git-wrapup`'s "Release PR mode", mode `straight-through`. One run: `git-wrapup` lands the commit stack on `release/<version>`, pushes it, and opens the PR (title = the release commit subject, body = the changelog entry plus a gates section); `release-and-publish` then fast-forwards `main` locally with `git merge --ff-only`, creates the tag on `main`'s tip, pushes `main` and the tag, deletes the branch, and publishes. A caller's brief may run a given release as `gated` instead — a `release-pr-review` pass on the open PR before `release-and-publish`. **Never merge through the GitHub UI or `gh pr merge`**: squash and rebase-merge are disabled in the repo settings because both rewrite the stack (rebase-merge also strips the SSH signatures), and a merge commit breaks the linear history.
 
 ---
 
