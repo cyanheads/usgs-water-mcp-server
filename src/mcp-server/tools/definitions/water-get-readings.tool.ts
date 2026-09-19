@@ -136,6 +136,7 @@ export const waterGetReadings = tool('water_get_readings', {
       when: 'NWIS rejected the request. Input formats are validated against NWIS-accepted patterns before the call, so this surfaces a value that is well-formed but unacceptable upstream.',
       recovery:
         'Read the NWIS message in this error — it names the field it rejected. Correct that field and retry.',
+      thrownBy: 'service',
     },
     {
       reason: 'upstream_error',
@@ -143,6 +144,7 @@ export const waterGetReadings = tool('water_get_readings', {
       when: 'NWIS returned a 5xx error or the request timed out.',
       recovery: 'The USGS service is temporarily unavailable. Retry after a short backoff.',
       retryable: true,
+      thrownBy: 'service',
     },
   ],
 

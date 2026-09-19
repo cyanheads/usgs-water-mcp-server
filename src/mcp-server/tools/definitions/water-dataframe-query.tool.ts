@@ -6,7 +6,9 @@
 
 import { tool, z } from '@cyanheads/mcp-ts-core';
 import {
+  CanvasIdSchema,
   type CanvasInstance,
+  DUCKDB_ERROR_REASONS,
   type QueryResult,
   SQL_GATE_REASONS,
 } from '@cyanheads/mcp-ts-core/canvas';
@@ -31,6 +33,15 @@ const SQL_GATE_MESSAGES: Record<string, string | null> = {
   [SQL_GATE_REASONS.deniedFunction]: null,
   [SQL_GATE_REASONS.deniedFunctionInPlan]: null,
   [SQL_GATE_REASONS.planOperatorNotAllowed]: null,
+  /**
+   * Engine-side rejections, raised past the gate by the DuckDB provider rather than by it. All
+   * three are caller-side — a statement the engine could not parse, a write it refused, or a cast
+   * that failed on the staged rows — so they belong in the same `invalid_sql` funnel. Each keeps
+   * the engine's own message: it names the offending token, column, or value.
+   */
+  [DUCKDB_ERROR_REASONS.sqlParseError]: null,
+  [DUCKDB_ERROR_REASONS.sqlReadOnly]: null,
+  [DUCKDB_ERROR_REASONS.sqlExecutionError]: null,
 };
 
 /**
@@ -44,11 +55,9 @@ export const waterDataframeQuery = tool('water_dataframe_query', {
     'Run a read-only SQL SELECT against water data tables staged on a DataCanvas by water_get_series or water_find_sites. Workflow: run water_get_series or water_find_sites (get canvas_id + table_name) → water_dataframe_describe (confirm the table and its columns) → water_dataframe_query (SQL analysis). Only SELECT statements are permitted. At most 10,000 rows are returned; a query matching more is capped and the response sets truncated=true — scope with WHERE/LIMIT, and use SELECT COUNT(*) or water_dataframe_describe to learn the true match count. Requires DataCanvas to be enabled on this server instance. Returns an error if DataCanvas is not available.',
   annotations: { readOnlyHint: true, idempotentHint: true, openWorldHint: false },
   input: z.object({
-    canvas_id: z
-      .string()
-      .describe(
-        'Canvas ID returned by water_get_series or water_find_sites. Identifies the canvas holding the data.',
-      ),
+    canvas_id: CanvasIdSchema.describe(
+      'Canvas ID returned by water_get_series or water_find_sites. Identifies the canvas holding the data.',
+    ),
     sql: z
       .string()
       .describe(
@@ -110,9 +119,9 @@ export const waterDataframeQuery = tool('water_dataframe_query', {
     {
       reason: 'invalid_sql',
       code: JsonRpcErrorCode.ValidationError,
-      when: 'The SQL is not a read-only SELECT, contains disallowed functions, or is syntactically invalid.',
+      when: 'The SQL is not a read-only SELECT, contains disallowed functions, is syntactically invalid, or failed on the staged data (a cast or conversion the engine could not apply).',
       recovery:
-        'Use only SELECT statements. Do not use file-reading functions (read_csv, read_parquet, etc.).',
+        'Use only SELECT statements. Do not use file-reading functions (read_csv, read_parquet, etc.). When the message names a value the engine could not convert, wrap the cast in TRY_CAST or filter those rows out first.',
     },
   ],
 

@@ -5,7 +5,7 @@
  */
 
 import { tool, z } from '@cyanheads/mcp-ts-core';
-import { spillover } from '@cyanheads/mcp-ts-core/canvas';
+import { CanvasIdSchema, spillover } from '@cyanheads/mcp-ts-core/canvas';
 import { JsonRpcErrorCode } from '@cyanheads/mcp-ts-core/errors';
 import { getCanvas } from '@/services/canvas/canvas-accessor.js';
 import { ParameterCdSchema, SiteNumberSchema } from '@/services/nwis/input-schemas.js';
@@ -56,12 +56,9 @@ export const waterGetSeries = tool('water_get_series', {
       .describe(
         '"daily" returns one value per day (DV service, typically mean/max/min). "instantaneous" returns ~15-minute readings (IV service). Default: "daily". Use "instantaneous" for high-resolution analysis.',
       ),
-    canvas_id: z
-      .string()
-      .optional()
-      .describe(
-        'Canvas ID from a prior water_get_series call to append data to an existing canvas rather than creating a new one. Omit to start a fresh canvas.',
-      ),
+    canvas_id: CanvasIdSchema.optional().describe(
+      'Canvas ID from a prior water_get_series call to append data to an existing canvas rather than creating a new one. Omit to start a fresh canvas.',
+    ),
   }),
   output: z.object({
     siteNumber: z.string().describe('USGS site number (8–15 digits, e.g. "01646500").'),
@@ -154,6 +151,7 @@ export const waterGetSeries = tool('water_get_series', {
       when: 'NWIS rejected the request. Input formats are validated against NWIS-accepted patterns before the call, so this surfaces a value that is well-formed but unacceptable upstream.',
       recovery:
         'Read the NWIS message in this error — it names the field it rejected. Correct that field and retry.',
+      thrownBy: 'service',
     },
     {
       reason: 'upstream_error',
@@ -161,6 +159,7 @@ export const waterGetSeries = tool('water_get_series', {
       when: 'NWIS returned a 5xx error or the request timed out.',
       recovery: 'The USGS service is temporarily unavailable. Retry after a short backoff.',
       retryable: true,
+      thrownBy: 'service',
     },
   ],
 

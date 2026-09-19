@@ -31,6 +31,7 @@ export const waterSiteResource = resource('usgs-water://site/{siteId}', {
       when: 'NWIS rejected the site number. The 8–15 digit format is validated at the resource edge, so this surfaces a well-formed value NWIS still refused.',
       recovery:
         'Read the NWIS message in this error, or verify the site number with water_find_sites.',
+      thrownBy: 'service',
     },
     {
       reason: 'upstream_error',
@@ -38,6 +39,7 @@ export const waterSiteResource = resource('usgs-water://site/{siteId}', {
       when: 'NWIS returned a 5xx error or the request timed out.',
       recovery: 'The USGS service is temporarily unavailable. Retry after a short backoff.',
       retryable: true,
+      thrownBy: 'service',
     },
   ],
 

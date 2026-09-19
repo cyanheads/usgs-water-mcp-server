@@ -7,6 +7,7 @@
  */
 
 import { tool, z } from '@cyanheads/mcp-ts-core';
+import { CanvasIdSchema } from '@cyanheads/mcp-ts-core/canvas';
 import { JsonRpcErrorCode } from '@cyanheads/mcp-ts-core/errors';
 import { getCanvas } from '@/services/canvas/canvas-accessor.js';
 import {
@@ -59,12 +60,9 @@ export const waterFindSites = tool('water_find_sites', {
       .describe(
         '"basic" returns core identification fields. "expanded" adds drainage area, altitude, contributing area, and other metadata.',
       ),
-    canvas_id: z
-      .string()
-      .optional()
-      .describe(
-        'Canvas ID from a prior call to stage the full match set into an existing canvas rather than creating a new one. Applies only when the result is truncated and DataCanvas is enabled. Omit to start a fresh canvas.',
-      ),
+    canvas_id: CanvasIdSchema.optional().describe(
+      'Canvas ID from a prior call to stage the full match set into an existing canvas rather than creating a new one. Applies only when the result is truncated and DataCanvas is enabled. Omit to start a fresh canvas.',
+    ),
   }),
   output: z.object({
     sites: z
@@ -211,6 +209,7 @@ export const waterFindSites = tool('water_find_sites', {
       when: 'NWIS rejected the request. Filter formats are validated against NWIS-accepted patterns before the call, so this surfaces a well-formed value NWIS still refused (an unknown code, or an unsupported filter combination).',
       recovery:
         'Read the NWIS message in this error — it names the field it rejected. Correct that filter and retry.',
+      thrownBy: 'service',
     },
     {
       reason: 'upstream_error',
@@ -218,6 +217,7 @@ export const waterFindSites = tool('water_find_sites', {
       when: 'NWIS returned a 5xx error or the request timed out.',
       recovery: 'The USGS service is temporarily unavailable. Retry after a short backoff.',
       retryable: true,
+      thrownBy: 'service',
     },
   ],
 

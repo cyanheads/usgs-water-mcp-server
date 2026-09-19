@@ -5,7 +5,7 @@
  */
 
 import { tool, z } from '@cyanheads/mcp-ts-core';
-import type { CanvasInstance } from '@cyanheads/mcp-ts-core/canvas';
+import { CanvasIdSchema, type CanvasInstance } from '@cyanheads/mcp-ts-core/canvas';
 import { JsonRpcErrorCode, McpError } from '@cyanheads/mcp-ts-core/errors';
 import { getCanvas } from '@/services/canvas/canvas-accessor.js';
 
@@ -14,11 +14,9 @@ export const waterDataframeDescribe = tool('water_dataframe_describe', {
     'List tables and columns staged on a DataCanvas by water_get_series or water_find_sites. Call this after water_get_series or water_find_sites returns a canvas_id to discover the exact table name and column types before writing a query. Then pass the table name to water_dataframe_query. Requires DataCanvas to be enabled on this server instance. Returns an error if DataCanvas is not available.',
   annotations: { readOnlyHint: true, idempotentHint: true, openWorldHint: false },
   input: z.object({
-    canvas_id: z
-      .string()
-      .describe(
-        'Canvas ID returned by water_get_series or water_find_sites. Identifies the canvas to describe.',
-      ),
+    canvas_id: CanvasIdSchema.describe(
+      'Canvas ID returned by water_get_series or water_find_sites. Identifies the canvas to describe.',
+    ),
   }),
   output: z.object({
     tables: z

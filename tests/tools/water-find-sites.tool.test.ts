@@ -115,7 +115,7 @@ describe('waterFindSites', () => {
         'contributing_area',
       ],
     });
-    const mockInstance = { canvasId: 'canvas_sites01', registerTable };
+    const mockInstance = { canvasId: 'cnvsites01', registerTable };
     mockCanvasInstance = { acquire: vi.fn().mockResolvedValue(mockInstance) };
 
     const ctx = createMockContext({ errors: waterFindSites.errors });
@@ -127,7 +127,7 @@ describe('waterFindSites', () => {
     expect(result.total).toBe(500);
     expect(result.upstreamTotal).toBe(800);
     expect(result.sites).toHaveLength(500);
-    expect(result.canvas_id).toBe('canvas_sites01');
+    expect(result.canvas_id).toBe('cnvsites01');
     expect(result.table_name).toBe('water_sites_KS_GW');
 
     // registerTable received the FULL 800-site set (not the capped 500), as snake_case canvas rows.
@@ -369,12 +369,12 @@ describe('waterFindSites', () => {
       total: 500,
       truncated: true,
       upstreamTotal: 800,
-      canvas_id: 'canvas_sites01',
+      canvas_id: 'cnvsites01',
       table_name: 'water_sites_KS_GW',
     };
     const blocks = waterFindSites.format!(result);
     const text = textContent(blocks[0]);
-    expect(text).toContain('canvas_sites01');
+    expect(text).toContain('cnvsites01');
     expect(text).toContain('water_sites_KS_GW');
     expect(text).toContain('water_dataframe_query');
     expect(text).toContain('800');

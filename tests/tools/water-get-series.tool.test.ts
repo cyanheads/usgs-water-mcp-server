@@ -128,7 +128,7 @@ describe('waterGetSeries', () => {
       truncated: true,
     } as Awaited<ReturnType<typeof spillover>>);
 
-    const mockInstance = { canvasId: 'canvas0001xx', expiresAt: '2026-07-01T00:00:00Z' };
+    const mockInstance = { canvasId: 'canvas0001', expiresAt: '2026-07-01T00:00:00Z' };
     mockCanvasInstance = { acquire: vi.fn().mockResolvedValue(mockInstance) };
 
     const ctx = createMockContext({ errors: waterGetSeries.errors });
@@ -143,7 +143,7 @@ describe('waterGetSeries', () => {
     // Canvas path: truncated=true, canvas_id and table_name present
     expect(result.truncated).toBe(true);
     expect(result.totalRecords).toBe(600);
-    expect(result.canvas_id).toBe('canvas0001xx');
+    expect(result.canvas_id).toBe('canvas0001');
     expect(result.table_name).toBe('water_series_01646500_00060');
     expect(result.values).toHaveLength(5);
 
@@ -170,7 +170,7 @@ describe('waterGetSeries', () => {
 
   it('does NOT spill when ≤500 records even if canvas is enabled', async () => {
     mockGetSeries.mockResolvedValue([makeSeries(400)]);
-    const mockInstance = { canvasId: 'canvas0002xx', acquire: vi.fn() };
+    const mockInstance = { canvasId: 'canvas0002', acquire: vi.fn() };
     mockCanvasInstance = { acquire: vi.fn().mockResolvedValue(mockInstance) };
 
     const ctx = createMockContext({ errors: waterGetSeries.errors });
@@ -439,12 +439,12 @@ describe('waterGetSeries', () => {
       values: makeSeries(5).values,
       totalRecords: 600,
       truncated: true,
-      canvas_id: 'canvas0001xx',
+      canvas_id: 'canvas0001',
       table_name: 'water_series_01646500_00060',
     };
     const blocks = waterGetSeries.format!(result);
     const text = textContent(blocks[0]);
-    expect(text).toContain('canvas0001xx');
+    expect(text).toContain('canvas0001');
     expect(text).toContain('water_series_01646500_00060');
     expect(text).toContain('water_dataframe_query');
   });

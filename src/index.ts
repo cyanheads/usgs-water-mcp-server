@@ -41,6 +41,15 @@ await createApp({
 - water_get_series returns a historical daily or instantaneous time series; large ranges spill to DataCanvas, queryable via water_dataframe_query when enabled on this server instance
 - water_get_conditions gives a current reading ranked against the full period-of-record percentiles
 - Groundwater depth (parameter 72019) uses the standard IV service — gwlevels was decommissioned Nov 2025`,
+
+  /**
+   * Every tool here answers from the NWIS response alone — none calls
+   * `ctx.requestInput`, so no handler needs a session to come back to.
+   * Declaring the posture in `src/` keeps it with the code rather than only in
+   * `.env.example` and the Dockerfile; `MCP_SESSION_MODE` still wins when set.
+   */
+  sessionMode: 'stateless',
+
   setup(core) {
     setCanvas(core.canvas);
   },

@@ -4,6 +4,7 @@
  * @module tests/tools/water-dataframe-query.tool.test
  */
 
+import { DUCKDB_ERROR_REASONS, type DuckdbErrorReason } from '@cyanheads/mcp-ts-core/canvas';
 import { JsonRpcErrorCode, notFound, validationError } from '@cyanheads/mcp-ts-core/errors';
 import { createMockContext } from '@cyanheads/mcp-ts-core/testing';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
@@ -70,13 +71,19 @@ const CANVAS_ERRORS = {
       `Canvas query references disallowed table function: ${fn}. File-reading and external-data functions are not permitted.`,
       { reason: 'denied_function', function: fn },
     ),
+  /**
+   * `classifyDuckdbError` — an engine-side rejection raised past the gate. All three classes are
+   * caller-side, so they belong in the same `invalid_sql` funnel as the gate's own rejections.
+   */
+  engineFailure: (reason: DuckdbErrorReason, message: string) =>
+    validationError(message, { reason }),
 };
 
 /** Canvas whose `query` rejects with `err`. */
 function canvasRejecting(err: unknown) {
   return {
     acquire: vi.fn().mockResolvedValue({
-      canvasId: 'canvas0001xx',
+      canvasId: 'canvas0001',
       query: vi.fn().mockRejectedValue(err),
     }),
   };
@@ -115,7 +122,7 @@ describe('waterDataframeQuery', () => {
     mockCanvasInstance = undefined;
     const ctx = createMockContext({ errors: waterDataframeQuery.errors });
     const input = waterDataframeQuery.input.parse({
-      canvas_id: 'canvas0001xx',
+      canvas_id: 'canvas0001',
       sql: 'SELECT * FROM water_series_01646500_00060 LIMIT 10',
     });
     await expect(waterDataframeQuery.handler(input, ctx)).rejects.toMatchObject({
@@ -128,7 +135,7 @@ describe('waterDataframeQuery', () => {
     mockCanvasInstance = undefined;
     const ctx = createMockContext({ errors: waterDataframeQuery.errors });
     const input = waterDataframeQuery.input.parse({
-      canvas_id: 'canvas0001xx',
+      canvas_id: 'canvas0001',
       sql: 'SELECT * FROM water_series_01646500_00060 LIMIT 10',
     });
     const error = (await captureError(() => waterDataframeQuery.handler(input, ctx))) as Error;
@@ -139,11 +146,11 @@ describe('waterDataframeQuery', () => {
 
   it('throws canvas_not_found when acquire rejects a stale canvas_id', async () => {
     mockCanvasInstance = {
-      acquire: vi.fn().mockRejectedValue(CANVAS_ERRORS.canvasNotFound('stalecanvas1')),
+      acquire: vi.fn().mockRejectedValue(CANVAS_ERRORS.canvasNotFound('stalecanv1')),
     };
     const ctx = createMockContext({ errors: waterDataframeQuery.errors });
     const input = waterDataframeQuery.input.parse({
-      canvas_id: 'stalecanvas1',
+      canvas_id: 'stalecanv1',
       sql: 'SELECT date_time, value FROM water_series_01646500_00060',
     });
     await expect(waterDataframeQuery.handler(input, ctx)).rejects.toMatchObject({
@@ -152,13 +159,30 @@ describe('waterDataframeQuery', () => {
     });
   });
 
+  it('rejects a canvas_id outside the minted shape at parse level, before any canvas lookup', () => {
+    // CanvasIdSchema advertises the 10-character shape the registry mints, so an id that could
+    // never exist is refused at argument validation rather than reaching acquire() and coming back
+    // as canvas_not_found — a miss the caller would read as "expired" instead of "malformed".
+    const acquire = vi.fn();
+    mockCanvasInstance = { acquire };
+    for (const canvas_id of ['canvas0001xx', 'short', 'has space', 'canvas.001']) {
+      expect(() =>
+        waterDataframeQuery.input.parse({
+          canvas_id,
+          sql: 'SELECT * FROM water_series_01646500_00060',
+        }),
+      ).toThrow();
+    }
+    expect(acquire).not.toHaveBeenCalled();
+  });
+
   it('throws invalid_sql when the binder rejects a SELECT, keeping the message that names the fault', async () => {
     mockCanvasInstance = canvasRejecting(
       CANVAS_ERRORS.binderFailure('Referenced column "valu" not found in FROM clause!'),
     );
     const ctx = createMockContext({ errors: waterDataframeQuery.errors });
     const input = waterDataframeQuery.input.parse({
-      canvas_id: 'canvas0001xx',
+      canvas_id: 'canvas0001',
       sql: 'SELECT valu FROM water_series_01646500_00060',
     });
     const error = (await captureError(() => waterDataframeQuery.handler(input, ctx))) as Error;
@@ -174,7 +198,7 @@ describe('waterDataframeQuery', () => {
     mockCanvasInstance = canvasRejecting(CANVAS_ERRORS.deniedFunction('read_csv'));
     const ctx = createMockContext({ errors: waterDataframeQuery.errors });
     const input = waterDataframeQuery.input.parse({
-      canvas_id: 'canvas0001xx',
+      canvas_id: 'canvas0001',
       sql: "SELECT * FROM read_csv('/etc/passwd')",
     });
     const error = (await captureError(() => waterDataframeQuery.handler(input, ctx))) as Error;
@@ -189,7 +213,7 @@ describe('waterDataframeQuery', () => {
     mockCanvasInstance = canvasRejecting(CANVAS_ERRORS.nonSelect('DELETE'));
     const ctx = createMockContext({ errors: waterDataframeQuery.errors });
     const input = waterDataframeQuery.input.parse({
-      canvas_id: 'canvas0001xx',
+      canvas_id: 'canvas0001',
       sql: 'DELETE FROM water_series_01646500_00060',
     });
     const error = (await captureError(() => waterDataframeQuery.handler(input, ctx))) as Error;
@@ -208,7 +232,7 @@ describe('waterDataframeQuery', () => {
     mockCanvasInstance = canvasRejecting(CANVAS_ERRORS.systemCatalog('information_schema'));
     const ctx = createMockContext({ errors: waterDataframeQuery.errors });
     const input = waterDataframeQuery.input.parse({
-      canvas_id: 'canvas0001xx',
+      canvas_id: 'canvas0001',
       sql: 'SELECT * FROM information_schema.tables',
     });
     const error = (await captureError(() => waterDataframeQuery.handler(input, ctx))) as Error;
@@ -231,7 +255,7 @@ describe('waterDataframeQuery', () => {
     mockCanvasInstance = canvasRejecting(CANVAS_ERRORS.missingTable('water_series_09380000_00060'));
     const ctx = createMockContext({ errors: waterDataframeQuery.errors });
     const input = waterDataframeQuery.input.parse({
-      canvas_id: 'canvas0001xx',
+      canvas_id: 'canvas0001',
       sql: 'SELECT * FROM water_series_09380000_00060',
     });
     const error = (await captureError(() => waterDataframeQuery.handler(input, ctx))) as Error;
@@ -244,11 +268,43 @@ describe('waterDataframeQuery', () => {
     expect(error.message).not.toContain('describe()');
   });
 
+  it.each([
+    [
+      DUCKDB_ERROR_REASONS.sqlParseError,
+      'Canvas SQL rejected: Parser Error: syntax error at or near "SELEC"',
+    ],
+    [
+      DUCKDB_ERROR_REASONS.sqlReadOnly,
+      'Canvas SQL rejected: Cannot execute statement in read-only mode!',
+    ],
+    [
+      DUCKDB_ERROR_REASONS.sqlExecutionError,
+      "Canvas query failed: Conversion Error: Could not convert string 'n/a' to DOUBLE",
+    ],
+  ])(
+    'maps the engine-side %s rejection to invalid_sql, keeping the engine message',
+    async (reason, message) => {
+      mockCanvasInstance = canvasRejecting(CANVAS_ERRORS.engineFailure(reason, message));
+      const ctx = createMockContext({ errors: waterDataframeQuery.errors });
+      const input = waterDataframeQuery.input.parse({
+        canvas_id: 'canvas0001',
+        sql: 'SELECT CAST(value AS DOUBLE) FROM water_series_01646500_00060',
+      });
+      const error = (await captureError(() => waterDataframeQuery.handler(input, ctx))) as Error;
+      expect(error).toMatchObject({
+        code: JsonRpcErrorCode.ValidationError,
+        data: { reason: 'invalid_sql', recovery: recovery('invalid_sql') },
+      });
+      // The engine names the offending token, column, or value — that detail must survive the mapping.
+      expect(error.message).toBe(message);
+    },
+  );
+
   it('re-throws a canvas failure it has no mapping for rather than labelling it invalid_sql', async () => {
     mockCanvasInstance = canvasRejecting(new Error('DuckDB out of memory'));
     const ctx = createMockContext({ errors: waterDataframeQuery.errors });
     const input = waterDataframeQuery.input.parse({
-      canvas_id: 'canvas0001xx',
+      canvas_id: 'canvas0001',
       sql: 'SELECT * FROM water_series_01646500_00060',
     });
     await expect(waterDataframeQuery.handler(input, ctx)).rejects.toThrow('DuckDB out of memory');
@@ -256,14 +312,14 @@ describe('waterDataframeQuery', () => {
 
   it('returns rows and row_count for a valid SELECT', async () => {
     const mockInstance = {
-      canvasId: 'canvas0001xx',
+      canvasId: 'canvas0001',
       query: vi.fn().mockResolvedValue(MOCK_QUERY_RESULT),
     };
     mockCanvasInstance = { acquire: vi.fn().mockResolvedValue(mockInstance) };
 
     const ctx = createMockContext({ errors: waterDataframeQuery.errors });
     const input = waterDataframeQuery.input.parse({
-      canvas_id: 'canvas0001xx',
+      canvas_id: 'canvas0001',
       sql: 'SELECT date_time, value FROM water_series_01646500_00060 ORDER BY date_time LIMIT 10',
     });
     const result = await waterDataframeQuery.handler(input, ctx);
@@ -278,14 +334,14 @@ describe('waterDataframeQuery', () => {
     // The canvas sets truncated when the match set exceeds rowLimit; rowCount then equals the cap,
     // so truncated is the only signal that rows are a partial read.
     const mockInstance = {
-      canvasId: 'canvas0001xx',
+      canvasId: 'canvas0001',
       query: vi.fn().mockResolvedValue({ ...MOCK_QUERY_RESULT, rowCount: 10_000, truncated: true }),
     };
     mockCanvasInstance = { acquire: vi.fn().mockResolvedValue(mockInstance) };
 
     const ctx = createMockContext({ errors: waterDataframeQuery.errors });
     const input = waterDataframeQuery.input.parse({
-      canvas_id: 'canvas0001xx',
+      canvas_id: 'canvas0001',
       sql: 'SELECT date_time FROM water_series_01646500_00060',
     });
     const result = await waterDataframeQuery.handler(input, ctx);
@@ -298,14 +354,14 @@ describe('waterDataframeQuery', () => {
     // QueryResult.truncated is optional and absent on an uncapped read — the output field is
     // required, so the handler must normalize rather than emit undefined.
     const mockInstance = {
-      canvasId: 'canvas0001xx',
+      canvasId: 'canvas0001',
       query: vi.fn().mockResolvedValue(MOCK_QUERY_RESULT),
     };
     mockCanvasInstance = { acquire: vi.fn().mockResolvedValue(mockInstance) };
 
     const ctx = createMockContext({ errors: waterDataframeQuery.errors });
     const input = waterDataframeQuery.input.parse({
-      canvas_id: 'canvas0001xx',
+      canvas_id: 'canvas0001',
       sql: 'SELECT date_time FROM water_series_01646500_00060 LIMIT 2',
     });
     const result = await waterDataframeQuery.handler(input, ctx);
@@ -316,12 +372,12 @@ describe('waterDataframeQuery', () => {
 
   it('passes the sql and signal to instance.query', async () => {
     const mockQuery = vi.fn().mockResolvedValue(MOCK_QUERY_RESULT);
-    const mockInstance = { canvasId: 'canvas0001xx', query: mockQuery };
+    const mockInstance = { canvasId: 'canvas0001', query: mockQuery };
     mockCanvasInstance = { acquire: vi.fn().mockResolvedValue(mockInstance) };
 
     const ctx = createMockContext({ errors: waterDataframeQuery.errors });
     const sql = 'SELECT AVG(CAST(value AS DOUBLE)) FROM water_series_01646500_00060';
-    const input = waterDataframeQuery.input.parse({ canvas_id: 'canvas0001xx', sql });
+    const input = waterDataframeQuery.input.parse({ canvas_id: 'canvas0001', sql });
     await waterDataframeQuery.handler(input, ctx);
 
     expect(mockQuery).toHaveBeenCalledWith(sql, expect.objectContaining({ signal: ctx.signal }));
