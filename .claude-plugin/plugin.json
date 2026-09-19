@@ -1,20 +1,40 @@
 {
+  "$schema": "https://json.schemastore.org/claude-code-plugin-manifest.json",
   "name": "usgs-water-mcp-server",
   "version": "0.2.3",
   "description": "Query real-time and historical water data from ~8,000 USGS stream gages and groundwater wells via MCP. STDIO or Streamable HTTP.",
   "author": {
-    "name": "cyanheads"
+    "name": "cyanheads",
+    "email": "casey@caseyjhand.com",
+    "url": "https://github.com/cyanheads"
   },
   "homepage": "https://github.com/cyanheads/usgs-water-mcp-server#readme",
   "repository": "git+https://github.com/cyanheads/usgs-water-mcp-server.git",
   "license": "Apache-2.0",
+  "keywords": [
+    "mcp",
+    "mcp-server",
+    "model-context-protocol",
+    "typescript",
+    "bun",
+    "stdio",
+    "streamable-http",
+    "ai-agent",
+    "usgs",
+    "water-data",
+    "hydrology",
+    "nwis",
+    "stream-gage",
+    "groundwater",
+    "streamflow",
+    "water-quality",
+    "real-time-data",
+    "environmental-data"
+  ],
   "mcpServers": {
     "usgs-water-mcp-server": {
       "command": "npx",
-      "args": [
-        "-y",
-        "@cyanheads/usgs-water-mcp-server"
-      ],
+      "args": ["-y", "@cyanheads/usgs-water-mcp-server"],
       "env": {
         "MCP_TRANSPORT_TYPE": "stdio"
       }
