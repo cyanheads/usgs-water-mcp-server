@@ -30,8 +30,8 @@ If you're not sure, file here and it'll get routed.
 
 Do the triage first — an unverified report costs more to read than it saves to file.
 
-- [`skills/report-issue-local/SKILL.md`](../skills/report-issue-local/SKILL.md) — filing against this repo.
-- [`skills/report-issue-framework/SKILL.md`](../skills/report-issue-framework/SKILL.md) — filing against `mcp-ts-core` after isolating the bug to the framework.
+- [`framework-skills/report-issue-local/SKILL.md`](../framework-skills/report-issue-local/SKILL.md) — filing against this repo.
+- [`framework-skills/report-issue-framework/SKILL.md`](../framework-skills/report-issue-framework/SKILL.md) — filing against `mcp-ts-core` after isolating the bug to the framework.
 
 Read the relevant workflow before filing on a user's behalf.
 
