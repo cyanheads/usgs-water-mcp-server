@@ -2,6 +2,10 @@
 
 All notable changes to this project. Each entry links to its full per-version file in [changelog/](changelog/).
 
+## [0.2.4](changelog/0.2.x/0.2.4.md) — 2026-09-19
+
+Adopts mcp-ts-core ^0.13.6: canvas_id inputs validate before any canvas lookup, water_dataframe_query classifies engine-side SQL failures, and a SQL-comment ReDoS fix reaches that same tool's sql input. Skill tree moves to framework-skills/.
+
 ## [0.2.3](changelog/0.2.x/0.2.3.md) — 2026-08-22
 
 MCP SDK v2 support and request-aware NWIS retries
