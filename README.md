@@ -7,7 +7,7 @@
 
 <div align="center">
 
-[![Version](https://img.shields.io/badge/Version-0.2.4-blue.svg?style=flat-square)](./CHANGELOG.md) [![License](https://img.shields.io/badge/License-Apache%202.0-orange.svg?style=flat-square)](./LICENSE) [![Docker](https://img.shields.io/badge/Docker-ghcr.io-2496ED?style=flat-square&logo=docker&logoColor=white)](https://github.com/users/cyanheads/packages/container/package/usgs-water-mcp-server) [![MCP SDK](https://img.shields.io/badge/MCP%20SDK-^2.0.0-green.svg?style=flat-square)](https://modelcontextprotocol.io/) [![npm](https://img.shields.io/npm/v/@cyanheads/usgs-water-mcp-server?style=flat-square&logo=npm&logoColor=white)](https://www.npmjs.com/package/@cyanheads/usgs-water-mcp-server) [![TypeScript](https://img.shields.io/badge/TypeScript-^7.0.2-3178C6.svg?style=flat-square)](https://www.typescriptlang.org/) [![Bun](https://img.shields.io/badge/Bun-v1.4.0-blueviolet.svg?style=flat-square)](https://bun.sh/)
+[![Version](https://img.shields.io/badge/Version-0.2.5-blue.svg?style=flat-square)](./CHANGELOG.md) [![License](https://img.shields.io/badge/License-Apache%202.0-orange.svg?style=flat-square)](./LICENSE) [![Docker](https://img.shields.io/badge/Docker-ghcr.io-2496ED?style=flat-square&logo=docker&logoColor=white)](https://github.com/users/cyanheads/packages/container/package/usgs-water-mcp-server) [![MCP SDK](https://img.shields.io/badge/MCP%20SDK-^2.0.0-green.svg?style=flat-square)](https://modelcontextprotocol.io/) [![npm](https://img.shields.io/npm/v/@cyanheads/usgs-water-mcp-server?style=flat-square&logo=npm&logoColor=white)](https://www.npmjs.com/package/@cyanheads/usgs-water-mcp-server) [![TypeScript](https://img.shields.io/badge/TypeScript-^7.0.2-3178C6.svg?style=flat-square)](https://www.typescriptlang.org/) [![Bun](https://img.shields.io/badge/Bun-v1.4.0-blueviolet.svg?style=flat-square)](https://bun.sh/)
 
 </div>
 
@@ -64,11 +64,11 @@ All resource data is also reachable via tools. Use `water_find_sites` for geogra
 
 ### `water_find_sites` <sub>tool</sub>
 
-- Geographic scoping: bounding box (`"west,south,east,north"`), 2-letter state code, comma-separated 5-digit FIPS county codes (up to 20), or a HUC watershed code — a 2-digit major HUC or an 8-digit minor HUC, the only two lengths NWIS accepts
-- Optional filters: `siteType` (`ST` stream, `GW` groundwater well, `LK` lake/reservoir, `SP` spring, and more — comma-separable), `parameterCd` (require data availability), and `hasDataTypeCd` (`iv` / `dv` / `gw`)
+- Geographic scoping: bounding box (`"west,south,east,north"`), 2-letter state code, comma-separated 5-digit FIPS county codes (up to 20), or a HUC watershed code — a 2-digit major HUC or an 8-digit minor HUC, the only two lengths NWIS accepts. Exactly one of the four per call: NWIS rejects a request carrying none or more than one, so the tool refuses it first with a reason naming which rule broke
+- Optional filters: `siteType` (`ST` stream, `GW` groundwater well, `LK` lake/reservoir, `SP` spring, and more — comma-separable), `parameterCd` (require data availability), and `hasDataTypeCd` (`iv` / `dv` / `gw`) — these narrow within the geographic scope and cannot stand alone
 - `siteOutput`: `basic` (default) or `expanded` (adds drainage area and contributing area); altitude appears in both modes when USGS records it
-- Capped at 500 sites inline — `truncated` and `upstreamTotal` report when more matched
-- With `CANVAS_PROVIDER_TYPE=duckdb` set, a truncated match set stages in full to a canvas (`canvas_id`/`table_name`) for `water_dataframe_query`; otherwise narrow the filters to bring the match under the cap
+- `limit` (1–500, default 500) and `offset` page through the match set; `truncated` means matches remain after the returned window and `upstreamTotal` holds the full count. An `offset` at or past the end returns an empty page naming the valid range rather than a not-found error
+- With `CANVAS_PROVIDER_TYPE=duckdb` set, a match set over 500 sites also stages in full to a canvas (`canvas_id`/`table_name`) — inspect the columns with `water_dataframe_describe`, then retrieve every match with `water_dataframe_query`. The table name carries the query's scope, site type, and a digest of the full filter set, so re-running a query replaces only its own table
 
 ---
 
@@ -86,7 +86,7 @@ All resource data is also reachable via tools. Use `water_find_sites` for geogra
 
 - One site and one parameter code per call; `seriesType` is `daily` (DV service, one value/day, default) or `instantaneous` (IV service, ~15 min), over a `startDate`–`endDate` range
 - Without DataCanvas, a result over 500 records returns the most recent 500 with `truncated: true` and `totalRecords` holding the full count
-- With `CANVAS_PROVIDER_TYPE=duckdb` set, ranges over 500 records spill to a canvas (`canvas_id`/`table_name`) for SQL via `water_dataframe_query`; pass a prior `canvas_id` to append to an existing canvas
+- With `CANVAS_PROVIDER_TYPE=duckdb` set, ranges over 500 records spill the complete series to a canvas (`canvas_id`/`table_name`) while the inline records stay the most recent — inspect the columns with `water_dataframe_describe`, then read the full series with `water_dataframe_query`. The table name carries the site, parameter code, series type, and both date bounds, so re-running a query replaces only its own table; pass a prior `canvas_id` to add a table to an existing canvas
 
 ---
 
@@ -265,7 +265,7 @@ cp .env.example .env
 | Variable | Description | Default |
 |:---------|:------------|:--------|
 | `CANVAS_PROVIDER_TYPE` | Set to `duckdb` to enable DataCanvas spillover for large results from `water_get_series` and `water_find_sites`. | — |
-| `USGS_USER_AGENT` | Custom User-Agent string sent to USGS NWIS. USGS requests a descriptive User-Agent per their terms. | `usgs-water-mcp-server/0.2.4 (contact: https://github.com/cyanheads/usgs-water-mcp-server)` |
+| `USGS_USER_AGENT` | Custom User-Agent string sent to USGS NWIS. USGS requests a descriptive User-Agent per their terms. | `usgs-water-mcp-server/0.2.5 (contact: https://github.com/cyanheads/usgs-water-mcp-server)` |
 | `USGS_REQUEST_TIMEOUT_MS` | HTTP request timeout in milliseconds for NWIS calls. | `30000` |
 | `MCP_TRANSPORT_TYPE` | Transport: `stdio` or `http`. | `stdio` |
 | `MCP_HTTP_PORT` | Port for HTTP server. | `3010` |
