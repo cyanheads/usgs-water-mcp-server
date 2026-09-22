@@ -1,6 +1,6 @@
 # usgs-water-mcp-server - Directory Structure
 
-Generated on: 2026-09-19 20:40:00
+Generated on: 2026-09-22 16:37:19
 
 ```text
 usgs-water-mcp-server/
@@ -156,7 +156,8 @@ usgs-water-mcp-server/
 │   │           └── water-list-parameters.tool.ts
 │   ├── services/
 │   │   ├── canvas/
-│   │   │   └── canvas-accessor.ts
+│   │   │   ├── canvas-accessor.ts
+│   │   │   └── canvas-table-name.ts
 │   │   └── nwis/
 │   │       ├── input-schemas.ts
 │   │       ├── nwis-service.ts
@@ -170,6 +171,8 @@ usgs-water-mcp-server/
 │   ├── resources/
 │   │   ├── water-parameters.resource.test.ts
 │   │   └── water-site.resource.test.ts
+│   ├── services/
+│   │   └── canvas-table-name.test.ts
 │   └── tools/
 │       ├── water-dataframe-describe.tool.test.ts
 │       ├── water-dataframe-query.tool.test.ts

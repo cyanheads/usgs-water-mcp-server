@@ -2,6 +2,10 @@
 
 All notable changes to this project. Each entry links to its full per-version file in [changelog/](changelog/).
 
+## [0.2.5](changelog/0.2.x/0.2.5.md) — 2026-09-22
+
+water_find_sites enforces NWIS's one-major-filter rule and adds limit/offset paging; water_get_series canvas previews now show the most recent records; both tools derive deterministic per-query canvas table names, resolve a supplied canvas_id before the upstream call, and point staged-data notices at water_dataframe_describe first.
+
 ## [0.2.4](changelog/0.2.x/0.2.4.md) — 2026-09-19
 
 Adopts mcp-ts-core ^0.13.6: canvas_id inputs validate before any canvas lookup, water_dataframe_query classifies engine-side SQL failures, and a SQL-comment ReDoS fix reaches that same tool's sql input. Skill tree moves to framework-skills/.
