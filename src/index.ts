@@ -38,7 +38,7 @@ await createApp({
 - Start with water_list_parameters to discover parameter codes (00060=Discharge, 00065=Gage height)
 - Use water_find_sites to find sites by bbox, state, county, or HUC watershed
 - water_get_readings returns the latest ~15-min real-time values for up to 100 sites
-- water_get_series returns a historical daily or instantaneous time series; large ranges spill to DataCanvas, queryable via water_dataframe_query when enabled on this server instance
+- water_get_series returns a historical daily or instantaneous time series, most recent records inline; large ranges spill the complete series to DataCanvas when enabled on this server instance — inspect the staged table with water_dataframe_describe, then read it with water_dataframe_query
 - water_get_conditions gives a current reading ranked against the full period-of-record percentiles
 - Groundwater depth (parameter 72019) uses the standard IV service — gwlevels was decommissioned Nov 2025`,
 

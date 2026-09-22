@@ -5,9 +5,13 @@
  */
 
 import { tool, z } from '@cyanheads/mcp-ts-core';
-import { CanvasIdSchema, spillover } from '@cyanheads/mcp-ts-core/canvas';
-import { JsonRpcErrorCode } from '@cyanheads/mcp-ts-core/errors';
+import { CanvasIdSchema, type CanvasInstance, spillover } from '@cyanheads/mcp-ts-core/canvas';
+import { JsonRpcErrorCode, McpError } from '@cyanheads/mcp-ts-core/errors';
 import { getCanvas } from '@/services/canvas/canvas-accessor.js';
+import {
+  assertCanvasTableName,
+  sanitizeIdentifierToken,
+} from '@/services/canvas/canvas-table-name.js';
 import { ParameterCdSchema, SiteNumberSchema } from '@/services/nwis/input-schemas.js';
 import { classifyNwisFailure, getSeries } from '@/services/nwis/nwis-service.js';
 import type { NwisValueRecord } from '@/services/nwis/types.js';
@@ -33,7 +37,7 @@ const ValueRecordSchema = z.object({
 
 export const waterGetSeries = tool('water_get_series', {
   description:
-    'Get a daily or instantaneous time series for one USGS site and parameter over a date range, as time-ordered value records. Large sets (>500 records) return the most recent 500 with truncated=true; with DataCanvas enabled they instead spill to a canvas (canvas_id/table_name) for SQL via water_dataframe_query. Use water_find_sites and water_list_parameters to resolve inputs.',
+    'Get a daily or instantaneous time series for one USGS site and parameter over a date range, as time-ordered value records. Large sets (>500 records) return the most recent records inline with truncated=true — the last 500 without DataCanvas, and with DataCanvas enabled the complete series also spills to a canvas (canvas_id/table_name): inspect the staged table with water_dataframe_describe, then read the full series with water_dataframe_query. Use water_find_sites and water_list_parameters to resolve inputs.',
   annotations: { readOnlyHint: true, idempotentHint: true, openWorldHint: true },
   input: z.object({
     site: SiteNumberSchema.describe(
@@ -57,7 +61,7 @@ export const waterGetSeries = tool('water_get_series', {
         '"daily" returns one value per day (DV service, typically mean/max/min). "instantaneous" returns ~15-minute readings (IV service). Default: "daily". Use "instantaneous" for high-resolution analysis.',
       ),
     canvas_id: CanvasIdSchema.optional().describe(
-      'Canvas ID from a prior water_get_series call to append data to an existing canvas rather than creating a new one. Omit to start a fresh canvas.',
+      'Canvas ID from a prior call to add this series as a table on an existing canvas rather than creating a new one. Each distinct site, parameter code, series type, and date range gets its own table name, so re-running the identical query replaces its own table while a different query adds another alongside it. Applies only when the series spills to a canvas. Omit to start a fresh canvas.',
     ),
   }),
   output: z.object({
@@ -80,7 +84,7 @@ export const waterGetSeries = tool('water_get_series', {
         ValueRecordSchema.describe('A single value record with date-time, value, and qualifiers.'),
       )
       .describe(
-        'Time-ordered value records. Contains all records when not truncated, or the most recent 500 when truncated (no canvas) or a preview slice (with canvas).',
+        'Time-ordered value records, oldest first within the slice. Holds every record when truncated is false; when truncated, the most recent records only — the last 500 without DataCanvas, or the last N that fit the inline preview budget when the full series is staged on a canvas.',
       ),
     totalRecords: z
       .number()
@@ -89,7 +93,7 @@ export const waterGetSeries = tool('water_get_series', {
     truncated: z
       .boolean()
       .describe(
-        'True when the result exceeds 500 records and was trimmed. Query the full series via water_dataframe_query when canvas_id is present, or narrow the date range.',
+        'True when the result exceeds 500 records and only the most recent were returned inline. When canvas_id is present, inspect the staged table with water_dataframe_describe then read the full series with water_dataframe_query; otherwise narrow the date range.',
       ),
     canvas_id: z
       .string()
@@ -119,7 +123,7 @@ export const waterGetSeries = tool('water_get_series', {
       .string()
       .optional()
       .describe(
-        'Advisory when the result was truncated — narrow the date range or enable DataCanvas for full access.',
+        'Advisory about this result: the staged canvas table and how to read it, the advice to narrow the date range when the series was truncated with no canvas available, or the fact that a supplied canvas_id went unused because nothing was staged.',
       ),
   },
 
@@ -161,6 +165,23 @@ export const waterGetSeries = tool('water_get_series', {
       retryable: true,
       thrownBy: 'service',
     },
+    {
+      reason: 'canvas_not_found',
+      code: JsonRpcErrorCode.NotFound,
+      when: 'The supplied canvas_id names a canvas that never existed or has expired. Raised before the NWIS request, so no upstream call is spent on it.',
+      recovery:
+        'Omit canvas_id to stage this series on a fresh canvas, or pass an id returned by a call that is still within its canvas lifetime.',
+      thrownBy: 'service',
+    },
+    {
+      reason: 'canvas_capacity_exhausted',
+      code: JsonRpcErrorCode.RateLimited,
+      when: 'canvas_id was omitted and a fresh canvas was needed to stage the series, but this tenant already holds the maximum number of active canvases.',
+      recovery:
+        'Pass a canvas_id returned by an earlier call instead of starting a fresh canvas, or retry once an existing canvas expires.',
+      retryable: true,
+      thrownBy: 'service',
+    },
   ],
 
   async handler(input, ctx) {
@@ -192,6 +213,27 @@ export const waterGetSeries = tool('water_get_series', {
         `startDate (${input.startDate}) must be before endDate (${input.endDate}).`,
         ctx.recoveryFor('invalid_date_range'),
       );
+    }
+
+    // A supplied canvas_id is resolved before the upstream call so a stale or never-minted id fails
+    // without spending an NWIS round trip. Minting stays lazy — a fresh canvas is acquired further
+    // down, only once the series actually has to spill.
+    const canvas = getCanvas();
+    let instance: CanvasInstance | undefined;
+    if (canvas && input.canvas_id) {
+      try {
+        instance = await canvas.acquire(input.canvas_id, ctx);
+      } catch (err: unknown) {
+        if (err instanceof McpError && err.data?.['reason'] === 'canvas_not_found') {
+          throw ctx.fail(
+            'canvas_not_found',
+            `Canvas ${input.canvas_id} not found or expired.`,
+            ctx.recoveryFor('canvas_not_found'),
+            { cause: err },
+          );
+        }
+        throw err;
+      }
     }
 
     ctx.log.info('Getting series', {
@@ -255,10 +297,16 @@ export const waterGetSeries = tool('water_get_series', {
       },
     });
 
+    // A canvas_id the caller supplied that no staging used. Emitted only when the whole series came
+    // back inline: a truncated no-canvas result already explains why it was cut, and "returned
+    // inline in full" would misdescribe a response holding the last 500 of N.
+    const nothingStagedNotice = input.canvas_id
+      ? `The ${totalRecords}-record series was returned inline in full, so nothing was staged on canvas "${input.canvas_id}".`
+      : undefined;
+
     // Canvas spillover path
-    const canvas = getCanvas();
     if (canvas && totalRecords > SPILLOVER_THRESHOLD) {
-      const instance = await canvas.acquire(input.canvas_id, ctx);
+      instance ??= await canvas.acquire(undefined, ctx);
 
       // Build rows suitable for canvas
       const rows = ts.values.map((v: NwisValueRecord) => ({
@@ -270,9 +318,23 @@ export const waterGetSeries = tool('water_get_series', {
         unit_code: ts.unitCode,
       }));
 
-      const tableName = `water_series_${ts.siteNumber}_${ts.parameterCd}`.replace(
-        /[^a-z0-9_]/gi,
-        '_',
+      // The name carries every dimension that changes the staged rows. registerTable is DROP +
+      // CREATE, so a name that collapsed a site's daily and instantaneous series — different
+      // quantities, identical columns — would replace one with the other and still report success.
+      // Every dimension here is fixed-width, so no digest is needed: the longest legal input (a
+      // 15-digit site number) lands at 55 characters, inside the 63-character identifier cap.
+      // Derived from the request, not the echoed response: the name has to be total over the query,
+      // and an upstream value that normalizes two distinct requests to one token would collapse
+      // them onto one table — the failure this name exists to prevent.
+      const tableName = assertCanvasTableName(
+        [
+          'water_series',
+          sanitizeIdentifierToken(input.site),
+          sanitizeIdentifierToken(input.parameterCd),
+          input.seriesType === 'daily' ? 'dv' : 'iv',
+          sanitizeIdentifierToken(input.startDate.replaceAll('-', '')),
+          sanitizeIdentifierToken(input.endDate.replaceAll('-', '')),
+        ].join('_'),
       );
 
       const spillResult = await spillover({
@@ -283,19 +345,24 @@ export const waterGetSeries = tool('water_get_series', {
         signal: ctx.signal,
       });
 
+      // spillover() fills its preview from the head of the source, so previewRows holds the OLDEST
+      // records that fit the character budget. For a time series the recent end is almost always
+      // the one that matters — and the no-canvas path below already returns the most recent — so
+      // the inline slice is the tail of the same chronological rows at the count the budget chose.
+      // The rows handed to spillover() stay in order, so the staged table holds every record
+      // chronologically. Sliced from the front index rather than a negative offset: slice(-0)
+      // returns the whole array, which would silently inline the full series at an empty preview.
+      const values = ts.values.slice(totalRecords - spillResult.previewRows.length);
+
       if (spillResult.spilled) {
         ctx.enrich({
-          notice: `Result truncated to ${spillResult.previewRows.length} preview records — query the full ${totalRecords} records via water_dataframe_query using canvas_id.`,
+          notice: `Staged all ${totalRecords} records to table "${spillResult.handle.tableName}" — use water_dataframe_describe to inspect its columns, then water_dataframe_query to analyze the full series with SQL (canvas_id "${instance.canvasId}"). Showing last ${values.length} of ${totalRecords} records inline.`,
         });
+      } else if (nothingStagedNotice) {
+        // Past the record threshold but under the character budget: spillover() registered nothing,
+        // so a supplied canvas_id went unused here exactly as it does below the threshold.
+        ctx.enrich({ notice: nothingStagedNotice });
       }
-
-      const previewValues = spillResult.previewRows.map((r) => ({
-        dateTime: String(r['date_time'] ?? ''),
-        value: String(r['value'] ?? ''),
-        qualifiers: String(r['qualifiers'] ?? '')
-          .split(',')
-          .filter(Boolean),
-      }));
 
       return {
         siteNumber: ts.siteNumber,
@@ -304,7 +371,7 @@ export const waterGetSeries = tool('water_get_series', {
         parameterName: ts.parameterName,
         unitCode: ts.unitCode,
         seriesType: input.seriesType,
-        values: previewValues,
+        values,
         totalRecords,
         truncated: spillResult.spilled,
         canvas_id: spillResult.spilled ? instance.canvasId : undefined,
@@ -317,9 +384,17 @@ export const waterGetSeries = tool('water_get_series', {
     const values = truncated ? ts.values.slice(-SPILLOVER_THRESHOLD) : ts.values;
 
     if (truncated) {
+      // Reaching a truncated result here means no provider is enabled — the spillover branch owns
+      // every over-threshold path when one is. A supplied canvas_id is named for the same reason
+      // the inline case names it: silence is indistinguishable from data having been staged.
+      const unusedCanvas = input.canvas_id
+        ? ` DataCanvas is not enabled on this server, so the series was not staged and canvas "${input.canvas_id}" went unused.`
+        : '';
       ctx.enrich({
-        notice: `Result truncated to ${SPILLOVER_THRESHOLD} records — narrow the date range or enable DataCanvas for full access to all ${totalRecords} records.`,
+        notice: `Result truncated to the most recent ${SPILLOVER_THRESHOLD} of ${totalRecords} records — narrow the date range or enable DataCanvas for full access.${unusedCanvas}`,
       });
+    } else if (nothingStagedNotice) {
+      ctx.enrich({ notice: nothingStagedNotice });
     }
 
     return {
@@ -344,10 +419,12 @@ export const waterGetSeries = tool('water_get_series', {
       `**Series type:** ${result.seriesType} | **Total records:** ${result.totalRecords}`,
     ];
 
-    if (result.truncated && result.canvas_id) {
+    // Keyed on canvas_id alone: the staged table is worth naming whenever one exists, and the
+    // caption names the inline slice's direction the way the no-canvas caption below always has.
+    if (result.canvas_id) {
       lines.push(
         `**Canvas:** \`${result.canvas_id}\` | **Table:** \`${result.table_name}\``,
-        `*(result truncated — query the full series via water_dataframe_query)*`,
+        `*(result truncated — showing last ${result.values.length} of ${result.totalRecords} records; use water_dataframe_describe for this table's columns, then water_dataframe_query for the full series)*`,
       );
     } else if (result.truncated) {
       lines.push(
