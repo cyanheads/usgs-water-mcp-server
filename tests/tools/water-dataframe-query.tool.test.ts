@@ -159,6 +159,11 @@ describe('waterDataframeQuery', () => {
     });
   });
 
+  it('declares canvas_not_found as service-thrown — the shared acquire helper raises it', () => {
+    const entry = waterDataframeQuery.errors!.find((e) => e.reason === 'canvas_not_found');
+    expect(entry).toMatchObject({ code: JsonRpcErrorCode.NotFound, thrownBy: 'service' });
+  });
+
   it('rejects a canvas_id outside the minted shape at parse level, before any canvas lookup', () => {
     // CanvasIdSchema advertises the 10-character shape the registry mints, so an id that could
     // never exist is refused at argument validation rather than reaching acquire() and coming back

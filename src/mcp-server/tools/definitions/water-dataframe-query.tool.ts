@@ -7,12 +7,12 @@
 import { tool, z } from '@cyanheads/mcp-ts-core';
 import {
   CanvasIdSchema,
-  type CanvasInstance,
   DUCKDB_ERROR_REASONS,
   type QueryResult,
   SQL_GATE_REASONS,
 } from '@cyanheads/mcp-ts-core/canvas';
 import { JsonRpcErrorCode, McpError } from '@cyanheads/mcp-ts-core/errors';
+import { acquireCanvas } from '@/services/canvas/acquire-canvas.js';
 import { getCanvas } from '@/services/canvas/canvas-accessor.js';
 
 /**
@@ -94,13 +94,15 @@ export const waterDataframeQuery = tool('water_dataframe_query', {
       code: JsonRpcErrorCode.InvalidRequest,
       when: 'DataCanvas is not enabled on this server instance.',
       recovery:
-        'DataCanvas is not available on this server instance; use water_get_series to read the data directly.',
+        'DataCanvas is not available on this server instance; read the data directly instead — water_get_series returns the most recent records inline, and water_find_sites pages its matches with limit/offset.',
     },
     {
       reason: 'canvas_not_found',
       code: JsonRpcErrorCode.NotFound,
       when: 'The canvas_id does not exist or has expired.',
-      recovery: 'Re-run water_get_series to stage the data again and get a fresh canvas_id.',
+      recovery:
+        'Re-run the tool that staged the data — water_get_series or water_find_sites — to stage it again and get a fresh canvas_id.',
+      thrownBy: 'service',
     },
     {
       reason: 'table_not_found',
@@ -140,20 +142,7 @@ export const waterDataframeQuery = tool('water_dataframe_query', {
 
     ctx.log.info('Running dataframe query', { canvas_id: input.canvas_id });
 
-    let instance: CanvasInstance;
-    try {
-      instance = await canvas.acquire(input.canvas_id, ctx);
-    } catch (err: unknown) {
-      if (err instanceof McpError && err.data?.['reason'] === 'canvas_not_found') {
-        throw ctx.fail(
-          'canvas_not_found',
-          `Canvas ${input.canvas_id} not found or expired.`,
-          ctx.recoveryFor('canvas_not_found'),
-          { cause: err },
-        );
-      }
-      throw err;
-    }
+    const instance = await acquireCanvas(canvas, input.canvas_id, ctx);
 
     let result: QueryResult;
     try {

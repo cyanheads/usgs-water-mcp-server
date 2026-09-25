@@ -87,6 +87,11 @@ describe('waterDataframeDescribe', () => {
     });
   });
 
+  it('declares canvas_not_found as service-thrown — the shared acquire helper raises it', () => {
+    const entry = waterDataframeDescribe.errors!.find((e) => e.reason === 'canvas_not_found');
+    expect(entry).toMatchObject({ code: JsonRpcErrorCode.NotFound, thrownBy: 'service' });
+  });
+
   it('re-throws an unrecognized acquire failure instead of mislabelling it canvas_not_found', async () => {
     mockCanvasInstance = {
       acquire: vi.fn().mockRejectedValue(new Error('DuckDB connection pool exhausted')),

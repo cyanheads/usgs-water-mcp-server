@@ -8,7 +8,8 @@
 
 import { tool, z } from '@cyanheads/mcp-ts-core';
 import { CanvasIdSchema, type CanvasInstance } from '@cyanheads/mcp-ts-core/canvas';
-import { JsonRpcErrorCode, McpError } from '@cyanheads/mcp-ts-core/errors';
+import { JsonRpcErrorCode } from '@cyanheads/mcp-ts-core/errors';
+import { acquireCanvas } from '@/services/canvas/acquire-canvas.js';
 import { getCanvas } from '@/services/canvas/canvas-accessor.js';
 import {
   assertCanvasTableName,
@@ -322,19 +323,7 @@ export const waterFindSites = tool('water_find_sites', {
     const canvas = getCanvas();
     let instance: CanvasInstance | undefined;
     if (canvas && input.canvas_id) {
-      try {
-        instance = await canvas.acquire(input.canvas_id, ctx);
-      } catch (err: unknown) {
-        if (err instanceof McpError && err.data?.['reason'] === 'canvas_not_found') {
-          throw ctx.fail(
-            'canvas_not_found',
-            `Canvas ${input.canvas_id} not found or expired.`,
-            ctx.recoveryFor('canvas_not_found'),
-            { cause: err },
-          );
-        }
-        throw err;
-      }
+      instance = await acquireCanvas(canvas, input.canvas_id, ctx);
     }
 
     ctx.log.info('Finding USGS sites', {
