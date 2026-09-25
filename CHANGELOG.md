@@ -2,6 +2,10 @@
 
 All notable changes to this project. Each entry links to its full per-version file in [changelog/](changelog/).
 
+## [0.2.6](changelog/0.2.x/0.2.6.md) — 2026-09-24
+
+NWIS series are read per statistic and sensor method, the -999999 no-data value reads as missing, and water_list_parameters searches the full USGS parameter-code catalog.
+
 ## [0.2.5](changelog/0.2.x/0.2.5.md) — 2026-09-22
 
 water_find_sites enforces NWIS's one-major-filter rule and adds limit/offset paging; water_get_series canvas previews now show the most recent records; both tools derive deterministic per-query canvas table names, resolve a supplied canvas_id before the upstream call, and point staged-data notices at water_dataframe_describe first.
