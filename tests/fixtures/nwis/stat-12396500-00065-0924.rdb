@@ -1,0 +1,10 @@
+#
+#
+# US Geological Survey, Water Resources Data
+# retrieved: 2026-09-24 23:52:23 -04:00	(natwebcaas01)
+#
+# This file contains USGS Daily Statistics
+agency_cd	site_no	parameter_cd	ts_id	loc_web_ds	month_nu	day_nu	begin_yr	end_yr	count_nu	max_va_yr	max_va	min_va_yr	min_va	mean_va	p05_va	p10_va	p20_va	p25_va	p50_va	p75_va	p80_va	p90_va	p95_va
+5s	15s	5s	10n	15s	3n	3n	6n	6n	8n	5n	12s	5n	12s	12s	12s	12s	12s	12s	12s	12s	12s	12s	12s
+USGS	12396500	00065	149574	[BASE GAGE]	9	24	1984	2025	38	1984	90.51	1988	14.83	69.27	17.58	18.79	19.57	21.57	86.36	87.97	88.58	89.02	89.71
+USGS	12396500	00065	149575	AUXILIARY GAGE, [AUXILIARY GAGE]	9	24	1988	2025	25	2017	88.50	1988	13.76	74.76	14.7	18.01	81.48	83.29	84.93	87.4	87.57	87.93	88.34

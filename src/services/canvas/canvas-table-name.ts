@@ -47,14 +47,15 @@ function canonicalize(value: unknown): unknown {
 }
 
 /**
- * First 8 hex characters of a SHA-256 over the canonical JSON of `input`. Deterministic across
- * processes and key orderings, so the same filter set always resolves to the same suffix.
+ * First `length` (default 8) hex characters of a SHA-256 over the canonical JSON of `input`.
+ * Deterministic across processes and key orderings, so the same filter set always resolves to the
+ * same suffix.
  */
-export function shortHash(input: Record<string, unknown>): string {
+export function shortHash(input: Record<string, unknown>, length = 8): string {
   return createHash('sha256')
     .update(JSON.stringify(canonicalize(input)))
     .digest('hex')
-    .slice(0, 8);
+    .slice(0, length);
 }
 
 /**

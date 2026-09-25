@@ -1,0 +1,118 @@
+{
+  "name": "ns1:timeSeriesResponseType",
+  "declaredType": "org.cuahsi.waterml.TimeSeriesResponseType",
+  "scope": "javax.xml.bind.JAXBElement$GlobalScope",
+  "value": {
+    "queryInfo": {
+      "queryURL": "http://waterservices.usgs.gov/nwis/iv/format=json&sites=14233500&parameterCd=00060&period=PT2H",
+      "criteria": {
+        "locationParam": "[ALL:14233500]",
+        "variableParam": "[00060]",
+        "parameter": []
+      },
+      "note": [
+        { "value": "[ALL:14233500]", "title": "filter:sites" },
+        { "value": "[mode=PERIOD, period=PT2H, modifiedSince=null]", "title": "filter:timeRange" },
+        { "value": "methodIds=[ALL]", "title": "filter:methodId" },
+        { "value": "2026-09-25T03:57:40.366Z", "title": "requestDT" },
+        { "value": "40e603d0-b895-11f1-8e7f-005056beda50", "title": "requestId" },
+        {
+          "value": "Provisional data are subject to revision. Go to http://waterdata.usgs.gov/nwis/help/?provisional for more information.",
+          "title": "disclaimer"
+        },
+        { "value": "caas01", "title": "server" }
+      ]
+    },
+    "timeSeries": [
+      {
+        "sourceInfo": {
+          "siteName": "COWLITZ RIVER NEAR KOSMOS, WA",
+          "siteCode": [{ "value": "14233500", "network": "NWIS", "agencyCode": "USGS" }],
+          "timeZoneInfo": {
+            "defaultTimeZone": { "zoneOffset": "-08:00", "zoneAbbreviation": "PST" },
+            "daylightSavingsTimeZone": { "zoneOffset": "-07:00", "zoneAbbreviation": "PDT" },
+            "siteUsesDaylightSavingsTime": true
+          },
+          "geoLocation": {
+            "geogLocation": {
+              "srs": "EPSG:4326",
+              "latitude": 46.4662217,
+              "longitude": -122.1089856
+            },
+            "localSiteXY": []
+          },
+          "note": [],
+          "siteType": [],
+          "siteProperty": [
+            { "value": "ST", "name": "siteTypeCd" },
+            { "value": "17080005", "name": "hucCd" },
+            { "value": "53", "name": "stateCd" },
+            { "value": "53041", "name": "countyCd" }
+          ]
+        },
+        "variable": {
+          "variableCode": [
+            {
+              "value": "00060",
+              "network": "NWIS",
+              "vocabulary": "NWIS:UnitValues",
+              "variableID": 45807197,
+              "default": true
+            }
+          ],
+          "variableName": "Streamflow, ft&#179;/s",
+          "variableDescription": "Discharge, cubic feet per second",
+          "valueType": "Derived Value",
+          "unit": { "unitCode": "ft3/s" },
+          "options": { "option": [{ "name": "Statistic", "optionCode": "00000" }] },
+          "note": [],
+          "noDataValue": -999999.0,
+          "variableProperty": [],
+          "oid": "45807197"
+        },
+        "values": [
+          {
+            "value": [
+              { "value": "675", "qualifiers": ["P"], "dateTime": "2026-09-24T19:00:00.000-07:00" },
+              { "value": "672", "qualifiers": ["P"], "dateTime": "2026-09-24T19:15:00.000-07:00" },
+              { "value": "673", "qualifiers": ["P"], "dateTime": "2026-09-24T19:30:00.000-07:00" },
+              { "value": "659", "qualifiers": ["P"], "dateTime": "2026-09-24T19:45:00.000-07:00" },
+              { "value": "669", "qualifiers": ["P"], "dateTime": "2026-09-24T20:00:00.000-07:00" },
+              { "value": "677", "qualifiers": ["P"], "dateTime": "2026-09-24T20:15:00.000-07:00" },
+              { "value": "674", "qualifiers": ["P"], "dateTime": "2026-09-24T20:30:00.000-07:00" }
+            ],
+            "qualifier": [
+              {
+                "qualifierCode": "P",
+                "qualifierDescription": "Provisional data subject to revision.",
+                "qualifierID": 0,
+                "network": "NWIS",
+                "vocabulary": "uv_rmk_cd"
+              }
+            ],
+            "qualityControlLevel": [],
+            "method": [{ "methodDescription": "[(2)]", "methodID": 152130 }],
+            "source": [],
+            "offset": [],
+            "sample": [],
+            "censorCode": []
+          },
+          {
+            "value": [],
+            "qualifier": [],
+            "qualityControlLevel": [],
+            "method": [{ "methodDescription": "", "methodID": 170807 }],
+            "source": [],
+            "offset": [],
+            "sample": [],
+            "censorCode": []
+          }
+        ],
+        "name": "USGS:14233500:00060:00000"
+      }
+    ]
+  },
+  "nil": false,
+  "globalScope": true,
+  "typeSubstituted": false
+}

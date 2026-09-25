@@ -11,21 +11,56 @@ import {
   PeriodSchema,
   SiteNumberSchema,
 } from '@/services/nwis/input-schemas.js';
-import { classifyNwisFailure, getReadings } from '@/services/nwis/nwis-service.js';
+import { carriesValues, classifyNwisFailure, getReadings } from '@/services/nwis/nwis-service.js';
+import type { NwisTimeSeries } from '@/services/nwis/types.js';
 
 /**
- * Maximum value records returned per site+parameter series. This tool answers "what is happening
+ * Maximum value records returned per site + parameter + method series. This tool answers "what is happening
  * now" — a wide period multiplied by up to 100 sites otherwise returns a full time series through
  * structuredContent. water_get_series is the tool for a complete series.
  */
 const VALUES_PER_SERIES_CAP = 10;
+
+/**
+ * Maximum series returned per call. parameterCd is optional, so a full 100-site batch otherwise
+ * returns one series per site per published parameter per method — several hundred at
+ * instrumented sites. Equal to the site maximum, so every site that returned data keeps a series.
+ */
+const MAX_SERIES = 100;
+
+/**
+ * Keep at most {@link MAX_SERIES} series, round-robin across sites: every site's first series, then
+ * every site's second, and so on, with a site's valued series ahead of its empty ones — a series
+ * whose every record is no data ranks as empty. The kept series stay in NWIS response order (site,
+ * then parameter code, then method).
+ */
+function capSeries(series: NwisTimeSeries[]): NwisTimeSeries[] {
+  if (series.length <= MAX_SERIES) return series;
+  const perSite = [...Map.groupBy(series.keys(), (i) => series[i]?.siteNumber).values()].map(
+    (indices) => [
+      ...indices.filter((i) => carriesValues(series[i])),
+      ...indices.filter((i) => !carriesValues(series[i])),
+    ],
+  );
+  const kept = new Set<number>();
+  for (let round = 0; kept.size < MAX_SERIES; round++) {
+    for (const indices of perSite) {
+      const index = indices[round];
+      if (index !== undefined) kept.add(index);
+      if (kept.size === MAX_SERIES) break;
+    }
+  }
+  return series.filter((_, i) => kept.has(i));
+}
 
 /** A single value record in the readings output. */
 const ValueRecordSchema = z.object({
   dateTime: z.string().describe('ISO 8601 date-time of this observation.'),
   value: z
     .string()
-    .describe('Measured value as a string (empty string means no data for that interval).'),
+    .describe(
+      'Measured value as a string. Empty string when NWIS reported no value for that interval — qualifiers then give the reason (e.g. "Ssn" seasonal, "Dis" discontinued, "Dry", "Eqp" equipment malfunction).',
+    ),
   qualifiers: z
     .array(
       z.string().describe('A USGS data qualifier code (e.g. "P" = provisional, "A" = approved).'),
@@ -33,7 +68,7 @@ const ValueRecordSchema = z.object({
     .describe('Data qualifier codes for this value.'),
 });
 
-/** One time-series result per site+parameter combination. */
+/** One time-series result per site + parameter + method combination. */
 const ReadingResultSchema = z.object({
   siteNumber: z.string().describe('USGS site number (8–15 digits, e.g. "01646500").'),
   siteName: z
@@ -46,6 +81,18 @@ const ReadingResultSchema = z.object({
   unitCode: z
     .string()
     .describe('Unit of measure for the values in this series (e.g. "ft3/s", "ft", "°C").'),
+  methodId: z
+    .string()
+    .nullable()
+    .describe(
+      'NWIS method ID of this series. A site can measure one parameter with several sensors or at several locations — each is its own method and its own entry in readings. Null only when NWIS returned the series with no method block.',
+    ),
+  methodDescription: z
+    .string()
+    .nullable()
+    .describe(
+      'NWIS description of the method, e.g. "From multiparameter sonde", "[(2)]", or "7.1 ft from riverbed (top), [Discontinued]". Null when NWIS leaves it blank, as it does for the default series at most single-sensor sites.',
+    ),
   values: z
     .array(
       ValueRecordSchema.describe('A single instantaneous reading for this site and parameter.'),
@@ -62,7 +109,7 @@ const ReadingResultSchema = z.object({
 });
 
 export const waterGetReadings = tool('water_get_readings', {
-  description: `Get the latest instantaneous (~15-min, real-time) values for up to 100 USGS sites in one call — per-site, per-parameter records with timestamp, value, unit, and provisional/approved qualifiers. Each series returns only its ${VALUES_PER_SERIES_CAP} most recent records (totalValues reports the true count; truncated=true if any were capped); use water_get_series for a full date-range series. Sites NWIS returns nothing for are listed in missingSites, not dropped silently. Use water_find_sites first to discover site numbers and available parameters.`,
+  description: `Get the latest instantaneous (~15-min, real-time) values for up to 100 USGS sites in one call — per-site, per-parameter records with timestamp, value, unit, and provisional/approved qualifiers. Omitting parameterCd returns every parameter each site publishes. A site measuring one parameter with several sensors returns one series per method, each named by methodId and methodDescription. At most ${MAX_SERIES} series return per call — every site that returned data keeps at least one, and totalSeries reports how many NWIS returned; pass parameterCd or split the sites across calls to reach the rest. Each series returns only its ${VALUES_PER_SERIES_CAP} most recent records (totalValues reports the true count); truncated=true when either cap applied. Use water_get_series for a full date-range series. Sites NWIS returns nothing for are listed in missingSites, not dropped silently. Use water_find_sites first to discover site numbers and available parameters.`,
   annotations: { readOnlyHint: true, idempotentHint: true, openWorldHint: true },
   input: z.object({
     sites: z
@@ -76,7 +123,7 @@ export const waterGetReadings = tool('water_get_readings', {
       )
       .optional()
       .describe(
-        'Parameter codes to return. Omit to get all parameters available at each site. Use water_list_parameters to discover codes.',
+        `Parameter codes to return. Omit to get every parameter each site publishes — one series per site, parameter, and method, so a large batch can exceed the ${MAX_SERIES}-series cap. Use water_list_parameters to discover codes.`,
       ),
     period: PeriodSchema.default('PT2H').describe(
       `ISO 8601 duration for the lookback period (e.g. "PT2H" = last 2 hours, "P1D" = last 1 day, "P7D" = last 7 days). Default: "PT2H" (last 2 hours of readings). Widening it raises totalValues, but each series still returns only its ${VALUES_PER_SERIES_CAP} most recent records — use water_get_series to retrieve a full series.`,
@@ -84,13 +131,30 @@ export const waterGetReadings = tool('water_get_readings', {
   }),
   output: z.object({
     readings: z
-      .array(ReadingResultSchema.describe('Time series result for one site+parameter combination.'))
-      .describe('Time series per site+parameter combination.'),
-    total: z.number().int().describe('Total number of site+parameter time series returned.'),
+      .array(
+        ReadingResultSchema.describe(
+          'Time series result for one site + parameter + method combination.',
+        ),
+      )
+      .describe(
+        `Time series per site + parameter + method combination, in NWIS order (site, then parameter code, then method). A method block NWIS returned empty is omitted when another method of the same site and parameter carries values. At most ${MAX_SERIES}: past that, series are kept round-robin across sites — every site's first series, then every site's second — with a site's series carrying values ahead of its empty ones, a series whose every record is no data counting as empty.`,
+      ),
+    total: z
+      .number()
+      .int()
+      .describe(
+        `Number of site + parameter + method time series returned in readings (at most ${MAX_SERIES}).`,
+      ),
+    totalSeries: z
+      .number()
+      .int()
+      .describe(
+        `Number of site + parameter + method time series before the ${MAX_SERIES}-series cap — an empty method block omitted as described under readings is not counted. Greater than total exactly when the cap dropped series; narrow with parameterCd or split the sites across calls to get the rest.`,
+      ),
     truncated: z
       .boolean()
       .describe(
-        `True when at least one series held more than ${VALUES_PER_SERIES_CAP} records and was capped. Per-series counts are in readings[].totalValues; use water_get_series for the full series.`,
+        `True when either cap applied. The series cap: totalSeries > total — pass parameterCd or split the sites across calls. The ${VALUES_PER_SERIES_CAP}-record cap: some readings[].totalValues > values.length — use water_get_series for the full series.`,
       ),
     missingSites: z
       .array(z.string().describe('A requested USGS site number that returned no time series.'))
@@ -141,7 +205,7 @@ export const waterGetReadings = tool('water_get_readings', {
     {
       reason: 'upstream_error',
       code: JsonRpcErrorCode.ServiceUnavailable,
-      when: 'NWIS returned a 5xx error or the request timed out.',
+      when: 'NWIS returned a 5xx error, timed out, or sent a response body that is not valid WaterML-JSON (cut off mid-document), and retrying did not clear it.',
       recovery: 'The USGS service is temporarily unavailable. Retry after a short backoff.',
       retryable: true,
       thrownBy: 'service',
@@ -192,16 +256,19 @@ export const waterGetReadings = tool('water_get_readings', {
       );
     }
 
-    const readings = series.map((s) => ({
+    const readings = capSeries(series).map((s) => ({
       siteNumber: s.siteNumber,
       siteName: s.siteName,
       parameterCd: s.parameterCd,
       parameterName: s.parameterName,
       unitCode: s.unitCode,
+      methodId: s.methodId,
+      methodDescription: s.methodDescription,
       values: s.values.slice(-VALUES_PER_SERIES_CAP),
       totalValues: s.values.length,
     }));
-    const truncated = readings.some((r) => r.values.length < r.totalValues);
+    const truncated =
+      readings.length < series.length || readings.some((r) => r.values.length < r.totalValues);
 
     // NWIS drops unknown or non-matching sites from a batch response without comment — diff the
     // request against what came back so a partial batch is visible rather than inferred.
@@ -218,18 +285,38 @@ export const waterGetReadings = tool('water_get_readings', {
 
     ctx.log.info('Readings fetched', {
       seriesCount: readings.length,
+      totalSeries: series.length,
       truncated,
       missingSiteCount: missingSites.length,
     });
-    return { readings, total: readings.length, truncated, missingSites };
+    return {
+      readings,
+      total: readings.length,
+      totalSeries: series.length,
+      truncated,
+      missingSites,
+    };
   },
 
   format(result) {
-    const lines = [
-      result.truncated
-        ? `**${result.total} time series** *(truncated — each series shows its latest ${VALUES_PER_SERIES_CAP} records; use water_get_series for full history)*\n`
-        : `**${result.total} time series**\n`,
-    ];
+    const seriesCapped = result.totalSeries > result.total;
+    const recordsCapped = result.readings.some((r) => r.values.length < r.totalValues);
+    const count = seriesCapped
+      ? `**${result.total} of ${result.totalSeries} time series**`
+      : `**${result.total} time series**`;
+    const seriesAdvice =
+      'pass parameterCd to choose which parameters return, or split the sites across calls';
+    const recordAdvice = 'use water_get_series for full history';
+    const recordCap = `each series shows its latest ${VALUES_PER_SERIES_CAP} records`;
+    const caption =
+      seriesCapped && recordsCapped
+        ? ` *(truncated — capped at ${MAX_SERIES} series, and ${recordCap}; ${seriesAdvice}; ${recordAdvice})*`
+        : seriesCapped
+          ? ` *(truncated — capped at ${MAX_SERIES} series; ${seriesAdvice})*`
+          : result.truncated
+            ? ` *(truncated — ${recordCap}; ${recordAdvice})*`
+            : '';
+    const lines = [`${count}${caption}\n`];
 
     if (result.missingSites.length > 0) {
       lines.push(
@@ -240,10 +327,15 @@ export const waterGetReadings = tool('water_get_readings', {
     for (const r of result.readings) {
       lines.push(
         `### ${r.siteName} (${r.siteNumber}) — ${r.parameterName} | code: ${r.parameterCd} | unit: ${r.unitCode}`,
+        `Method: ${r.methodDescription ?? '(no description)'} | method ID: ${r.methodId ?? 'none'}`,
       );
       for (const v of r.values) {
         const qualifier = v.qualifiers.length > 0 ? ` [${v.qualifiers.join(',')}]` : '';
-        lines.push(`- ${v.dateTime}: **${v.value}** ${r.unitCode}${qualifier}`);
+        lines.push(
+          v.value === ''
+            ? `- ${v.dateTime}: no data${qualifier}`
+            : `- ${v.dateTime}: **${v.value}** ${r.unitCode}${qualifier}`,
+        );
       }
       lines.push(
         r.values.length < r.totalValues

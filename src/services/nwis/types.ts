@@ -40,12 +40,34 @@ export interface NwisValueRecord {
   dateTime: string;
   /** Data qualifier codes (e.g. ["P"] for provisional, ["A"] for approved). */
   qualifiers: string[];
-  /** Measured value as a string (NWIS returns strings; may be empty for missing data). */
+  /**
+   * Measured value as a string (NWIS returns strings). Empty when NWIS reported no value — a blank
+   * record, or one holding the series' no-data value (`-999999`), whose qualifiers then name the
+   * reason (e.g. `Ssn` seasonal, `Dis` discontinued, `Dry`, `Eqp` equipment).
+   */
   value: string;
 }
 
-/** A time series for a site+parameter combination (IV or DV). */
+/**
+ * One method's time series for a site + parameter + statistic (IV or DV).
+ *
+ * A WaterML `timeSeries` carries one `values[]` block per method — a distinct sensor or
+ * measurement location for the same parameter — so one upstream `timeSeries` can yield several of
+ * these. The daily-values service also returns one `timeSeries` per statistic code.
+ */
 export interface NwisTimeSeries {
+  /**
+   * NWIS method description for this block (HTML entities decoded), e.g. "From multiparameter
+   * sonde" or "[(2)]". Null when NWIS labels the method with an empty string, which it does for
+   * the default series at most single-sensor sites.
+   */
+  methodDescription: string | null;
+  /**
+   * NWIS method ID of this block, as a string. Scoped to the service that returned it: an IV
+   * method ID, a DV method ID, and the stat service's `ts_id` for the same sensor are different
+   * numbers. Null only when the upstream `timeSeries` carried no method block at all.
+   */
+  methodId: string | null;
   /** Parameter code (e.g. "00060"). */
   parameterCd: string;
   /** Human-readable parameter name. */
@@ -54,6 +76,10 @@ export interface NwisTimeSeries {
   siteName: string;
   /** USGS site number. */
   siteNumber: string;
+  /** NWIS statistic code: "00000" for instantaneous values, "00003" for a daily mean, etc. */
+  statCd: string;
+  /** Statistic name NWIS attaches to the code (e.g. "Mean", "Maximum"); null when it gives none, as for instantaneous values. */
+  statName: string | null;
   /** Unit code (e.g. "ft3/s"). */
   unitCode: string;
   /** Value records. */
@@ -90,6 +116,16 @@ export interface NwisStatRow {
   p75: number | null;
   /** 95th percentile. */
   p95: number | null;
+  /**
+   * Location description of the time series these statistics were computed from (`loc_web_ds`),
+   * e.g. "From multiparameter sonde". Null when NWIS leaves it blank.
+   */
+  seriesDescription: string | null;
+  /**
+   * Stat-service time-series ID (`ts_id`) — the daily-mean series the percentiles come from. Not
+   * the IV method ID of the same sensor; NWIS numbers the two independently. Null when absent.
+   */
+  tsId: string | null;
 }
 
 /** Result from the stats service for a site+parameter. */

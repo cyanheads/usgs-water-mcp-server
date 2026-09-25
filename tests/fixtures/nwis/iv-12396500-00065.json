@@ -1,0 +1,162 @@
+{
+  "name": "ns1:timeSeriesResponseType",
+  "declaredType": "org.cuahsi.waterml.TimeSeriesResponseType",
+  "scope": "javax.xml.bind.JAXBElement$GlobalScope",
+  "value": {
+    "queryInfo": {
+      "queryURL": "http://waterservices.usgs.gov/nwis/iv/format=json&sites=12396500&parameterCd=00065&period=PT2H",
+      "criteria": {
+        "locationParam": "[ALL:12396500]",
+        "variableParam": "[00065]",
+        "parameter": []
+      },
+      "note": [
+        { "value": "[ALL:12396500]", "title": "filter:sites" },
+        { "value": "[mode=PERIOD, period=PT2H, modifiedSince=null]", "title": "filter:timeRange" },
+        { "value": "methodIds=[ALL]", "title": "filter:methodId" },
+        { "value": "2026-09-25T03:57:44.536Z", "title": "requestDT" },
+        { "value": "43627580-b895-11f1-8e7f-005056beda50", "title": "requestId" },
+        {
+          "value": "Provisional data are subject to revision. Go to http://waterdata.usgs.gov/nwis/help/?provisional for more information.",
+          "title": "disclaimer"
+        },
+        { "value": "caas01", "title": "server" }
+      ]
+    },
+    "timeSeries": [
+      {
+        "sourceInfo": {
+          "siteName": "PEND OREILLE RIVER BELOW BOX CANYON NEAR IONE, WA",
+          "siteCode": [{ "value": "12396500", "network": "NWIS", "agencyCode": "USGS" }],
+          "timeZoneInfo": {
+            "defaultTimeZone": { "zoneOffset": "-08:00", "zoneAbbreviation": "PST" },
+            "daylightSavingsTimeZone": { "zoneOffset": "-07:00", "zoneAbbreviation": "PDT" },
+            "siteUsesDaylightSavingsTime": true
+          },
+          "geoLocation": {
+            "geogLocation": {
+              "srs": "EPSG:4326",
+              "latitude": 48.7809561,
+              "longitude": -117.4163706
+            },
+            "localSiteXY": []
+          },
+          "note": [],
+          "siteType": [],
+          "siteProperty": [
+            { "value": "ST", "name": "siteTypeCd" },
+            { "value": "17010216", "name": "hucCd" },
+            { "value": "53", "name": "stateCd" },
+            { "value": "53051", "name": "countyCd" }
+          ]
+        },
+        "variable": {
+          "variableCode": [
+            {
+              "value": "00065",
+              "network": "NWIS",
+              "vocabulary": "NWIS:UnitValues",
+              "variableID": 45807202,
+              "default": true
+            }
+          ],
+          "variableName": "Gage height, ft",
+          "variableDescription": "Gage height, feet",
+          "valueType": "Derived Value",
+          "unit": { "unitCode": "ft" },
+          "options": { "option": [{ "name": "Statistic", "optionCode": "00000" }] },
+          "note": [],
+          "noDataValue": -999999.0,
+          "variableProperty": [],
+          "oid": "45807202"
+        },
+        "values": [
+          {
+            "value": [
+              {
+                "value": "88.08",
+                "qualifiers": ["P"],
+                "dateTime": "2026-09-24T19:00:00.000-07:00"
+              },
+              {
+                "value": "88.06",
+                "qualifiers": ["P"],
+                "dateTime": "2026-09-24T19:15:00.000-07:00"
+              },
+              {
+                "value": "88.03",
+                "qualifiers": ["P"],
+                "dateTime": "2026-09-24T19:30:00.000-07:00"
+              },
+              {
+                "value": "88.01",
+                "qualifiers": ["P"],
+                "dateTime": "2026-09-24T19:45:00.000-07:00"
+              },
+              { "value": "87.99", "qualifiers": ["P"], "dateTime": "2026-09-24T20:00:00.000-07:00" }
+            ],
+            "qualifier": [
+              {
+                "qualifierCode": "P",
+                "qualifierDescription": "Provisional data subject to revision.",
+                "qualifierID": 0,
+                "network": "NWIS",
+                "vocabulary": "uv_rmk_cd"
+              }
+            ],
+            "qualityControlLevel": [],
+            "method": [{ "methodDescription": "", "methodID": 151590 }],
+            "source": [],
+            "offset": [],
+            "sample": [],
+            "censorCode": []
+          },
+          {
+            "value": [
+              {
+                "value": "86.33",
+                "qualifiers": ["P"],
+                "dateTime": "2026-09-24T19:00:00.000-07:00"
+              },
+              {
+                "value": "86.29",
+                "qualifiers": ["P"],
+                "dateTime": "2026-09-24T19:15:00.000-07:00"
+              },
+              {
+                "value": "86.24",
+                "qualifiers": ["P"],
+                "dateTime": "2026-09-24T19:30:00.000-07:00"
+              },
+              {
+                "value": "86.19",
+                "qualifiers": ["P"],
+                "dateTime": "2026-09-24T19:45:00.000-07:00"
+              },
+              { "value": "86.18", "qualifiers": ["P"], "dateTime": "2026-09-24T20:00:00.000-07:00" }
+            ],
+            "qualifier": [
+              {
+                "qualifierCode": "P",
+                "qualifierDescription": "Provisional data subject to revision.",
+                "qualifierID": 0,
+                "network": "NWIS",
+                "vocabulary": "uv_rmk_cd"
+              }
+            ],
+            "qualityControlLevel": [],
+            "method": [{ "methodDescription": "AUXILIARY GAGE", "methodID": 151591 }],
+            "source": [],
+            "offset": [],
+            "sample": [],
+            "censorCode": []
+          }
+        ],
+        "name": "USGS:12396500:00065:00000"
+      }
+    ]
+  },
+  "nil": false,
+  "globalScope": true,
+  "typeSubstituted": false
+}

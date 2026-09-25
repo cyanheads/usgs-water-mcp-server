@@ -1,0 +1,148 @@
+{
+  "name": "ns1:timeSeriesResponseType",
+  "declaredType": "org.cuahsi.waterml.TimeSeriesResponseType",
+  "scope": "javax.xml.bind.JAXBElement$GlobalScope",
+  "value": {
+    "queryInfo": {
+      "queryURL": "http://waterservices.usgs.gov/nwis/iv/format=json&sites=12024000&parameterCd=00060&period=PT2H",
+      "criteria": {
+        "locationParam": "[ALL:12024000]",
+        "variableParam": "[00060]",
+        "parameter": []
+      },
+      "note": [
+        { "value": "[ALL:12024000]", "title": "filter:sites" },
+        { "value": "[mode=PERIOD, period=PT2H, modifiedSince=null]", "title": "filter:timeRange" },
+        { "value": "methodIds=[ALL]", "title": "filter:methodId" },
+        { "value": "2026-09-25T04:43:18.438Z", "title": "requestDT" },
+        { "value": "a0eaa550-b89b-11f1-8e7f-005056beda50", "title": "requestId" },
+        {
+          "value": "Provisional data are subject to revision. Go to http://waterdata.usgs.gov/nwis/help/?provisional for more information.",
+          "title": "disclaimer"
+        },
+        { "value": "caas01", "title": "server" }
+      ]
+    },
+    "timeSeries": [
+      {
+        "sourceInfo": {
+          "siteName": "SOUTH FORK NEWAUKUM RIVER NEAR ONALASKA, WA",
+          "siteCode": [{ "value": "12024000", "network": "NWIS", "agencyCode": "USGS" }],
+          "timeZoneInfo": {
+            "defaultTimeZone": { "zoneOffset": "-08:00", "zoneAbbreviation": "PST" },
+            "daylightSavingsTimeZone": { "zoneOffset": "-07:00", "zoneAbbreviation": "PDT" },
+            "siteUsesDaylightSavingsTime": true
+          },
+          "geoLocation": {
+            "geogLocation": {
+              "srs": "EPSG:4326",
+              "latitude": 46.57566178,
+              "longitude": -122.6851159
+            },
+            "localSiteXY": []
+          },
+          "note": [],
+          "siteType": [],
+          "siteProperty": [
+            { "value": "ST", "name": "siteTypeCd" },
+            { "value": "17100103", "name": "hucCd" },
+            { "value": "53", "name": "stateCd" },
+            { "value": "53041", "name": "countyCd" }
+          ]
+        },
+        "variable": {
+          "variableCode": [
+            {
+              "value": "00060",
+              "network": "NWIS",
+              "vocabulary": "NWIS:UnitValues",
+              "variableID": 45807197,
+              "default": true
+            }
+          ],
+          "variableName": "Streamflow, ft&#179;/s",
+          "variableDescription": "Discharge, cubic feet per second",
+          "valueType": "Derived Value",
+          "unit": { "unitCode": "ft3/s" },
+          "options": { "option": [{ "name": "Statistic", "optionCode": "00000" }] },
+          "note": [],
+          "noDataValue": -999999.0,
+          "variableProperty": [],
+          "oid": "45807197"
+        },
+        "values": [
+          {
+            "value": [
+              {
+                "value": "-999999",
+                "qualifiers": ["P", "Ssn"],
+                "dateTime": "2026-09-24T19:45:00.000-07:00"
+              },
+              {
+                "value": "-999999",
+                "qualifiers": ["P", "Ssn"],
+                "dateTime": "2026-09-24T20:00:00.000-07:00"
+              },
+              {
+                "value": "-999999",
+                "qualifiers": ["P", "Ssn"],
+                "dateTime": "2026-09-24T20:15:00.000-07:00"
+              },
+              {
+                "value": "-999999",
+                "qualifiers": ["P", "Ssn"],
+                "dateTime": "2026-09-24T20:30:00.000-07:00"
+              },
+              {
+                "value": "-999999",
+                "qualifiers": ["P", "Ssn"],
+                "dateTime": "2026-09-24T20:45:00.000-07:00"
+              },
+              {
+                "value": "-999999",
+                "qualifiers": ["P", "Ssn"],
+                "dateTime": "2026-09-24T21:00:00.000-07:00"
+              },
+              {
+                "value": "-999999",
+                "qualifiers": ["P", "Ssn"],
+                "dateTime": "2026-09-24T21:15:00.000-07:00"
+              },
+              {
+                "value": "-999999",
+                "qualifiers": ["P", "Ssn"],
+                "dateTime": "2026-09-24T21:30:00.000-07:00"
+              }
+            ],
+            "qualifier": [
+              {
+                "qualifierCode": "Ssn",
+                "qualifierDescription": "Parameter monitored seasonally.",
+                "qualifierID": 0,
+                "network": "NWIS",
+                "vocabulary": "uv_rmk_cd"
+              },
+              {
+                "qualifierCode": "P",
+                "qualifierDescription": "Provisional data subject to revision.",
+                "qualifierID": 1,
+                "network": "NWIS",
+                "vocabulary": "uv_rmk_cd"
+              }
+            ],
+            "qualityControlLevel": [],
+            "method": [{ "methodDescription": "", "methodID": 150572 }],
+            "source": [],
+            "offset": [],
+            "sample": [],
+            "censorCode": []
+          }
+        ],
+        "name": "USGS:12024000:00060:00000"
+      }
+    ]
+  },
+  "nil": false,
+  "globalScope": true,
+  "typeSubstituted": false
+}

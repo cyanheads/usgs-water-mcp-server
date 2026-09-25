@@ -1,0 +1,573 @@
+{
+  "name": "ns1:timeSeriesResponseType",
+  "declaredType": "org.cuahsi.waterml.TimeSeriesResponseType",
+  "scope": "javax.xml.bind.JAXBElement$GlobalScope",
+  "value": {
+    "queryInfo": {
+      "queryURL": "http://waterservices.usgs.gov/nwis/dv/format=json&sites=01646500&parameterCd=00010&startDT=2019-09-01&endDT=2019-09-05",
+      "criteria": {
+        "locationParam": "[ALL:01646500]",
+        "variableParam": "[00010]",
+        "timeParam": {
+          "beginDateTime": "2019-09-01T00:00:00.000",
+          "endDateTime": "2019-09-05T00:00:00.000"
+        },
+        "parameter": []
+      },
+      "note": [
+        { "value": "[ALL:01646500]", "title": "filter:sites" },
+        {
+          "value": "[mode=RANGE, modifiedSince=null] interval={INTERVAL[2019-09-01T00:00:00.000-04:00/2019-09-05T00:00:00.000-04:00]}",
+          "title": "filter:timeRange"
+        },
+        { "value": "methodIds=[ALL]", "title": "filter:methodId" },
+        { "value": "2026-09-25T03:50:25.184Z", "title": "requestDT" },
+        { "value": "3d8282f0-b894-11f1-8c9d-2cea7f5e5ede", "title": "requestId" },
+        {
+          "value": "Provisional data are subject to revision. Go to http://waterdata.usgs.gov/nwis/help/?provisional for more information.",
+          "title": "disclaimer"
+        },
+        { "value": "sdas01", "title": "server" }
+      ]
+    },
+    "timeSeries": [
+      {
+        "sourceInfo": {
+          "siteName": "POTOMAC RIVER NEAR WASH, DC LITTLE FALLS PUMP STA",
+          "siteCode": [{ "value": "01646500", "network": "NWIS", "agencyCode": "USGS" }],
+          "timeZoneInfo": {
+            "defaultTimeZone": { "zoneOffset": "-05:00", "zoneAbbreviation": "EST" },
+            "daylightSavingsTimeZone": { "zoneOffset": "-04:00", "zoneAbbreviation": "EDT" },
+            "siteUsesDaylightSavingsTime": true
+          },
+          "geoLocation": {
+            "geogLocation": {
+              "srs": "EPSG:4326",
+              "latitude": 38.94977778,
+              "longitude": -77.12763889
+            },
+            "localSiteXY": []
+          },
+          "note": [],
+          "siteType": [],
+          "siteProperty": [
+            { "value": "ST", "name": "siteTypeCd" },
+            { "value": "020700081005", "name": "hucCd" },
+            { "value": "24", "name": "stateCd" },
+            { "value": "24031", "name": "countyCd" }
+          ]
+        },
+        "variable": {
+          "variableCode": [
+            {
+              "value": "00010",
+              "network": "NWIS",
+              "vocabulary": "NWIS:UnitValues",
+              "variableID": 45807042,
+              "default": true
+            }
+          ],
+          "variableName": "Temperature, water, &#176;C",
+          "variableDescription": "Temperature, water, degrees Celsius",
+          "valueType": "Derived Value",
+          "unit": { "unitCode": "deg C" },
+          "options": {
+            "option": [{ "value": "Maximum", "name": "Statistic", "optionCode": "00001" }]
+          },
+          "note": [],
+          "noDataValue": -999999.0,
+          "variableProperty": [],
+          "oid": "45807042"
+        },
+        "values": [
+          {
+            "value": [
+              { "value": "27.4", "qualifiers": ["A"], "dateTime": "2019-09-01T00:00:00.000" },
+              { "value": "27.9", "qualifiers": ["A"], "dateTime": "2019-09-02T00:00:00.000" },
+              { "value": "27.8", "qualifiers": ["A"], "dateTime": "2019-09-03T00:00:00.000" },
+              { "value": "29.0", "qualifiers": ["A"], "dateTime": "2019-09-04T00:00:00.000" },
+              { "value": "28.1", "qualifiers": ["A"], "dateTime": "2019-09-05T00:00:00.000" }
+            ],
+            "qualifier": [
+              {
+                "qualifierCode": "A",
+                "qualifierDescription": "Approved for publication -- Processing and review completed.",
+                "qualifierID": 0,
+                "network": "NWIS",
+                "vocabulary": "uv_rmk_cd"
+              }
+            ],
+            "qualityControlLevel": [],
+            "method": [
+              {
+                "methodDescription": "4.1 ft from riverbed (middle), [Discontinued]",
+                "methodID": 68479
+              }
+            ],
+            "source": [],
+            "offset": [],
+            "sample": [],
+            "censorCode": []
+          },
+          {
+            "value": [
+              { "value": "27.3", "qualifiers": ["A"], "dateTime": "2019-09-01T00:00:00.000" },
+              { "value": "27.4", "qualifiers": ["A"], "dateTime": "2019-09-02T00:00:00.000" },
+              { "value": "27.4", "qualifiers": ["A"], "dateTime": "2019-09-03T00:00:00.000" },
+              { "value": "28.2", "qualifiers": ["A"], "dateTime": "2019-09-04T00:00:00.000" },
+              { "value": "28.0", "qualifiers": ["A"], "dateTime": "2019-09-05T00:00:00.000" }
+            ],
+            "qualifier": [
+              {
+                "qualifierCode": "A",
+                "qualifierDescription": "Approved for publication -- Processing and review completed.",
+                "qualifierID": 0,
+                "network": "NWIS",
+                "vocabulary": "uv_rmk_cd"
+              }
+            ],
+            "qualityControlLevel": [],
+            "method": [
+              {
+                "methodDescription": "1.0 ft from riverbed (bottom), [Discontinued]",
+                "methodID": 68482
+              }
+            ],
+            "source": [],
+            "offset": [],
+            "sample": [],
+            "censorCode": []
+          },
+          {
+            "value": [
+              { "value": "27.1", "qualifiers": ["A"], "dateTime": "2019-09-01T00:00:00.000" },
+              { "value": "27.3", "qualifiers": ["A"], "dateTime": "2019-09-02T00:00:00.000" },
+              { "value": "27.2", "qualifiers": ["A"], "dateTime": "2019-09-03T00:00:00.000" },
+              { "value": "28.0", "qualifiers": ["A"], "dateTime": "2019-09-04T00:00:00.000" },
+              { "value": "27.9", "qualifiers": ["A"], "dateTime": "2019-09-05T00:00:00.000" }
+            ],
+            "qualifier": [
+              {
+                "qualifierCode": "A",
+                "qualifierDescription": "Approved for publication -- Processing and review completed.",
+                "qualifierID": 0,
+                "network": "NWIS",
+                "vocabulary": "uv_rmk_cd"
+              }
+            ],
+            "qualityControlLevel": [],
+            "method": [
+              {
+                "methodDescription": "7.1 ft from riverbed (top), [Discontinued]",
+                "methodID": 68485
+              }
+            ],
+            "source": [],
+            "offset": [],
+            "sample": [],
+            "censorCode": []
+          },
+          {
+            "value": [],
+            "qualifier": [],
+            "qualityControlLevel": [],
+            "method": [
+              {
+                "methodDescription": "From multiparameter sonde, [Discontinued]",
+                "methodID": 68512
+              }
+            ],
+            "source": [],
+            "offset": [],
+            "sample": [],
+            "censorCode": []
+          },
+          {
+            "value": [
+              { "value": "27.3", "qualifiers": ["A"], "dateTime": "2019-09-01T00:00:00.000" },
+              { "value": "27.9", "qualifiers": ["A"], "dateTime": "2019-09-02T00:00:00.000" },
+              { "value": "27.5", "qualifiers": ["A"], "dateTime": "2019-09-03T00:00:00.000" },
+              { "value": "28.9", "qualifiers": ["A"], "dateTime": "2019-09-04T00:00:00.000" },
+              { "value": "28.0", "qualifiers": ["A"], "dateTime": "2019-09-05T00:00:00.000" }
+            ],
+            "qualifier": [
+              {
+                "qualifierCode": "A",
+                "qualifierDescription": "Approved for publication -- Processing and review completed.",
+                "qualifierID": 0,
+                "network": "NWIS",
+                "vocabulary": "uv_rmk_cd"
+              }
+            ],
+            "qualityControlLevel": [],
+            "method": [{ "methodDescription": "From multiparameter sonde", "methodID": 255632 }],
+            "source": [],
+            "offset": [],
+            "sample": [],
+            "censorCode": []
+          }
+        ],
+        "name": "USGS:01646500:00010:00001"
+      },
+      {
+        "sourceInfo": {
+          "siteName": "POTOMAC RIVER NEAR WASH, DC LITTLE FALLS PUMP STA",
+          "siteCode": [{ "value": "01646500", "network": "NWIS", "agencyCode": "USGS" }],
+          "timeZoneInfo": {
+            "defaultTimeZone": { "zoneOffset": "-05:00", "zoneAbbreviation": "EST" },
+            "daylightSavingsTimeZone": { "zoneOffset": "-04:00", "zoneAbbreviation": "EDT" },
+            "siteUsesDaylightSavingsTime": true
+          },
+          "geoLocation": {
+            "geogLocation": {
+              "srs": "EPSG:4326",
+              "latitude": 38.94977778,
+              "longitude": -77.12763889
+            },
+            "localSiteXY": []
+          },
+          "note": [],
+          "siteType": [],
+          "siteProperty": [
+            { "value": "ST", "name": "siteTypeCd" },
+            { "value": "020700081005", "name": "hucCd" },
+            { "value": "24", "name": "stateCd" },
+            { "value": "24031", "name": "countyCd" }
+          ]
+        },
+        "variable": {
+          "variableCode": [
+            {
+              "value": "00010",
+              "network": "NWIS",
+              "vocabulary": "NWIS:UnitValues",
+              "variableID": 45807042,
+              "default": true
+            }
+          ],
+          "variableName": "Temperature, water, &#176;C",
+          "variableDescription": "Temperature, water, degrees Celsius",
+          "valueType": "Derived Value",
+          "unit": { "unitCode": "deg C" },
+          "options": {
+            "option": [{ "value": "Minimum", "name": "Statistic", "optionCode": "00002" }]
+          },
+          "note": [],
+          "noDataValue": -999999.0,
+          "variableProperty": [],
+          "oid": "45807042"
+        },
+        "values": [
+          {
+            "value": [
+              { "value": "26.0", "qualifiers": ["A"], "dateTime": "2019-09-01T00:00:00.000" },
+              { "value": "26.1", "qualifiers": ["A"], "dateTime": "2019-09-02T00:00:00.000" },
+              { "value": "26.2", "qualifiers": ["A"], "dateTime": "2019-09-03T00:00:00.000" },
+              { "value": "26.6", "qualifiers": ["A"], "dateTime": "2019-09-04T00:00:00.000" },
+              { "value": "27.2", "qualifiers": ["A"], "dateTime": "2019-09-05T00:00:00.000" }
+            ],
+            "qualifier": [
+              {
+                "qualifierCode": "A",
+                "qualifierDescription": "Approved for publication -- Processing and review completed.",
+                "qualifierID": 0,
+                "network": "NWIS",
+                "vocabulary": "uv_rmk_cd"
+              }
+            ],
+            "qualityControlLevel": [],
+            "method": [
+              {
+                "methodDescription": "4.1 ft from riverbed (middle), [Discontinued]",
+                "methodID": 68480
+              }
+            ],
+            "source": [],
+            "offset": [],
+            "sample": [],
+            "censorCode": []
+          },
+          {
+            "value": [
+              { "value": "25.9", "qualifiers": ["A"], "dateTime": "2019-09-01T00:00:00.000" },
+              { "value": "26.1", "qualifiers": ["A"], "dateTime": "2019-09-02T00:00:00.000" },
+              { "value": "26.2", "qualifiers": ["A"], "dateTime": "2019-09-03T00:00:00.000" },
+              { "value": "26.5", "qualifiers": ["A"], "dateTime": "2019-09-04T00:00:00.000" },
+              { "value": "27.2", "qualifiers": ["A"], "dateTime": "2019-09-05T00:00:00.000" }
+            ],
+            "qualifier": [
+              {
+                "qualifierCode": "A",
+                "qualifierDescription": "Approved for publication -- Processing and review completed.",
+                "qualifierID": 0,
+                "network": "NWIS",
+                "vocabulary": "uv_rmk_cd"
+              }
+            ],
+            "qualityControlLevel": [],
+            "method": [
+              {
+                "methodDescription": "1.0 ft from riverbed (bottom), [Discontinued]",
+                "methodID": 68483
+              }
+            ],
+            "source": [],
+            "offset": [],
+            "sample": [],
+            "censorCode": []
+          },
+          {
+            "value": [
+              { "value": "25.8", "qualifiers": ["A"], "dateTime": "2019-09-01T00:00:00.000" },
+              { "value": "26.0", "qualifiers": ["A"], "dateTime": "2019-09-02T00:00:00.000" },
+              { "value": "26.1", "qualifiers": ["A"], "dateTime": "2019-09-03T00:00:00.000" },
+              { "value": "26.4", "qualifiers": ["A"], "dateTime": "2019-09-04T00:00:00.000" },
+              { "value": "27.1", "qualifiers": ["A"], "dateTime": "2019-09-05T00:00:00.000" }
+            ],
+            "qualifier": [
+              {
+                "qualifierCode": "A",
+                "qualifierDescription": "Approved for publication -- Processing and review completed.",
+                "qualifierID": 0,
+                "network": "NWIS",
+                "vocabulary": "uv_rmk_cd"
+              }
+            ],
+            "qualityControlLevel": [],
+            "method": [
+              {
+                "methodDescription": "7.1 ft from riverbed (top), [Discontinued]",
+                "methodID": 68486
+              }
+            ],
+            "source": [],
+            "offset": [],
+            "sample": [],
+            "censorCode": []
+          },
+          {
+            "value": [],
+            "qualifier": [],
+            "qualityControlLevel": [],
+            "method": [
+              {
+                "methodDescription": "From multiparameter sonde, [Discontinued]",
+                "methodID": 68513
+              }
+            ],
+            "source": [],
+            "offset": [],
+            "sample": [],
+            "censorCode": []
+          },
+          {
+            "value": [
+              { "value": "25.9", "qualifiers": ["A"], "dateTime": "2019-09-01T00:00:00.000" },
+              { "value": "26.1", "qualifiers": ["A"], "dateTime": "2019-09-02T00:00:00.000" },
+              { "value": "26.2", "qualifiers": ["A"], "dateTime": "2019-09-03T00:00:00.000" },
+              { "value": "26.5", "qualifiers": ["A"], "dateTime": "2019-09-04T00:00:00.000" },
+              { "value": "27.2", "qualifiers": ["A"], "dateTime": "2019-09-05T00:00:00.000" }
+            ],
+            "qualifier": [
+              {
+                "qualifierCode": "A",
+                "qualifierDescription": "Approved for publication -- Processing and review completed.",
+                "qualifierID": 0,
+                "network": "NWIS",
+                "vocabulary": "uv_rmk_cd"
+              }
+            ],
+            "qualityControlLevel": [],
+            "method": [{ "methodDescription": "From multiparameter sonde", "methodID": 255631 }],
+            "source": [],
+            "offset": [],
+            "sample": [],
+            "censorCode": []
+          }
+        ],
+        "name": "USGS:01646500:00010:00002"
+      },
+      {
+        "sourceInfo": {
+          "siteName": "POTOMAC RIVER NEAR WASH, DC LITTLE FALLS PUMP STA",
+          "siteCode": [{ "value": "01646500", "network": "NWIS", "agencyCode": "USGS" }],
+          "timeZoneInfo": {
+            "defaultTimeZone": { "zoneOffset": "-05:00", "zoneAbbreviation": "EST" },
+            "daylightSavingsTimeZone": { "zoneOffset": "-04:00", "zoneAbbreviation": "EDT" },
+            "siteUsesDaylightSavingsTime": true
+          },
+          "geoLocation": {
+            "geogLocation": {
+              "srs": "EPSG:4326",
+              "latitude": 38.94977778,
+              "longitude": -77.12763889
+            },
+            "localSiteXY": []
+          },
+          "note": [],
+          "siteType": [],
+          "siteProperty": [
+            { "value": "ST", "name": "siteTypeCd" },
+            { "value": "020700081005", "name": "hucCd" },
+            { "value": "24", "name": "stateCd" },
+            { "value": "24031", "name": "countyCd" }
+          ]
+        },
+        "variable": {
+          "variableCode": [
+            {
+              "value": "00010",
+              "network": "NWIS",
+              "vocabulary": "NWIS:UnitValues",
+              "variableID": 45807042,
+              "default": true
+            }
+          ],
+          "variableName": "Temperature, water, &#176;C",
+          "variableDescription": "Temperature, water, degrees Celsius",
+          "valueType": "Derived Value",
+          "unit": { "unitCode": "deg C" },
+          "options": {
+            "option": [{ "value": "Mean", "name": "Statistic", "optionCode": "00003" }]
+          },
+          "note": [],
+          "noDataValue": -999999.0,
+          "variableProperty": [],
+          "oid": "45807042"
+        },
+        "values": [
+          {
+            "value": [
+              { "value": "26.7", "qualifiers": ["A"], "dateTime": "2019-09-01T00:00:00.000" },
+              { "value": "27.0", "qualifiers": ["A"], "dateTime": "2019-09-02T00:00:00.000" },
+              { "value": "27.0", "qualifiers": ["A"], "dateTime": "2019-09-03T00:00:00.000" },
+              { "value": "27.7", "qualifiers": ["A"], "dateTime": "2019-09-04T00:00:00.000" },
+              { "value": "27.7", "qualifiers": ["A"], "dateTime": "2019-09-05T00:00:00.000" }
+            ],
+            "qualifier": [
+              {
+                "qualifierCode": "A",
+                "qualifierDescription": "Approved for publication -- Processing and review completed.",
+                "qualifierID": 0,
+                "network": "NWIS",
+                "vocabulary": "uv_rmk_cd"
+              }
+            ],
+            "qualityControlLevel": [],
+            "method": [
+              {
+                "methodDescription": "4.1 ft from riverbed (middle), [Discontinued]",
+                "methodID": 68481
+              }
+            ],
+            "source": [],
+            "offset": [],
+            "sample": [],
+            "censorCode": []
+          },
+          {
+            "value": [
+              { "value": "26.6", "qualifiers": ["A"], "dateTime": "2019-09-01T00:00:00.000" },
+              { "value": "26.7", "qualifiers": ["A"], "dateTime": "2019-09-02T00:00:00.000" },
+              { "value": "26.8", "qualifiers": ["A"], "dateTime": "2019-09-03T00:00:00.000" },
+              { "value": "27.2", "qualifiers": ["A"], "dateTime": "2019-09-04T00:00:00.000" },
+              { "value": "27.6", "qualifiers": ["A"], "dateTime": "2019-09-05T00:00:00.000" }
+            ],
+            "qualifier": [
+              {
+                "qualifierCode": "A",
+                "qualifierDescription": "Approved for publication -- Processing and review completed.",
+                "qualifierID": 0,
+                "network": "NWIS",
+                "vocabulary": "uv_rmk_cd"
+              }
+            ],
+            "qualityControlLevel": [],
+            "method": [
+              {
+                "methodDescription": "1.0 ft from riverbed (bottom), [Discontinued]",
+                "methodID": 68484
+              }
+            ],
+            "source": [],
+            "offset": [],
+            "sample": [],
+            "censorCode": []
+          },
+          {
+            "value": [
+              { "value": "26.5", "qualifiers": ["A"], "dateTime": "2019-09-01T00:00:00.000" },
+              { "value": "26.6", "qualifiers": ["A"], "dateTime": "2019-09-02T00:00:00.000" },
+              { "value": "26.6", "qualifiers": ["A"], "dateTime": "2019-09-03T00:00:00.000" },
+              { "value": "27.1", "qualifiers": ["A"], "dateTime": "2019-09-04T00:00:00.000" },
+              { "value": "27.5", "qualifiers": ["A"], "dateTime": "2019-09-05T00:00:00.000" }
+            ],
+            "qualifier": [
+              {
+                "qualifierCode": "A",
+                "qualifierDescription": "Approved for publication -- Processing and review completed.",
+                "qualifierID": 0,
+                "network": "NWIS",
+                "vocabulary": "uv_rmk_cd"
+              }
+            ],
+            "qualityControlLevel": [],
+            "method": [
+              {
+                "methodDescription": "7.1 ft from riverbed (top), [Discontinued]",
+                "methodID": 68487
+              }
+            ],
+            "source": [],
+            "offset": [],
+            "sample": [],
+            "censorCode": []
+          },
+          {
+            "value": [],
+            "qualifier": [],
+            "qualityControlLevel": [],
+            "method": [
+              {
+                "methodDescription": "From multiparameter sonde, [Discontinued]",
+                "methodID": 68514
+              }
+            ],
+            "source": [],
+            "offset": [],
+            "sample": [],
+            "censorCode": []
+          },
+          {
+            "value": [
+              { "value": "26.6", "qualifiers": ["A"], "dateTime": "2019-09-01T00:00:00.000" },
+              { "value": "26.9", "qualifiers": ["A"], "dateTime": "2019-09-02T00:00:00.000" },
+              { "value": "26.9", "qualifiers": ["A"], "dateTime": "2019-09-03T00:00:00.000" },
+              { "value": "27.6", "qualifiers": ["A"], "dateTime": "2019-09-04T00:00:00.000" },
+              { "value": "27.6", "qualifiers": ["A"], "dateTime": "2019-09-05T00:00:00.000" }
+            ],
+            "qualifier": [
+              {
+                "qualifierCode": "A",
+                "qualifierDescription": "Approved for publication -- Processing and review completed.",
+                "qualifierID": 0,
+                "network": "NWIS",
+                "vocabulary": "uv_rmk_cd"
+              }
+            ],
+            "qualityControlLevel": [],
+            "method": [{ "methodDescription": "From multiparameter sonde", "methodID": 300173 }],
+            "source": [],
+            "offset": [],
+            "sample": [],
+            "censorCode": []
+          }
+        ],
+        "name": "USGS:01646500:00010:00003"
+      }
+    ]
+  },
+  "nil": false,
+  "globalScope": true,
+  "typeSubstituted": false
+}

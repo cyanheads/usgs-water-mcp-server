@@ -43,6 +43,12 @@ describe('shortHash', () => {
     expect(shortHash({ stateCd: 'RI' })).toMatch(/^[0-9a-f]{8}$/);
   });
 
+  it('returns a prefix of the same digest when a shorter length is asked for', () => {
+    const selection = { statCd: '00003', methodId: '300173' };
+    expect(shortHash(selection, 7)).toMatch(/^[0-9a-f]{7}$/);
+    expect(shortHash(selection).startsWith(shortHash(selection, 7))).toBe(true);
+  });
+
   it('is stable for the same filter set — the property that makes re-staging idempotent', () => {
     expect(shortHash({ stateCd: 'RI', siteType: 'ST' })).toBe(
       shortHash({ stateCd: 'RI', siteType: 'ST' }),

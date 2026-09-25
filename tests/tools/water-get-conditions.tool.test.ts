@@ -9,12 +9,13 @@ import {
   serviceUnavailable,
   validationError,
 } from '@cyanheads/mcp-ts-core/errors';
-import { createMockContext } from '@cyanheads/mcp-ts-core/testing';
+import { createMockContext, runToolContract } from '@cyanheads/mcp-ts-core/testing';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { waterGetConditions } from '@/mcp-server/tools/definitions/water-get-conditions.tool.js';
 import type { NwisStatResult, NwisStatRow, NwisTimeSeries } from '@/services/nwis/types.js';
 import { textContent } from '../helpers/content-block.js';
 import { declaredRecovery } from '../helpers/error-contract.js';
+import { allText } from '../helpers/nwis-fixtures.js';
 
 const recovery = (reason: string) => declaredRecovery(waterGetConditions.errors, reason);
 
@@ -44,6 +45,10 @@ const MOCK_IV: NwisTimeSeries[] = [
     parameterCd: '00060',
     parameterName: 'Streamflow, ft³/s',
     unitCode: 'ft3/s',
+    methodId: '69928',
+    methodDescription: null,
+    statCd: '00000',
+    statName: null,
     values: [
       { dateTime: '2026-06-04T14:00:00-04:00', value: '5000', qualifiers: ['A'] },
       { dateTime: CURRENT_DATETIME, value: '6000', qualifiers: ['A'] },
@@ -72,6 +77,8 @@ function statRowForDay(dayNu: number, p50: number): NwisStatRow {
     maxVa: 22000,
     minVa: 800,
     meanVa: 7000,
+    tsId: '68478',
+    seriesDescription: null,
   };
 }
 
@@ -198,6 +205,317 @@ describe('waterGetConditions', () => {
       // this back as June 27.
       const result = await conditionsAt('2026-06-28T00:30:00.000+10:00');
       expect(result.historicalContext?.p50).toBe(JUNE_28_P50);
+    });
+  });
+
+  /**
+   * Classification driven through the assembled tool result, so the class and label are asserted on
+   * both structuredContent and content[]. Thresholds are statRowForDay's: p05 2000, p10 3000,
+   * p25 4500, p75 9000, p95 14000.
+   */
+  describe('percentile classification', () => {
+    type Threshold = 'p05' | 'p10' | 'p25' | 'p75' | 'p95';
+
+    async function classify(value: string, blank: Threshold[] = []) {
+      mockGetReadings.mockResolvedValue([
+        { ...MOCK_IV[0]!, values: [{ dateTime: CURRENT_DATETIME, value, qualifiers: ['P'] }] },
+      ]);
+      const row = statRowForDay(4, 6000);
+      for (const key of blank) row[key] = null;
+      mockGetStats.mockResolvedValue({ siteNumber: '01646500', parameterCd: '00060', rows: [row] });
+      const result = await runToolContract(waterGetConditions, {
+        site: '01646500',
+        parameterCd: '00060',
+      });
+      expect(result.isError).toBeFalsy();
+      const context = (
+        result.structuredContent as {
+          historicalContext: { percentileClass: string; percentileLabel: string };
+        }
+      ).historicalContext;
+      return { ...context, text: allText(result.content) };
+    }
+
+    const HIGH = '≥ 95th percentile (percentile-of-record extreme, not a verified all-time record)';
+    const LOW = '< 5th percentile (percentile-of-record extreme, not a verified all-time record)';
+
+    it.each([
+      ['20000', 'record-high', HIGH],
+      ['14000', 'record-high', HIGH],
+      ['13999', 'above-normal', '75th–95th percentile'],
+      ['9000', 'above-normal', '75th–95th percentile'],
+      ['8999', 'normal', '25th–75th percentile'],
+      ['4500', 'normal', '25th–75th percentile'],
+      ['4499', 'below-normal', '10th–25th percentile'],
+      ['3000', 'below-normal', '10th–25th percentile'],
+      ['2999', 'low', '5th–10th percentile'],
+      ['2000', 'low', '5th–10th percentile'],
+      ['1999', 'record-low', LOW],
+    ])('classifies %s against a fully published table as %s', async (value, cls, label) => {
+      const { percentileClass, percentileLabel, text } = await classify(value);
+      expect(percentileClass).toBe(cls);
+      expect(percentileLabel).toBe(label);
+      expect(text).toContain(`**Condition:** ${cls} — ${label} |`);
+    });
+
+    it.each<[string, Threshold[], string, string]>([
+      // #44: a value outside p25–p75 is placed by the thresholds that are published.
+      ['9500', ['p95'], 'above-normal', '≥ 75th percentile; 95th not published'],
+      ['20000', ['p95'], 'above-normal', '≥ 75th percentile; 95th not published'],
+      ['4000', ['p10'], 'below-normal', '< 25th percentile; 10th not published'],
+      ['1000', ['p05', 'p10'], 'below-normal', '< 25th percentile; 10th not published'],
+      ['2500', ['p05'], 'low', '< 10th percentile; 5th not published'],
+      ['1000', ['p05'], 'low', '< 10th percentile; 5th not published'],
+      // normal needs both quartiles; a value no published threshold can place is unknown.
+      ['6000', ['p75'], 'unknown', '25th–95th percentile; 75th not published'],
+      ['6000', ['p75', 'p95'], 'unknown', '≥ 25th percentile; 75th, 95th not published'],
+      ['6000', ['p25'], 'unknown', '10th–75th percentile; 25th not published'],
+      [
+        '6000',
+        ['p05', 'p10', 'p25'],
+        'unknown',
+        '< 75th percentile; 5th, 10th, 25th not published',
+      ],
+      [
+        '6000',
+        ['p05', 'p10', 'p25', 'p75', 'p95'],
+        'unknown',
+        'no percentile thresholds published',
+      ],
+    ])('classifies %s with %j blank as %s', async (value, blank, cls, label) => {
+      const { percentileClass, percentileLabel, text } = await classify(value, blank);
+      expect(percentileClass).toBe(cls);
+      expect(percentileLabel).toBe(label);
+      expect(text).toContain(`**Condition:** ${cls} — ${label} |`);
+    });
+
+    it.each<[string, Threshold[], string, string]>([
+      ['6000', ['p05', 'p10', 'p95'], 'normal', '25th–75th percentile'],
+      ['20000', ['p75'], 'record-high', HIGH],
+      ['1000', ['p10'], 'record-low', LOW],
+    ])(
+      'keeps %s with %j blank as %s, the published thresholds deciding',
+      async (value, blank, cls, label) => {
+        const { percentileClass, percentileLabel } = await classify(value, blank);
+        expect(percentileClass).toBe(cls);
+        expect(percentileLabel).toBe(label);
+      },
+    );
+
+    it('keeps the label for a non-numeric reading unchanged', async () => {
+      const { percentileClass, percentileLabel } = await classify('Ice');
+      expect(percentileClass).toBe('unknown');
+      expect(percentileLabel).toBe('insufficient percentile data');
+    });
+
+    /**
+     * Every combination of blank thresholds (32) against a value at, between, and beyond each
+     * threshold. The class must be one the published thresholds prove; `unknown` must mean no
+     * published threshold decides; an open-ended class must name the threshold it could not check.
+     */
+    describe('every combination of blank thresholds', () => {
+      const KEYS: Threshold[] = ['p05', 'p10', 'p25', 'p75', 'p95'];
+      const PUBLISHED = { p05: 2000, p10: 3000, p25: 4500, p75: 9000, p95: 14000 };
+      const VALUES = [1000, 2000, 2500, 3000, 4000, 4500, 6000, 9000, 12000, 14000, 20000];
+      const COMBINATIONS = Array.from({ length: 2 ** KEYS.length }, (_, mask) =>
+        KEYS.filter((_, i) => mask & (1 << i)),
+      );
+
+      /** The class each published threshold set proves for a value, independent of the tool. */
+      function provable(v: number, blank: Threshold[]): Record<string, boolean> {
+        const t = Object.fromEntries(
+          KEYS.map((k) => [k, blank.includes(k) ? null : PUBLISHED[k]]),
+        ) as Record<Threshold, number | null>;
+        const below = (k: Threshold) => t[k] !== null && v < (t[k] as number);
+        const atOrAbove = (k: Threshold) => t[k] !== null && v >= (t[k] as number);
+        const notBelow = (k: Threshold) => t[k] === null || v >= (t[k] as number);
+        return {
+          'record-high': atOrAbove('p95'),
+          'above-normal': atOrAbove('p75') && !atOrAbove('p95'),
+          normal: atOrAbove('p25') && below('p75'),
+          'below-normal': below('p25') && notBelow('p10') && notBelow('p05'),
+          low: below('p10') && notBelow('p05'),
+          'record-low': below('p05'),
+        };
+      }
+
+      it.each(COMBINATIONS.map((blank) => [blank]))(
+        'never places a value outside its band with %j blank',
+        async (blank) => {
+          for (const v of VALUES) {
+            const { percentileClass, percentileLabel } = await classify(String(v), blank);
+            const proven = provable(v, blank);
+            const decided = Object.entries(proven).filter(([, holds]) => holds);
+            expect(decided.length, `value ${v}`).toBeLessThanOrEqual(1);
+            if (percentileClass === 'unknown') {
+              expect(decided, `value ${v} is decidable`).toEqual([]);
+            } else {
+              expect(proven[percentileClass], `value ${v} → ${percentileClass}`).toBe(true);
+            }
+            if (percentileClass === 'above-normal' && blank.includes('p95')) {
+              expect(percentileLabel).toContain('95th not published');
+            }
+            if (percentileClass === 'below-normal' && blank.includes('p10')) {
+              expect(percentileLabel).toContain('10th not published');
+            }
+            if (percentileClass === 'low' && blank.includes('p05')) {
+              expect(percentileLabel).toContain('5th not published');
+            }
+          }
+        },
+      );
+    });
+  });
+
+  describe('a reading NWIS reported as no data (#45)', () => {
+    /** One method block whose latest record carries the given value and qualifiers. */
+    function method(methodId: string, value: string, qualifiers: string[]): NwisTimeSeries {
+      return {
+        ...MOCK_IV[0]!,
+        methodId,
+        methodDescription: `sensor ${methodId}`,
+        values: [{ dateTime: CURRENT_DATETIME, value, qualifiers }],
+      };
+    }
+
+    it('reports the missing reading as unknown and names its qualifiers on both surfaces', async () => {
+      mockGetReadings.mockResolvedValue([method('69928', '', ['P', 'Eqp'])]);
+      mockGetStats.mockResolvedValue(MOCK_STAT);
+      const result = await runToolContract(waterGetConditions, {
+        site: '01646500',
+        parameterCd: '00060',
+      });
+
+      const structured = result.structuredContent as {
+        currentValue: string;
+        historicalContext: { percentileClass: string; percentileLabel: string };
+        note?: string;
+        qualifiers: string[];
+      };
+      expect(structured.currentValue).toBe('');
+      expect(structured.qualifiers).toEqual(['P', 'Eqp']);
+      expect(structured.historicalContext.percentileClass).toBe('unknown');
+      expect(structured.historicalContext.percentileLabel).toContain('Eqp');
+      expect(structured.note).toContain('Eqp');
+      const text = allText(result.content);
+      expect(text).toContain('**Current value:** no data [P,Eqp]');
+      expect(text).toContain(
+        `**Condition:** unknown — ${structured.historicalContext.percentileLabel}`,
+      );
+    });
+
+    it("prefers another method's measured reading over a missing one at the same time", async () => {
+      // Both methods last report at the same instant; the first (a discontinued sensor) sends the
+      // no-data value, so the second's measurement is the current reading.
+      mockGetReadings.mockResolvedValue([
+        method('11111', '', ['P', 'Dis']),
+        method('22222', '6000', ['P']),
+      ]);
+      mockGetStats.mockResolvedValue(MOCK_STAT);
+      const result = await runToolContract(waterGetConditions, {
+        site: '01646500',
+        parameterCd: '00060',
+      });
+
+      expect(result.structuredContent).toMatchObject({
+        currentValue: '6000',
+        methodId: '22222',
+        historicalContext: { percentileClass: 'normal' },
+      });
+    });
+
+    it('still reports the missing reading when no method carries a measurement', async () => {
+      mockGetReadings.mockResolvedValue([
+        method('11111', '', ['P', 'Dis']),
+        method('22222', '', ['P', 'Ssn']),
+      ]);
+      mockGetStats.mockResolvedValue({ ...MOCK_STAT, rows: [] });
+      const result = await runToolContract(waterGetConditions, {
+        site: '01646500',
+        parameterCd: '00060',
+      });
+
+      expect(result.isError).toBeFalsy();
+      expect(result.structuredContent).toMatchObject({
+        currentValue: '',
+        methodId: '11111',
+        qualifiers: ['P', 'Dis'],
+        historicalContext: null,
+        historicalContextStatus: 'no_record',
+      });
+      expect(allText(result.content)).toContain('**Current value:** no data [P,Dis]');
+    });
+  });
+
+  describe('pairing the reporting sensor with a stat series (#43)', () => {
+    /** A measured method block whose single record is read at `time` (HH:MM, June 4). */
+    function sensor(methodId: string, description: string | null, value: string, time: string) {
+      return {
+        ...MOCK_IV[0]!,
+        methodId,
+        methodDescription: description,
+        values: [{ dateTime: `2026-06-04T${time}:00-04:00`, value, qualifiers: ['P'] }],
+      } satisfies NwisTimeSeries;
+    }
+
+    /** A stat series for June 4 with the given ts_id and description. */
+    function statSeries(tsId: string, description: string | null): NwisStatRow {
+      return { ...statRowForDay(4, 6000), tsId, seriesDescription: description };
+    }
+
+    async function conditions(series: NwisTimeSeries[], rows: NwisStatRow[]) {
+      mockGetReadings.mockResolvedValue(series);
+      mockGetStats.mockResolvedValue({ siteNumber: '01646500', parameterCd: '00060', rows });
+      const result = await runToolContract(waterGetConditions, {
+        site: '01646500',
+        parameterCd: '00060',
+      });
+      expect(result.isError).toBeFalsy();
+      return {
+        structured: result.structuredContent as {
+          historicalContext: { methodMatched: boolean; statSeriesId: string } | null;
+          historicalContextStatus: string;
+          methodId: string;
+          note?: string;
+        },
+        text: allText(result.content),
+      };
+    }
+
+    it('takes the most recent reading when no sensor is paired', async () => {
+      const { structured } = await conditions(
+        [sensor('1', 'LEFT BANK', '6000', '14:00'), sensor('2', 'RIGHT BANK', '6100', '14:15')],
+        [statSeries('90', null)],
+      );
+      expect(structured).toMatchObject({
+        methodId: '2',
+        historicalContext: { statSeriesId: '90', methodMatched: false },
+      });
+      expect(structured.note).toContain('only statistics series at this site');
+    });
+
+    it('never sets aside a "[Discontinued]" label to pair a live sensor with a retired series', async () => {
+      const { structured } = await conditions(
+        [sensor('1', 'From multiparameter sonde', '6000', '14:00')],
+        [statSeries('90', 'From multiparameter sonde, [Discontinued]'), statSeries('91', 'Pump')],
+      );
+      expect(structured).toMatchObject({
+        historicalContext: null,
+        historicalContextStatus: 'no_matching_method',
+      });
+    });
+
+    it('identifies no series when two share the sensor’s description', async () => {
+      const { structured, text } = await conditions(
+        [sensor('1', null, '6000', '14:00')],
+        [statSeries('90', null), statSeries('91', null)],
+      );
+      expect(structured).toMatchObject({
+        historicalContext: null,
+        historicalContextStatus: 'no_matching_method',
+      });
+      expect(structured.note).toContain('none is identified');
+      expect(text).toContain(structured.note ?? '(missing note)');
     });
   });
 
@@ -333,6 +651,8 @@ describe('waterGetConditions', () => {
       parameterCd: '00060',
       parameterName: 'Streamflow, ft³/s',
       unitCode: 'ft3/s',
+      methodId: '69928',
+      methodDescription: null,
       currentValue: '6000',
       currentDateTime: CURRENT_DATETIME,
       qualifiers: ['A'],
@@ -347,6 +667,9 @@ describe('waterGetConditions', () => {
         p95: 14000,
         periodOfRecord: '1930–2025',
         comparisonBasis: 'instantaneous reading ranked against daily-mean percentiles',
+        statSeriesId: '68478',
+        statSeriesDescription: null,
+        methodMatched: true,
       },
       historicalContextStatus: 'available' as const,
       note: undefined,
@@ -374,6 +697,8 @@ describe('waterGetConditions', () => {
       parameterCd: '00060',
       parameterName: 'Streamflow, ft³/s',
       unitCode: 'ft3/s',
+      methodId: '69928',
+      methodDescription: null,
       currentValue: '6000',
       currentDateTime: CURRENT_DATETIME,
       qualifiers: [],

@@ -59,6 +59,10 @@ function makeSeries(count: number, overrides: Partial<NwisTimeSeries> = {}): Nwi
     parameterCd: '00060',
     parameterName: 'Streamflow, ft³/s',
     unitCode: 'ft3/s',
+    methodId: '68478',
+    methodDescription: null,
+    statCd: '00003',
+    statName: 'Mean',
     values: Array.from({ length: count }, (_, i) => ({
       dateTime: `2024-01-${String(i + 1).padStart(2, '0')}T00:00:00`,
       value: String(5000 + i * 10),
@@ -88,11 +92,16 @@ function formatResult(
     parameterName: 'Streamflow, ft³/s',
     unitCode: 'ft3/s',
     seriesType: 'daily' as const,
+    statCd: '00003',
+    statName: 'Mean',
+    methodId: '68478',
+    methodDescription: null,
     values: overrides.values ?? makeSeries(5).values,
     totalRecords: overrides.totalRecords ?? 5,
     truncated: overrides.truncated ?? false,
     canvas_id: overrides.canvas_id,
     table_name: overrides.table_name,
+    otherSeries: [],
   };
 }
 
@@ -474,6 +483,24 @@ describe('waterGetSeries', () => {
     expect(text).toContain('water_dataframe_query');
   });
 
+  describe('missing records on the canvas (#45)', () => {
+    it('stages a record NWIS reported as no data with a null value, keeping its qualifiers', async () => {
+      const series = makeSeries(600);
+      series.values[0] = { dateTime: '2024-01-01T00:00:00', value: '', qualifiers: ['P', 'Ice'] };
+      mockGetSeries.mockResolvedValue([series]);
+      stageCanvas();
+      mockSpill(5);
+
+      const ctx = createMockContext({ errors: waterGetSeries.errors });
+      await waterGetSeries.handler(waterGetSeries.input.parse(SPILLING_INPUT), ctx);
+
+      const rows = spilledRows();
+      expect(rows[0]).toMatchObject({ value: null, qualifiers: 'P,Ice' });
+      // A measured record keeps its value string.
+      expect(rows[1]?.['value']).toBe(series.values[1]?.value);
+    });
+  });
+
   describe('preview orientation (#27)', () => {
     it('inlines the most recent records on the canvas path, not the oldest', async () => {
       // spillover() previews the HEAD of its source, so reading `previewRows` straight back dropped
@@ -622,6 +649,92 @@ describe('waterGetSeries', () => {
       const description = waterGetSeries.input.shape.canvas_id.description ?? '';
       expect(description).not.toMatch(/append/i);
       expect(description).toMatch(/table/i);
+    });
+  });
+
+  describe('canvas table naming across statistics and methods (#43)', () => {
+    /** Three series one daily query can return: a maximum and two mean sensors. */
+    const offered = () => [
+      makeSeries(600, { statCd: '00001', statName: 'Maximum', methodId: '11' }),
+      makeSeries(600, { statCd: '00003', statName: 'Mean', methodId: '31' }),
+      makeSeries(600, { statCd: '00003', statName: 'Mean', methodId: '32' }),
+    ];
+
+    /** Stage one selection out of `list` and return the derived table name and staged rows. */
+    async function stage(overrides: Record<string, unknown>, list: NwisTimeSeries[] = offered()) {
+      vi.clearAllMocks();
+      mockGetSeries.mockResolvedValue(list);
+      stageCanvas();
+      mockSpill(5);
+      const ctx = createMockContext({ errors: waterGetSeries.errors });
+      const result = await waterGetSeries.handler(
+        waterGetSeries.input.parse({ ...SPILLING_INPUT, ...overrides }),
+        ctx,
+      );
+      return { name: spilledTableName(), rows: spilledRows(), result };
+    }
+
+    it('gives each statistic and method selected from one query its own table', async () => {
+      const selections = [{}, { statCd: '00001' }, { methodId: '32' }];
+      const staged = [];
+      for (const selection of selections) staged.push(await stage(selection));
+
+      expect(staged.map((s) => [s.result.statCd, s.result.methodId])).toEqual([
+        ['00003', '31'],
+        ['00001', '11'],
+        ['00003', '32'],
+      ]);
+      expect(new Set(staged.map((s) => s.name)).size).toBe(3);
+      for (const { name } of staged) {
+        expect(name).toMatch(/^water_series_01646500_00060_dv_20230101_20241231_[0-9a-f]{7}$/);
+      }
+    });
+
+    it('names a selection the same way however it was reached', async () => {
+      // The default pick and an explicit request for the same series stage identical rows.
+      expect((await stage({})).name).toBe((await stage({ statCd: '00003', methodId: '31' })).name);
+    });
+
+    it('suffixes a filtered request even when NWIS returned one series', async () => {
+      const bare = await stage({}, [makeSeries(600)]);
+      const filtered = await stage({ statCd: '00003' }, [makeSeries(600)]);
+
+      expect(bare.name).toBe('water_series_01646500_00060_dv_20230101_20241231');
+      expect(filtered.name).not.toBe(bare.name);
+    });
+
+    it('stays a legal identifier at the 15-digit-site worst case with a selection suffix', async () => {
+      const { name } = await stage(
+        { site: '123456789012345', seriesType: 'instantaneous', methodId: '31' },
+        offered().map((s) => ({ ...s, siteNumber: '123456789012345' })),
+      );
+
+      expect(name.length).toBeLessThanOrEqual(63);
+      expect(name).toMatch(CANVAS_IDENTIFIER_REGEX);
+    });
+
+    it('falls back to the first statistic with values when the mean came back empty', async () => {
+      const { result } = await stage({}, [
+        makeSeries(600, { statCd: '00001', statName: 'Maximum', methodId: '11' }),
+        makeSeries(0, { statCd: '00003', statName: 'Mean', methodId: '31' }),
+      ]);
+
+      expect(result).toMatchObject({ statCd: '00001', methodId: '11', totalRecords: 600 });
+      expect(result.otherSeries).toEqual([
+        {
+          statCd: '00003',
+          statName: 'Mean',
+          methodId: '31',
+          methodDescription: null,
+          recordCount: 0,
+        },
+      ]);
+    });
+
+    it('stages the statistic and method on every row', async () => {
+      const { rows } = await stage({ statCd: '00001' });
+      expect(rows[0]).toMatchObject({ stat_cd: '00001', method_id: '11' });
+      expect(rows.at(-1)).toMatchObject({ stat_cd: '00001', method_id: '11' });
     });
   });
 

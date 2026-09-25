@@ -1,0 +1,9 @@
+#
+#
+# US Geological Survey, Water Resources Data
+# retrieved: 2026-09-24 23:57:36 -04:00	(natwebcaas01)
+#
+# This file contains USGS Daily Statistics
+agency_cd	site_no	parameter_cd	ts_id	loc_web_ds	month_nu	day_nu	begin_yr	end_yr	count_nu	max_va_yr	max_va	min_va_yr	min_va	mean_va	p05_va	p10_va	p20_va	p25_va	p50_va	p75_va	p80_va	p90_va	p95_va
+5s	15s	5s	10n	15s	3n	3n	6n	6n	8n	5n	12s	5n	12s	12s	12s	12s	12s	12s	12s	12s	12s	12s	12s
+USGS	01646500	00060	68478		9	24	1930	2025	96	2003	115000	2002	566	5810	751	952	1260	1390	2110	4260	5340	12300	26400

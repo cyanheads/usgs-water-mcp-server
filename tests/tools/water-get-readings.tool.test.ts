@@ -9,12 +9,13 @@ import {
   serviceUnavailable,
   validationError,
 } from '@cyanheads/mcp-ts-core/errors';
-import { createMockContext, getEnrichment } from '@cyanheads/mcp-ts-core/testing';
+import { createMockContext, getEnrichment, runToolContract } from '@cyanheads/mcp-ts-core/testing';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { waterGetReadings } from '@/mcp-server/tools/definitions/water-get-readings.tool.js';
 import type { NwisTimeSeries } from '@/services/nwis/types.js';
 import { textContent } from '../helpers/content-block.js';
 import { declaredRecovery } from '../helpers/error-contract.js';
+import { allText } from '../helpers/nwis-fixtures.js';
 
 const recovery = (reason: string) => declaredRecovery(waterGetReadings.errors, reason);
 
@@ -40,6 +41,10 @@ const MOCK_SERIES: NwisTimeSeries[] = [
     parameterCd: '00060',
     parameterName: 'Streamflow, ft³/s',
     unitCode: 'ft3/s',
+    methodId: '69928',
+    methodDescription: null,
+    statCd: '00000',
+    statName: null,
     values: [
       { dateTime: '2026-06-04T14:00:00-04:00', value: '7660', qualifiers: ['P'] },
       { dateTime: '2026-06-04T14:15:00-04:00', value: '7700', qualifiers: ['P'] },
@@ -58,6 +63,10 @@ function makeSeries(count: number, siteNumber = '01646500'): NwisTimeSeries {
     parameterCd: '00060',
     parameterName: 'Streamflow, ft³/s',
     unitCode: 'ft3/s',
+    methodId: '69928',
+    methodDescription: null,
+    statCd: '00000',
+    statName: null,
     values: Array.from({ length: count }, (_, i) => ({
       dateTime: `2026-06-04T${String(i % 24).padStart(2, '0')}:00:00-04:00`,
       value: String(7000 + i),
@@ -143,6 +152,7 @@ describe('waterGetReadings', () => {
     const result = {
       readings: MOCK_SERIES.map((s) => ({ ...s, totalValues: s.values.length })),
       total: 1,
+      totalSeries: 1,
       truncated: false,
       missingSites: [],
     };
@@ -271,6 +281,199 @@ describe('waterGetReadings', () => {
       const result = await waterGetReadings.handler(input, ctx);
 
       expect(result.missingSites).toEqual([]);
+    });
+  });
+
+  describe('result header (characterization)', () => {
+    async function header(series: NwisTimeSeries[]) {
+      mockGetReadings.mockResolvedValue(series);
+      const result = await runToolContract(waterGetReadings, { sites: ['01646500'] });
+      return allText(result.content).split('\n')[0];
+    }
+
+    it('states the series count alone when nothing was capped', async () => {
+      expect(await header([makeSeries(2)])).toBe('**1 time series**');
+    });
+
+    it('keeps the record caption when a series was capped at 10 records', async () => {
+      expect(await header([makeSeries(277)])).toBe(
+        '**1 time series** *(truncated — each series shows its latest 10 records; use water_get_series for full history)*',
+      );
+    });
+  });
+
+  /** The documented cap on the number of series one call returns. */
+  const SERIES_CAP = 100;
+
+  /** A 8-digit site number for index `i`. */
+  const siteNo = (i: number) => String(10_000_000 + i);
+
+  /** One series for a site and parameter, carrying `count` records. */
+  function seriesFor(site: string, parameterCd: string, count = 2): NwisTimeSeries {
+    return { ...makeSeries(count, site), parameterCd, siteName: `SITE ${site}` };
+  }
+
+  type ReadingsResult = {
+    missingSites: string[];
+    readings: { parameterCd: string; siteNumber: string; totalValues: number }[];
+    total: number;
+    totalSeries: number;
+    truncated: boolean;
+  };
+
+  async function readings(series: NwisTimeSeries[], sites: string[], parameterCd?: string[]) {
+    mockGetReadings.mockResolvedValue(series);
+    const result = await runToolContract(waterGetReadings, {
+      sites,
+      ...(parameterCd ? { parameterCd } : {}),
+    });
+    expect(result.isError).toBeFalsy();
+    return {
+      structured: result.structuredContent as ReadingsResult,
+      text: allText(result.content),
+    };
+  }
+
+  describe('series cap', () => {
+    it(`keeps every site when ${SERIES_CAP} sites return two series each`, async () => {
+      const sites = Array.from({ length: SERIES_CAP }, (_, i) => siteNo(i));
+      const upstream = sites.flatMap((s) => [seriesFor(s, '00060'), seriesFor(s, '00065')]);
+      const { structured, text } = await readings(upstream, sites);
+
+      expect(structured).toMatchObject({
+        total: SERIES_CAP,
+        totalSeries: 2 * SERIES_CAP,
+        truncated: true,
+        missingSites: [],
+      });
+      expect(new Set(structured.readings.map((r) => r.siteNumber)).size).toBe(SERIES_CAP);
+      // Round-robin gives each site one slot, so each keeps its first series.
+      expect(structured.readings.every((r) => r.parameterCd === '00060')).toBe(true);
+      expect(text.split('\n')[0]).toBe(
+        `**${SERIES_CAP} of ${2 * SERIES_CAP} time series** *(truncated — capped at ${SERIES_CAP} series; pass parameterCd to choose which parameters return, or split the sites across calls)*`,
+      );
+      expect(text).not.toContain('latest 10 records;');
+    });
+
+    it('fills later rounds site by site and keeps upstream order', async () => {
+      // Three sites × 50 series: 33 full rounds (99 series), then the first site's 34th.
+      const sites = [siteNo(1), siteNo(2), siteNo(3)];
+      const params = Array.from({ length: 50 }, (_, i) => String(i).padStart(5, '0'));
+      const upstream = sites.flatMap((s) => params.map((p) => seriesFor(s, p)));
+      const { structured } = await readings(upstream, sites);
+
+      expect(structured.total).toBe(SERIES_CAP);
+      expect(structured.totalSeries).toBe(150);
+      const kept = structured.readings.map((r) => `${r.siteNumber}:${r.parameterCd}`);
+      expect(kept).toEqual([
+        ...params.slice(0, 34).map((p) => `${sites[0]}:${p}`),
+        ...params.slice(0, 33).map((p) => `${sites[1]}:${p}`),
+        ...params.slice(0, 33).map((p) => `${sites[2]}:${p}`),
+      ]);
+    });
+
+    it('gives a site with one slot its valued series over an earlier empty one', async () => {
+      const sites = Array.from({ length: SERIES_CAP }, (_, i) => siteNo(i));
+      const upstream = sites.flatMap((s, i) =>
+        i === 0 ? [seriesFor(s, '00010', 0), seriesFor(s, '00060', 3)] : [seriesFor(s, '00060')],
+      );
+      const { structured } = await readings(upstream, sites);
+
+      expect(structured.totalSeries).toBe(SERIES_CAP + 1);
+      expect(structured.readings[0]).toMatchObject({
+        siteNumber: siteNo(0),
+        parameterCd: '00060',
+        totalValues: 3,
+      });
+    });
+
+    it("drops a site's empty series before its valued ones", async () => {
+      // One site, 101 series: the empty one ranks last within the site and is the one dropped.
+      const site = siteNo(0);
+      const params = Array.from({ length: SERIES_CAP + 1 }, (_, i) => String(i).padStart(5, '0'));
+      const upstream = params.map((p, i) => seriesFor(site, p, i === 0 ? 0 : 1));
+      const { structured } = await readings(upstream, [site]);
+
+      expect(structured.readings.map((r) => r.parameterCd)).toEqual(params.slice(1));
+    });
+
+    it('ranks a series whose every record is missing with the empty ones (#45)', async () => {
+      // Site 0's first series holds records, but NWIS reported each as no data (seasonal gage).
+      const sites = Array.from({ length: SERIES_CAP }, (_, i) => siteNo(i));
+      const allMissing: NwisTimeSeries = {
+        ...seriesFor(sites[0]!, '00010', 3),
+        values: Array.from({ length: 3 }, (_, i) => ({
+          dateTime: `2026-06-04T0${i}:00:00-04:00`,
+          value: '',
+          qualifiers: ['P', 'Ssn'],
+        })),
+      };
+      const upstream = sites.flatMap((s, i) =>
+        i === 0 ? [allMissing, seriesFor(s, '00060', 2)] : [seriesFor(s, '00060')],
+      );
+      const { structured } = await readings(upstream, sites);
+
+      expect(structured.totalSeries).toBe(SERIES_CAP + 1);
+      expect(structured.readings[0]).toMatchObject({
+        siteNumber: siteNo(0),
+        parameterCd: '00060',
+        totalValues: 2,
+      });
+    });
+
+    it('names both caps when series and records were both capped', async () => {
+      const sites = Array.from({ length: SERIES_CAP }, (_, i) => siteNo(i));
+      const upstream = sites.flatMap((s) => [seriesFor(s, '00060', 12), seriesFor(s, '00065')]);
+      const { structured, text } = await readings(upstream, sites);
+
+      expect(structured.truncated).toBe(true);
+      expect(text.split('\n')[0]).toBe(
+        `**${SERIES_CAP} of ${2 * SERIES_CAP} time series** *(truncated — capped at ${SERIES_CAP} series, and each series shows its latest 10 records; pass parameterCd to choose which parameters return, or split the sites across calls; use water_get_series for full history)*`,
+      );
+    });
+
+    it(`returns exactly ${SERIES_CAP} series uncapped`, async () => {
+      const sites = Array.from({ length: SERIES_CAP }, (_, i) => siteNo(i));
+      const { structured, text } = await readings(
+        sites.map((s) => seriesFor(s, '00060')),
+        sites,
+      );
+
+      expect(structured).toMatchObject({
+        total: SERIES_CAP,
+        totalSeries: SERIES_CAP,
+        truncated: false,
+      });
+      expect(text.split('\n')[0]).toBe(`**${SERIES_CAP} time series**`);
+    });
+
+    it('lists only the sites that returned nothing as missing when the cap applies', async () => {
+      // 99 sites return two series each (198 > cap); the 100th returns none.
+      const sites = Array.from({ length: SERIES_CAP }, (_, i) => siteNo(i));
+      const upstream = sites
+        .slice(0, -1)
+        .flatMap((s) => [seriesFor(s, '00060'), seriesFor(s, '00065')]);
+      const { structured, text } = await readings(upstream, sites);
+
+      expect(structured.total).toBe(SERIES_CAP);
+      expect(structured.missingSites).toEqual([siteNo(SERIES_CAP - 1)]);
+      expect(text).toContain(`**No data returned for:** ${siteNo(SERIES_CAP - 1)}`);
+    });
+
+    it('reports totalSeries equal to total for a parameterCd-filtered call under the cap', async () => {
+      const { structured, text } = await readings(
+        [makeSeries(2, '01646500'), makeSeries(2, '14211720')],
+        ['01646500', '14211720'],
+        ['00060'],
+      );
+
+      expect(structured).toMatchObject({ total: 2, totalSeries: 2, truncated: false });
+      expect(text.split('\n')[0]).toBe('**2 time series**');
+    });
+
+    it('rejects more than 100 sites at the schema', () => {
+      const sites = Array.from({ length: SERIES_CAP + 1 }, (_, i) => siteNo(i));
+      expect(() => waterGetReadings.input.parse({ sites })).toThrow();
     });
   });
 

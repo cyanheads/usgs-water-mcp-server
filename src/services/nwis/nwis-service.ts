@@ -5,7 +5,12 @@
  */
 
 import type { Context } from '@cyanheads/mcp-ts-core';
-import { JsonRpcErrorCode, McpError, validationError } from '@cyanheads/mcp-ts-core/errors';
+import {
+  JsonRpcErrorCode,
+  McpError,
+  serviceUnavailable,
+  validationError,
+} from '@cyanheads/mcp-ts-core/errors';
 import { fetchWithTimeout, withRetry } from '@cyanheads/mcp-ts-core/utils';
 import { getServerConfig } from '@/config/server-config.js';
 import type {
@@ -101,7 +106,8 @@ export interface NwisFailure {
  * Classify an error raised by this module into the failure reason its calling tool declares.
  *
  * Every NWIS failure this module raises is already typed — an HTML 400 becomes a
- * `validationError`, a 5xx becomes a `serviceUnavailable` — so callers branch on the error's
+ * `validationError`; a 5xx, or an IV/DV body that is not valid WaterML-JSON, becomes a
+ * `serviceUnavailable` — so callers branch on the error's
  * code instead of re-matching its prose. `invalid_request` names no field on purpose: NWIS
  * reports the offending one verbatim in the message (`period: Invalid format…`,
  * `ParameterCd: length must be…`), and inferring a field from the wrapper text is what made a
@@ -261,6 +267,8 @@ function decodeHtmlEntities(s: string): string {
 interface WatermlResponse {
   value?: {
     timeSeries?: Array<{
+      /** `agency:site:parameter:statistic`, e.g. "USGS:01646500:00010:00003". */
+      name?: string;
       sourceInfo?: {
         siteName?: string;
         siteCode?: Array<{ value?: string }>;
@@ -269,8 +277,15 @@ interface WatermlResponse {
         variableCode?: Array<{ value?: string }>;
         variableName?: string;
         unit?: { unitCode?: string };
+        /** Value NWIS writes in place of a reading it cannot provide — `-999999`. */
+        noDataValue?: number | null;
+        options?: {
+          option?: Array<{ name?: string; optionCode?: string; value?: string }>;
+        };
       };
+      /** One block per method (sensor) — a timeSeries can carry several. */
       values?: Array<{
+        method?: Array<{ methodID?: number | string; methodDescription?: string }>;
         value?: Array<{
           value?: string;
           qualifiers?: string[];
@@ -281,22 +296,113 @@ interface WatermlResponse {
   };
 }
 
+/** Decoded, non-empty string, or null — NWIS writes an unlabeled method as "". */
+function nonEmpty(s: string | undefined): string | null {
+  const decoded = decodeHtmlEntities(s ?? '').trim();
+  return decoded === '' ? null : decoded;
+}
+
+/**
+ * A record's value, or "" when NWIS reported none. NWIS writes the series' `noDataValue`
+ * (`-999999`) for a reading it cannot provide — a seasonal, discontinued, dry, or malfunctioning
+ * gage — and names the reason in the record's qualifiers (`Ssn`, `Dis`, `Dry`, `Eqp`, …), which
+ * the caller keeps.
+ */
+function readValue(raw: string | undefined, noDataValue: number | null | undefined): string {
+  if (!raw) return '';
+  return noDataValue != null && Number(raw) === noDataValue ? '' : raw;
+}
+
+/**
+ * Flatten a WaterML response into one series per `timeSeries` × method block.
+ *
+ * Each `values[]` block is a separate method — a second sensor, a relocated probe, a discontinued
+ * gage — so every block is read. An empty block is dropped when a sibling block of the same
+ * `timeSeries` carries values, since it adds nothing but a name; when every block is empty, one
+ * empty series (the first block's) remains, so "this site reports the parameter but returned no
+ * values" still reaches the caller instead of the series vanishing. A record holding the series'
+ * no-data value keeps its place, timestamp, and qualifiers with an empty value — see
+ * {@link readValue}.
+ */
 function parseWaterml(json: WatermlResponse): NwisTimeSeries[] {
-  const series = json.value?.timeSeries ?? [];
-  return series.map((ts): NwisTimeSeries => {
-    const siteNumber = ts.sourceInfo?.siteCode?.[0]?.value ?? '';
-    const siteName = ts.sourceInfo?.siteName ?? '';
-    const parameterCd = ts.variable?.variableCode?.[0]?.value ?? '';
-    const parameterName = decodeHtmlEntities(ts.variable?.variableName ?? '');
-    const unitCode = decodeHtmlEntities(ts.variable?.unit?.unitCode ?? '');
-    const rawValues = ts.values?.[0]?.value ?? [];
-    const values: NwisValueRecord[] = rawValues.map((v) => ({
-      dateTime: v.dateTime ?? '',
-      value: v.value ?? '',
-      qualifiers: v.qualifiers ?? [],
-    }));
-    return { siteNumber, siteName, parameterCd, parameterName, unitCode, values };
+  return (json.value?.timeSeries ?? []).flatMap((ts): NwisTimeSeries[] => {
+    const noDataValue = ts.variable?.noDataValue;
+    const statOption = ts.variable?.options?.option?.find((o) => o.name === 'Statistic');
+    const base = {
+      siteNumber: ts.sourceInfo?.siteCode?.[0]?.value ?? '',
+      siteName: ts.sourceInfo?.siteName ?? '',
+      parameterCd: ts.variable?.variableCode?.[0]?.value ?? '',
+      parameterName: decodeHtmlEntities(ts.variable?.variableName ?? ''),
+      unitCode: decodeHtmlEntities(ts.variable?.unit?.unitCode ?? ''),
+      statCd: statOption?.optionCode ?? ts.name?.split(':')[3] ?? '',
+      statName: nonEmpty(statOption?.value),
+    };
+
+    const blocks = (ts.values ?? []).map(
+      (block): NwisTimeSeries => ({
+        ...base,
+        methodId: block.method?.[0]?.methodID?.toString() ?? null,
+        methodDescription: nonEmpty(block.method?.[0]?.methodDescription),
+        values: (block.value ?? []).map(
+          (v): NwisValueRecord => ({
+            dateTime: v.dateTime ?? '',
+            value: readValue(v.value, noDataValue),
+            qualifiers: v.qualifiers ?? [],
+          }),
+        ),
+      }),
+    );
+
+    const withValues = blocks.filter((s) => s.values.length > 0);
+    if (withValues.length > 0) return withValues;
+    return [blocks[0] ?? { ...base, methodId: null, methodDescription: null, values: [] }];
   });
+}
+
+/**
+ * Read an IV/DV response body as WaterML-JSON. NWIS sometimes answers HTTP 200 with a body cut off
+ * mid-document; that — or any other body without a `value.timeSeries` array, which every
+ * well-formed response carries (empty when nothing matched) — is an upstream fault, not a parse
+ * bug, so it is raised as `ServiceUnavailable` for the retry wrapper to retry like a 503.
+ */
+function parseWatermlBody(text: string, url: string): NwisTimeSeries[] {
+  let json: WatermlResponse | null;
+  try {
+    json = JSON.parse(text) as WatermlResponse | null;
+  } catch (err: unknown) {
+    const detail = err instanceof Error ? err.message : String(err);
+    throw serviceUnavailable(
+      `NWIS returned a response that is not valid WaterML-JSON: ${detail}`,
+      { url, bodyLength: text.length },
+      { cause: err },
+    );
+  }
+  if (json === null || !Array.isArray(json.value?.timeSeries)) {
+    throw serviceUnavailable(
+      'NWIS returned a response that is not valid WaterML-JSON: it carries no timeSeries document.',
+      { url, bodyLength: text.length },
+    );
+  }
+  return parseWaterml(json);
+}
+
+/**
+ * Fetch and parse one IV/DV request. Parsing sits inside the retry so a truncated body is retried
+ * and, if every attempt fails, surfaces as the same `ServiceUnavailable` a persistent 5xx does.
+ */
+function fetchWaterml(url: string, operation: string, ctx: Context): Promise<NwisTimeSeries[]> {
+  return withRetry(async () => parseWatermlBody(await fetchText(url, ctx), url), {
+    maxRetries: 3,
+    baseDelayMs: 500,
+    operation,
+    context: ctx,
+    signal: ctx.signal,
+  });
+}
+
+/** True when at least one record carries a value — a record NWIS reported as no data does not. */
+export function carriesValues(series: NwisTimeSeries | undefined): boolean {
+  return series?.values.some((v) => v.value !== '') ?? false;
 }
 
 // ── IV service ────────────────────────────────────────────────────────────────
@@ -308,10 +414,7 @@ export interface GetReadingsParams {
 }
 
 /** Get the latest instantaneous values for one or more sites. */
-export async function getReadings(
-  params: GetReadingsParams,
-  ctx: Context,
-): Promise<NwisTimeSeries[]> {
+export function getReadings(params: GetReadingsParams, ctx: Context): Promise<NwisTimeSeries[]> {
   const qs = new URLSearchParams({
     format: 'json',
     sites: params.sites.join(','),
@@ -320,17 +423,7 @@ export async function getReadings(
   if (params.period) qs.set('period', params.period);
   else qs.set('period', 'PT2H'); // default: last 2 hours
 
-  const url = `${BASE_URL}/iv/?${qs}`;
-
-  const text = await withRetry(() => fetchText(url, ctx), {
-    maxRetries: 3,
-    baseDelayMs: 500,
-    operation: 'getReadings',
-    context: ctx,
-    signal: ctx.signal,
-  });
-
-  return parseWaterml(JSON.parse(text) as WatermlResponse);
+  return fetchWaterml(`${BASE_URL}/iv/?${qs}`, 'getReadings', ctx);
 }
 
 // ── DV/IV series service ──────────────────────────────────────────────────────
@@ -341,10 +434,18 @@ export interface GetSeriesParams {
   seriesType: 'daily' | 'instantaneous';
   site: string;
   startDate: string;
+  /**
+   * Daily statistic code to request (e.g. "00003"). Forwarded to the DV service only, which then
+   * returns that statistic alone — the IV service rejects the `statCd` keyword with an HTTP 400.
+   */
+  statCd?: string;
 }
 
-/** Get a time series of daily or instantaneous values. */
-export async function getSeries(params: GetSeriesParams, ctx: Context): Promise<NwisTimeSeries[]> {
+/**
+ * Get a time series of daily or instantaneous values — one entry per statistic × method the
+ * service returned (see {@link parseWaterml}).
+ */
+export function getSeries(params: GetSeriesParams, ctx: Context): Promise<NwisTimeSeries[]> {
   const endpoint = params.seriesType === 'daily' ? 'dv' : 'iv';
   const qs = new URLSearchParams({
     format: 'json',
@@ -353,18 +454,9 @@ export async function getSeries(params: GetSeriesParams, ctx: Context): Promise<
     startDT: params.startDate,
     endDT: params.endDate,
   });
+  if (params.statCd && endpoint === 'dv') qs.set('statCd', params.statCd);
 
-  const url = `${BASE_URL}/${endpoint}/?${qs}`;
-
-  const text = await withRetry(() => fetchText(url, ctx), {
-    maxRetries: 3,
-    baseDelayMs: 500,
-    operation: 'getSeries',
-    context: ctx,
-    signal: ctx.signal,
-  });
-
-  return parseWaterml(JSON.parse(text) as WatermlResponse);
+  return fetchWaterml(`${BASE_URL}/${endpoint}/?${qs}`, 'getSeries', ctx);
 }
 
 // ── Stat service ──────────────────────────────────────────────────────────────
@@ -410,6 +502,8 @@ export async function getStats(
       maxVa: parseFloat_(r['max_va']),
       minVa: parseFloat_(r['min_va']),
       meanVa: parseFloat_(r['mean_va']),
+      tsId: r['ts_id'] || null,
+      seriesDescription: nonEmpty(r['loc_web_ds']),
     }),
   );
 
