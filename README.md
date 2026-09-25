@@ -35,7 +35,7 @@ USGS NWIS water data — ~8,000 active stream gages and groundwater wells across
 
 | Tool | Description |
 |:-----|:------------|
-| `water_list_parameters` | Static lookup of well-known USGS parameter codes with names, units, and domain. No network call. |
+| `water_list_parameters` | List well-known USGS parameter codes with names, units, and domain (no network call), or search the full ~19,600-code USGS catalog by name or description. |
 | `water_find_sites` | Find USGS monitoring sites by bounding box, state, county, or HUC watershed. Filter by site type and parameter availability. Large match sets spill to DataCanvas. |
 | `water_get_readings` | Get the latest instantaneous values (~15 min real-time) for up to 100 USGS sites. |
 | `water_get_series` | Get a time series of daily or instantaneous values for a site over a date range. Large ranges spill to DataCanvas. |
@@ -48,7 +48,7 @@ USGS NWIS water data — ~8,000 active stream gages and groundwater wells across
 | Resource | Description |
 |:---|:---|
 | `usgs-water://site/{siteId}` | Site metadata: name, coordinates, type, HUC, state, county, drainage area, and altitude |
-| `usgs-water://parameters` | Full parameter code catalog (same data as `water_list_parameters`) |
+| `usgs-water://parameters` | Curated well-known parameter codes (the list `water_list_parameters` returns without a query) |
 
 All resource data is also reachable via tools. Use `water_find_sites` for geographic site discovery.
 
@@ -56,9 +56,10 @@ All resource data is also reachable via tools. Use `water_find_sites` for geogra
 
 ### `water_list_parameters` <sub>tool</sub>
 
-- Static, built-in catalog — no network call — covering codes like `00060` (Discharge, ft³/s), `00065` (Gage height, ft), `00010` (Temperature, water, °C), and `72019` (Depth to water level, ft)
-- `group` filters by thematic domain: `streamflow`, `groundwater`, `temperature`, `meteorological`, `water-quality`, or `all` (default)
-- Required first step — every other tool's `parameterCd` input expects a code from this catalog
+- Without `query`: a curated, built-in list — no network call — covering codes like `00060` (Discharge, ft³/s), `00065` (Gage height, ft), `00010` (Temperature, water, °C), and `72019` (Depth to water level, ft). `group` filters it by thematic domain: `streamflow`, `groundwater`, `temperature`, `meteorological`, `water-quality`, or `all` (default)
+- With `query`: searches the full USGS parameter-code catalog (~19,600 codes) — every word must start a word in the parameter name or description (`"turbidity"`, `"nitrate filtered"`), and a bare 5-digit code returns that code. Matching curated codes come first, then name matches, then description matches; at most 25 return, with `total` counting every match and `truncated` flagging the cap. Each entry names its `source` (`curated` or `usgs-catalog`), and catalog entries carry the USGS `description`
+- The catalog is fetched once on the first query and cached for 24 hours; a failed fetch returns a retryable `upstream_error` rather than a curated-only answer. `query` and a `group` other than `all` can't be combined
+- The place to resolve a code before any other tool — every `parameterCd` input takes one
 
 ---
 
@@ -75,8 +76,10 @@ All resource data is also reachable via tools. Use `water_find_sites` for geogra
 ### `water_get_readings` <sub>tool</sub>
 
 - Batch up to 100 site numbers per call; optional `parameterCd` filter; `period` is an ISO 8601 lookback duration, default `PT2H`
-- Each series returns only its 10 most recent records — `totalValues` reports the true count and `truncated` flags any series that was capped; use `water_get_series` for full history
-- Every value carries qualifier codes (e.g. `P` provisional, `A` approved)
+- A site measuring one parameter with several sensors (NWIS "methods") returns one series per method, each carrying `methodId` and `methodDescription`; a method block that came back empty is omitted when another method of the same parameter has values
+- Omitting `parameterCd` returns every parameter each site publishes, so at most 100 series return per call — kept round-robin across sites, so every site that returned data keeps at least one, with `totalSeries` holding the count before the cap. Pass `parameterCd` or split the sites across calls to reach the rest
+- Each series returns only its 10 most recent records — `totalValues` reports the true count; use `water_get_series` for full history. `truncated` flags either cap
+- Every value carries qualifier codes (e.g. `P` provisional, `A` approved). A reading NWIS reports as no data — its `-999999` no-data value, from a seasonal, discontinued, dry, or malfunctioning gage — comes back as an empty `value` with its qualifiers naming why (`Ssn`, `Dis`, `Dry`, `Eqp`), never as a magnitude, and a series whose every record is no data ranks with the empty ones under the series cap
 - Sites NWIS returns nothing for are named in `missingSites` rather than dropped silently
 - Groundwater depth reads through this same IV service via parameter `72019` — the legacy `gwlevels` endpoint was decommissioned November 2025
 
@@ -85,8 +88,10 @@ All resource data is also reachable via tools. Use `water_find_sites` for geogra
 ### `water_get_series` <sub>tool</sub>
 
 - One site and one parameter code per call; `seriesType` is `daily` (DV service, one value/day, default) or `instantaneous` (IV service, ~15 min), over a `startDate`–`endDate` range
+- Returns one series and names it: NWIS can hold one daily series per statistic (`00003` mean, `00001` maximum, `00002` minimum) and one per sensor (method). The default is the daily mean when NWIS returns one with values, and the method with the most records; `statCd` and `methodId` pick another, and `otherSeries` lists every alternative with its record count. `statCd` applies to daily series only — instantaneous values carry just `00000`
+- A record NWIS reports as no data (`-999999`) returns as an empty `value` with its qualifiers, and stages as `NULL` on a canvas
 - Without DataCanvas, a result over 500 records returns the most recent 500 with `truncated: true` and `totalRecords` holding the full count
-- With `CANVAS_PROVIDER_TYPE=duckdb` set, ranges over 500 records spill the complete series to a canvas (`canvas_id`/`table_name`) while the inline records stay the most recent — inspect the columns with `water_dataframe_describe`, then read the full series with `water_dataframe_query`. The table name carries the site, parameter code, series type, and both date bounds, so re-running a query replaces only its own table; pass a prior `canvas_id` to add a table to an existing canvas
+- With `CANVAS_PROVIDER_TYPE=duckdb` set, ranges over 500 records spill the complete series to a canvas (`canvas_id`/`table_name`) while the inline records stay the most recent — inspect the columns with `water_dataframe_describe`, then read the full series with `water_dataframe_query`. The table name carries the site, parameter code, series type, both date bounds, and — whenever a statistic or method was chosen among several — a digest of that choice, so re-running a query replaces only its own table; pass a prior `canvas_id` to add a table to an existing canvas
 
 ---
 
@@ -94,8 +99,11 @@ All resource data is also reachable via tools. Use `water_find_sites` for geogra
 
 - Ranks the current IV reading against the full period-of-record daily-mean percentiles for the observation's own calendar day: `record-high` (≥p95), `above-normal` (p75–95), `normal` (p25–75), `below-normal` (p10–25), `low` (p05–10), `record-low` (<p05)
 - `percentileLabel` spells out each threshold in plain language — the `record-high`/`record-low` classes mark percentile-of-record extremes, not verified all-time records
+- Short records often leave p05, p10, or p95 blank; the class is then decided by the thresholds that are published and the label names the missing one (e.g. `above-normal`, "≥ 75th percentile; 95th not published"). `normal` needs both p25 and p75
 - `comparisonBasis` discloses the granularity mismatch: the reading is instantaneous while the percentiles are daily-mean, so the ranking is approximate, not a flood-stage or drought determination
-- Degrades gracefully when history is thin: returns the reading with `historicalContext: null` and a `historicalContextStatus` of `no_record`, `no_matching_day`, or `unavailable` (the last is a transient, retryable stat-service failure, not a statement about the site's record)
+- When the site reports the parameter from several sensors, one reading is used and named by `methodId`/`methodDescription`: from the sensor a statistics series is described as when one is, otherwise the most recent across them. Percentiles come from the statistics series whose description equals that method's (`methodMatched: true`). With no exact match, the series is still used — with `methodMatched: false` and a `note` saying why — when it is the only one whose description matches once the statistics service's bracketed label (`[BASE GAGE]`) is set aside, or the only statistics series at the site
+- A current reading NWIS reports as no data (`-999999`, e.g. a seasonal gage) is not ranked: `currentValue` is empty, `percentileClass` is `unknown`, and the qualifiers (`Ssn`, `Dis`, `Eqp`, …) name the reason. Another sensor's measured reading is preferred when the site has one
+- Degrades gracefully when history is thin: returns the reading with `historicalContext: null` and a `historicalContextStatus` of `no_record`, `no_matching_day`, `no_matching_method` (several statistics series, none identified as the reporting sensor's), or `unavailable` (a transient, retryable stat-service failure, not a statement about the site's record)
 
 ---
 
@@ -124,8 +132,8 @@ All resource data is also reachable via tools. Use `water_find_sites` for geogra
 
 ### `usgs-water://parameters` <sub>resource</sub>
 
-- Full parameter code catalog as `application/json` — the same data as `water_list_parameters`
-- Takes no parameters; always returns the entire catalog
+- The curated table of well-known parameter codes as `application/json` — the list `water_list_parameters` returns without a query
+- Takes no parameters; a curated subset of the USGS catalog — search the rest with `water_list_parameters` `query`
 
 ## Features
 
@@ -133,7 +141,7 @@ Built on [`@cyanheads/mcp-ts-core`](https://github.com/cyanheads/mcp-ts-core): s
 
 USGS Water-specific:
 
-- Wraps NWIS IV (instantaneous), DV (daily), site, and stat endpoints — no API key required, fully public
+- Wraps NWIS IV (instantaneous), DV (daily), site, and stat endpoints plus the USGS Water Data parameter-code catalog — no API key required, fully public
 - Input formats are checked at the edge against what NWIS actually accepts — site numbers, parameter codes, ISO 8601 periods, HUC, FIPS county, state, and bbox each carry a validated pattern advertised in the tool's JSON Schema
 - HTML error detection: NWIS returns 400 with an HTML body for bad input, and the service layer extracts NWIS's own message and maps it to a typed failure
 - DataCanvas spillover: `water_get_series` (long date ranges) and `water_find_sites` (match sets past the 500-site cap) stage the full result as a DuckDB-backed table, queryable via `water_dataframe_query`
@@ -265,8 +273,8 @@ cp .env.example .env
 | Variable | Description | Default |
 |:---------|:------------|:--------|
 | `CANVAS_PROVIDER_TYPE` | Set to `duckdb` to enable DataCanvas spillover for large results from `water_get_series` and `water_find_sites`. | — |
-| `USGS_USER_AGENT` | Custom User-Agent string sent to USGS NWIS. USGS requests a descriptive User-Agent per their terms. | `usgs-water-mcp-server/0.2.5 (contact: https://github.com/cyanheads/usgs-water-mcp-server)` |
-| `USGS_REQUEST_TIMEOUT_MS` | HTTP request timeout in milliseconds for NWIS calls. | `30000` |
+| `USGS_USER_AGENT` | Custom User-Agent string sent to USGS — NWIS and the parameter-code catalog. USGS requests a descriptive User-Agent per their terms. | `usgs-water-mcp-server/0.2.5 (contact: https://github.com/cyanheads/usgs-water-mcp-server)` |
+| `USGS_REQUEST_TIMEOUT_MS` | HTTP request timeout in milliseconds for USGS calls — NWIS and the parameter-code catalog. | `30000` |
 | `MCP_TRANSPORT_TYPE` | Transport: `stdio` or `http`. | `stdio` |
 | `MCP_HTTP_PORT` | Port for HTTP server. | `3010` |
 | `MCP_SESSION_MODE` | HTTP session mode. The server declares `stateless` in code, matching `.env.example` and the Docker runtime; setting this overrides that, and `auto` resolves to `stateful`. | `stateless` |
@@ -319,7 +327,7 @@ The Dockerfile defaults to HTTP transport, stateless session mode, and logs to `
 | `src/mcp-server/tools` | Tool definitions (`*.tool.ts`). |
 | `src/mcp-server/resources` | Resource definitions (`*.resource.ts`). |
 | `src/services/nwis` | NWIS HTTP client — IV, DV, site, and stat endpoints with HTML error detection. |
-| `src/services/canvas` | DataCanvas accessor for DuckDB-backed spillover. |
+| `src/services/canvas` | DataCanvas accessor, caller-supplied `canvas_id` resolution, and deterministic table names for DuckDB-backed spillover. |
 | `tests/` | Unit and integration tests mirroring `src/`. |
 
 ## Development guide
