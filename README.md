@@ -327,6 +327,7 @@ The Dockerfile defaults to HTTP transport, stateless session mode, and logs to `
 | `src/mcp-server/tools` | Tool definitions (`*.tool.ts`). |
 | `src/mcp-server/resources` | Resource definitions (`*.resource.ts`). |
 | `src/services/nwis` | NWIS HTTP client — IV, DV, site, and stat endpoints with HTML error detection. |
+| `src/services/waterdata` | USGS Water Data parameter-code catalog reader (24-hour cache) and the curated parameter table. |
 | `src/services/canvas` | DataCanvas accessor, caller-supplied `canvas_id` resolution, and deterministic table names for DuckDB-backed spillover. |
 | `tests/` | Unit and integration tests mirroring `src/`. |
 
