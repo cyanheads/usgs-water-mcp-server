@@ -1,0 +1,1122 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "parameter_name": "delta O-18/O-16, NO3, solids",
+        "unit_of_measure": "per mil",
+        "parameter_description": "delta oxygen-18/oxygen-16 of nitrate, solids, per mil"
+      },
+      "id": "63040",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "parameter_name": "delta O-18/O-16, NO3, wf",
+        "unit_of_measure": "per mil",
+        "parameter_description": "delta oxygen-18/oxygen-16 of nitrate, water, filtered, per mil"
+      },
+      "id": "63041",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "parameter_name": "Turbidity, Nephelom",
+        "unit_of_measure": "NTU",
+        "parameter_description": "Turbidity, water, unfiltered, broad band light source (400-680 nm), detection angle 90 +-30 degrees to incident light, nephelometric turbidity units (NTU)"
+      },
+      "id": "63675",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "parameter_name": "Turbidity, NephRatio",
+        "unit_of_measure": "NTRU",
+        "parameter_description": "Turbidity, water, unfiltered, broad band light source (400-680 nm), detectors at multiple angles including 90 +-30 degrees, ratiometric correction, NTRU"
+      },
+      "id": "63676",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "parameter_name": "Backscatter turbidty",
+        "unit_of_measure": "BU",
+        "parameter_description": "Backscatter turbidity, water, unfiltered, broad band light source (400-680 nm), detection angle 0-45 degrees to incident light, backscatter units (BU)"
+      },
+      "id": "63677",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "parameter_name": "Attenuation turbidty",
+        "unit_of_measure": "ATU",
+        "parameter_description": "Attenuation turbidity, water, unfiltered, broad band light source (400-680 nm), detection angle 180 degrees to incident light, attenuation units (ATU)"
+      },
+      "id": "63678",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "parameter_name": "Turbidity, NephMulti",
+        "unit_of_measure": "NTMU",
+        "parameter_description": "Turbidity, water, unfiltered, broad band light source (400-680 nm), multiple beam, detectors at multiple angles including 90 degrees, NTMU"
+      },
+      "id": "63679",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "parameter_name": "Turbidity, Form Neph",
+        "unit_of_measure": "FNU",
+        "parameter_description": "Turbidity, water, unfiltered, monochrome near infra-red LED light, 780-900 nm, detection angle 90 +-2.5 degrees, formazin nephelometric units (FNU)"
+      },
+      "id": "63680",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "parameter_name": "Turbidity, FormRatio",
+        "unit_of_measure": "FNRU",
+        "parameter_description": "Turbidity, water, unfiltered, monochrome near infra-red LED light, 780-900 nm, detectors at multiple angles including 90 +-2.5 degrees, ratiometric correction, FNRU"
+      },
+      "id": "63681",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "parameter_name": "Turbidity,FormBksctr",
+        "unit_of_measure": "FBU",
+        "parameter_description": "Turbidity, water, unfiltered, monochrome near infra-red LED light source, 780-900 nm, detection angle 0-45 degrees to incident light (backscatter), FBU"
+      },
+      "id": "63682",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "parameter_name": "Turbidity,FormAttenu",
+        "unit_of_measure": "FAU",
+        "parameter_description": "Turbidity, water, unfiltered, monochrome near infra-red LED light source, 780-900 nm, detection angle 180 degrees to incident light (attenuation), FAU"
+      },
+      "id": "63683",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "parameter_name": "Turbidity, FormMulti",
+        "unit_of_measure": "FNMU",
+        "parameter_description": "Turbidity, water, unfiltered, monochrome near infra-red LED light source, 780-900 nm, multiple beam, detectors at multiple angles including 90 degrees, FNMU"
+      },
+      "id": "63684",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "parameter_name": "Nitrate, wf",
+        "unit_of_measure": "ug/L as N",
+        "parameter_description": "Nitrate, water, filtered, micrograms per liter as nitrogen"
+      },
+      "id": "64832",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "parameter_name": "Total nitrogen, solids",
+        "unit_of_measure": "%",
+        "parameter_description": "Total nitrogen [nitrate + nitrite + ammonia + organic-N], solids, dry weight, mass fraction, percent"
+      },
+      "id": "64834",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "parameter_name": "NO3 + NO2 yield",
+        "unit_of_measure": "lb/day/mi2",
+        "parameter_description": "Nitrate plus nitrite yield, computed by regression equation, pounds per day per square mile"
+      },
+      "id": "70378",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "parameter_name": "NO3 + NO2 yield",
+        "unit_of_measure": "kg/day/km2",
+        "parameter_description": "Nitrate plus nitrite yield, computed by regression equation, kilograms per day per square kilometer"
+      },
+      "id": "70379",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "parameter_name": "Total nitrogen yield",
+        "unit_of_measure": "lb/day/mi2",
+        "parameter_description": "Total nitrogen [nitrate + nitrite + ammonia + organic-N] yield, computed by regression equation, pounds per day per square mile"
+      },
+      "id": "70380",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "parameter_name": "Total nitrogen yield",
+        "unit_of_measure": "kg/day/km2",
+        "parameter_description": "Total nitrogen [nitrate + nitrite + ammonia + organic-N] yield, computed by regression equation, kilograms per day per square kilometer"
+      },
+      "id": "70381",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "parameter_name": "Nitrate, wu",
+        "unit_of_measure": "mg/l asNO3",
+        "parameter_description": "Nitrate, water, unfiltered, milligrams per liter as nitrate"
+      },
+      "id": "71850",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "parameter_name": "Nitrate, wf",
+        "unit_of_measure": "mg/l asNO3",
+        "parameter_description": "Nitrate, water, filtered, milligrams per liter as nitrate"
+      },
+      "id": "71851",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "parameter_name": "Total nitrogen, wu",
+        "unit_of_measure": "mg/l NO3",
+        "parameter_description": "Total nitrogen [nitrate + nitrite + ammonia + organic-N], water, unfiltered, milligrams per liter as nitrate"
+      },
+      "id": "71887",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "parameter_name": "Water level, depth LSD",
+        "unit_of_measure": "ft",
+        "parameter_description": "Depth to water level, feet below land surface"
+      },
+      "id": "72019",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "parameter_name": "Elevation, NGVD29",
+        "unit_of_measure": "ft",
+        "parameter_description": "Elevation above NGVD 1929, feet"
+      },
+      "id": "72020",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "parameter_name": "Discharge, storm event median",
+        "unit_of_measure": "ft3/s",
+        "parameter_description": "Discharge, median for storm event, cubic feet per second"
+      },
+      "id": "72122",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "parameter_name": "Discharge, storm event mean",
+        "unit_of_measure": "ft3/s",
+        "parameter_description": "Discharge, mean for storm event, cubic feet per second"
+      },
+      "id": "72123",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "parameter_name": "Discharge,tide fltrd",
+        "unit_of_measure": "ft3/s",
+        "parameter_description": "Discharge, tidally filtered, cubic feet per second"
+      },
+      "id": "72137",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "parameter_name": "Discharge,tide fltrd",
+        "unit_of_measure": "m3/sec",
+        "parameter_description": "Discharge, tidally filtered, cubic meters per second"
+      },
+      "id": "72138",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "parameter_name": "Discharge,tide fltrd",
+        "unit_of_measure": "gal/min",
+        "parameter_description": "Discharge, tidally filtered, gallons per minute"
+      },
+      "id": "72139",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "parameter_name": "Elevation, GW, LMSL",
+        "unit_of_measure": "ft",
+        "parameter_description": "Groundwater level above local mean sea level (LMSL), feet"
+      },
+      "id": "72150",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "parameter_name": "Discharge, GW",
+        "unit_of_measure": "cm/d",
+        "parameter_description": "Groundwater discharge, centimeters per day"
+      },
+      "id": "72177",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "parameter_name": "Turbidity, wu,field,NephRatio",
+        "unit_of_measure": "NTRU",
+        "parameter_description": "Turbidity, water, unfiltered, field, broad band light source (400-680 nm), detectors at multiple angles including 90 +-30 degrees, ratiometric correction, nephelometric"
+      },
+      "id": "72188",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "parameter_name": "Turbidity,middepth,broad band",
+        "unit_of_measure": "NTU",
+        "parameter_description": "Turbidity, water, unfiltered, mid-depth of water column, broad band light source (400-680 nm), detection angle 90 +-30 degrees to incident light, nephelometric turbidity units"
+      },
+      "id": "72208",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "parameter_name": "Turbidity,middepth,monochrome",
+        "unit_of_measure": "FNU",
+        "parameter_description": "Turbidity, water, unfiltered, mid-depth of water column, monochrome near infra-red LED light, 780-900 nm, detection angle 90 +-2.5 degrees, formazin nephelometric units"
+      },
+      "id": "72209",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "parameter_name": "Dissolved oxygen, mid-depth",
+        "unit_of_measure": "% saturatn",
+        "parameter_description": "Dissolved oxygen, water, unfiltered, mid-depth of water column, percent of saturation"
+      },
+      "id": "72210",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "parameter_name": "Turbidity, 90&0-45 d",
+        "unit_of_measure": "FBRU",
+        "parameter_description": "Turbidity, water, unfiltered, monochrome near infra-red LED light, 780-900 nm, detector angles at 90 +-2.5 degrees and 0-45 degrees, ratiometric correction, fiber-optic beam-reduced unit"
+      },
+      "id": "72213",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "parameter_name": "Discharge",
+        "unit_of_measure": "ft3/day",
+        "parameter_description": "Discharge, cubic feet per day"
+      },
+      "id": "72243",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "parameter_name": "Mean water velocity",
+        "unit_of_measure": "ft/sec",
+        "parameter_description": "Mean water velocity for discharge computation, feet per second"
+      },
+      "id": "72255",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "parameter_name": "Discharge factor",
+        "unit_of_measure": "None",
+        "parameter_description": "Coefficient used to adjust discharge, Slope-Q computation"
+      },
+      "id": "72258",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "parameter_name": "Fit RMSE",
+        "unit_of_measure": "None",
+        "parameter_description": "Fitting parameter root-mean-square error (RMSE), water, in situ, ultraviolet nitrate analyzer"
+      },
+      "id": "72260",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "parameter_name": "Burst standard dev.",
+        "unit_of_measure": "mg/l as N",
+        "parameter_description": "Standard deviation, nitrate + nitrite, water, in situ, burst sample, ultraviolet nitrate analyzer, mg/L as N"
+      },
+      "id": "72261",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "parameter_name": "Burst coeff. of var.",
+        "unit_of_measure": "%",
+        "parameter_description": "Coefficient of variation, nitrate + nitrite, water, in situ, burst sample, ultraviolet nitrate analyzer, percent"
+      },
+      "id": "72262",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "parameter_name": "Discharge, cumul",
+        "unit_of_measure": "ac-ft",
+        "parameter_description": "Discharge, cumulative, acre-feet"
+      },
+      "id": "72272",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "parameter_name": "Mean water velocity",
+        "unit_of_measure": "mph",
+        "parameter_description": "Mean water velocity for discharge computation, miles per hour"
+      },
+      "id": "72294",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "parameter_name": "Turbidity, wu, SDVBBksctr",
+        "unit_of_measure": "SBU",
+        "parameter_description": "Turbidity, water, unfiltered, monochrome near infra-red LED light, 780-900 nm, detection angle 135-180 degrees, SDVB (styrene divinylbenzene beads) backscatter units(SBU)"
+      },
+      "id": "72337",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "parameter_name": "Turbidity, storm event mean",
+        "unit_of_measure": "FNU",
+        "parameter_description": "Turbidity, mean for storm event, composite samples, formazin nephelometric units"
+      },
+      "id": "72395",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "parameter_name": "Discharge, cumulative",
+        "unit_of_measure": "dam3",
+        "parameter_description": "Discharge, cumulative, cubic decameters"
+      },
+      "id": "72433",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "parameter_name": "Discharge, cumulative",
+        "unit_of_measure": "ft3",
+        "parameter_description": "Discharge, cumulative, cubic feet"
+      },
+      "id": "72434",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "parameter_name": "Fluoresce ex355-375 em440-500, unc WT, TB, IFE",
+        "unit_of_measure": "ug/l QSE",
+        "parameter_description": "Fluorescence, water, in situ, excitation 355-375, emission 440-500, uncorrected for water temperature, turbidity or inner filter effects, micrograms per liter as quinine sulfate equivalents (QSE)"
+      },
+      "id": "72442",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "parameter_name": "Fluoresce ex360-370 em440-520, unc WT, TB, IFE",
+        "unit_of_measure": "ug/l QSE",
+        "parameter_description": "Fluorescence, water, in situ, excitation 360-370, emission 440-520, uncorrected for water temperature, turbidity or inner filter effects, micrograms per liter as quinine sulfate equivalents (QSE)"
+      },
+      "id": "72443",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "parameter_name": "Total nitrogen, solids",
+        "unit_of_measure": "mg/kg",
+        "parameter_description": "Total nitrogen [nitrate + nitrite + ammonia + organic-N], solids, dry weight, milligrams per kilogram as nitrogen"
+      },
+      "id": "80111",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "parameter_name": "Suspnd sedmnt disch",
+        "unit_of_measure": "tons/day",
+        "parameter_description": "Suspended sediment discharge, short tons per day"
+      },
+      "id": "80155",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "parameter_name": "Total sediment disch",
+        "unit_of_measure": "tons/day",
+        "parameter_description": "Total sediment discharge, short tons per day"
+      },
+      "id": "80156",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "parameter_name": "Bedload sediment",
+        "unit_of_measure": "tons/day",
+        "parameter_description": "Bedload sediment discharge, short tons per day"
+      },
+      "id": "80225",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "parameter_name": "SS load, regres turb",
+        "unit_of_measure": "tons/day",
+        "parameter_description": "Suspended sediment load, water, unfiltered, regression computed, turbidity and streamflow as regressors, short tons per day"
+      },
+      "id": "80298",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "parameter_name": "Susp sediment, wu, point est",
+        "unit_of_measure": "mg/l",
+        "parameter_description": "Suspended sediment concentration, water, unfiltered, at a fixed point in stream, estimated by a regression equation with turbidity, milligrams per liter"
+      },
+      "id": "80300",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "parameter_name": "Suspnd sedmnt disch",
+        "unit_of_measure": "lb/day",
+        "parameter_description": "Suspended sediment discharge, pounds per day"
+      },
+      "id": "80301",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "parameter_name": "Discharge velocity",
+        "unit_of_measure": "m/sec",
+        "parameter_description": "Discharge velocity, meters per second"
+      },
+      "id": "81380",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "parameter_name": "Discharge duration",
+        "unit_of_measure": "minutes",
+        "parameter_description": "Discharge duration, minutes"
+      },
+      "id": "81381",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "parameter_name": "Discharge, sample mean",
+        "unit_of_measure": "ft3/s",
+        "parameter_description": "Discharge, mean, composite sample, cubic feet per second"
+      },
+      "id": "81799",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "parameter_name": "Turbidity, wu, lab",
+        "unit_of_measure": "NTU",
+        "parameter_description": "Turbidity, water, unfiltered, laboratory, nephelometric turbidity units"
+      },
+      "id": "82079",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "parameter_name": "NO3+NO2, soluble, dd",
+        "unit_of_measure": "mg/kg as N",
+        "parameter_description": "Nitrate plus nitrite, soluble, dry atmospheric deposition, milligrams per kilogram as nitrogen"
+      },
+      "id": "82458",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "parameter_name": "Nitrate, soluble, dd",
+        "unit_of_measure": "mg/kg as N",
+        "parameter_description": "Nitrate, soluble, dry atmospheric deposition, milligrams per kilogram as nitrogen"
+      },
+      "id": "82462",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "parameter_name": "delta N-15/N-14, NO3, soil",
+        "unit_of_measure": "per mil",
+        "parameter_description": "delta nitrogen-15/nitrogen-14 of nitrate, soil, per mil"
+      },
+      "id": "82688",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "parameter_name": "delta N-15/N-14, NO3, wf",
+        "unit_of_measure": "per mil",
+        "parameter_description": "delta nitrogen-15/nitrogen-14 of nitrate, water, filtered, per mil"
+      },
+      "id": "82690",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "parameter_name": "delta O-18/O-16, O2, wu",
+        "unit_of_measure": "per mil",
+        "parameter_description": "delta oxygen-18/oxygen-16 of dissolved oxygen, water, unfiltered, per mil"
+      },
+      "id": "82699",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "parameter_name": "delta O-17/O-16, NO3, wf",
+        "unit_of_measure": "per mil",
+        "parameter_description": "delta oxygen-17/oxygen-16 of nitrate, water, filtered, relative to Vienna Standard Mean Ocean Water (VSMOW), per mil"
+      },
+      "id": "82793",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "parameter_name": "Nitrate, wd,f",
+        "unit_of_measure": "mg/l as N",
+        "parameter_description": "Nitrate, wet atmospheric deposition, filtered, milligrams per liter as nitrogen"
+      },
+      "id": "83068",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "parameter_name": "Nitrate, wd,f",
+        "unit_of_measure": "mg/m2 as N",
+        "parameter_description": "Nitrate, wet atmospheric deposition, filtered, milligrams per square meter as nitrogen"
+      },
+      "id": "83069",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "parameter_name": "Nitrate, wd,f",
+        "unit_of_measure": "mg/l",
+        "parameter_description": "Nitrate, wet atmospheric deposition, filtered, milligrams per liter as nitrate"
+      },
+      "id": "83071",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "parameter_name": "Nitrate, bd,f",
+        "unit_of_measure": "mg/l",
+        "parameter_description": "Nitrate, bulk atmospheric deposition, filtered, milligrams per liter as nitrate"
+      },
+      "id": "83353",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "parameter_name": "NO3+NO2, w, total",
+        "unit_of_measure": "ton/d as N",
+        "parameter_description": "Nitrate plus nitrite, water, total, short tons per day as nitrogen"
+      },
+      "id": "83554",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "parameter_name": "NO3+NO2 load, water, in situ",
+        "unit_of_measure": "mg/s as N",
+        "parameter_description": "Nitrate plus nitrite load, water, in situ, milligrams per second as nitrogen"
+      },
+      "id": "83561",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "parameter_name": "Oxygen, fraction of diss gas",
+        "unit_of_measure": "%",
+        "parameter_description": "Dissolved oxygen, water, volume percent of dissolved gases"
+      },
+      "id": "85550",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "parameter_name": "Dissolved oxygen, w, diss",
+        "unit_of_measure": "cm3/g @STP",
+        "parameter_description": "Dissolved oxygen, water, weight basis, dissolved, cubic centimeters per gram at standard temperature and pressure"
+      },
+      "id": "85573",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "parameter_name": "Oxygen, diss, area wt ave",
+        "unit_of_measure": "mg/l",
+        "parameter_description": "Dissolved oxygen, water, unfiltered, area weighted average, milligrams per liter"
+      },
+      "id": "90300",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "parameter_name": "NO3+NO2, wu, calcd",
+        "unit_of_measure": "mg/l as N",
+        "parameter_description": "Nitrate plus nitrite, water, filtered, computed by regression equation, milligrams per liter as nitrogen"
+      },
+      "id": "90869",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "parameter_name": "Nitrate, wf",
+        "unit_of_measure": "ug/l",
+        "parameter_description": "Nitrate, water, filtered, micrograms per liter as nitrate"
+      },
+      "id": "91003",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "parameter_name": "Nitrate, dissolved",
+        "unit_of_measure": "tons/day",
+        "parameter_description": "Nitrate, water, filtered, short tons of nitrate per day"
+      },
+      "id": "91006",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "parameter_name": "NO3+NO2, wu",
+        "unit_of_measure": "lb/d as N",
+        "parameter_description": "Nitrate plus nitrite, water, unfiltered, pounds of nitrogen per day"
+      },
+      "id": "91049",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "parameter_name": "Total nitrogen, wu",
+        "unit_of_measure": "lb/day",
+        "parameter_description": "Total nitrogen [nitrate + nitrite + ammonia + organic-N], water, unfiltered, pounds of nitrogen per day"
+      },
+      "id": "91058",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "parameter_name": "NO3+NO2, dissolved",
+        "unit_of_measure": "lb/d as N",
+        "parameter_description": "Nitrate plus nitrite, water, filtered, pounds of nitrogen per day"
+      },
+      "id": "91061",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "parameter_name": "Discharge",
+        "unit_of_measure": "m3/sec",
+        "parameter_description": "Discharge, cubic meters per second"
+      },
+      "id": "99060",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "parameter_name": "Discharge, instantaneous",
+        "unit_of_measure": "m3/sec",
+        "parameter_description": "Discharge, instantaneous, cubic meters per second"
+      },
+      "id": "99061",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "parameter_name": "Nitrate, wf, field",
+        "unit_of_measure": "mg/l as N",
+        "parameter_description": "Nitrate, water, filtered, field, milligrams per liter as nitrogen"
+      },
+      "id": "99121",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "parameter_name": "Nitrate, wu, field",
+        "unit_of_measure": "mg/l as N",
+        "parameter_description": "Nitrate, water, unfiltered, field, milligrams per liter as nitrogen"
+      },
+      "id": "99124",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "parameter_name": "Nitrate, wu, field",
+        "unit_of_measure": "umol/L",
+        "parameter_description": "Nitrate, water, unfiltered, field, micromoles per liter"
+      },
+      "id": "99130",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "parameter_name": "NO3+NO2,water,insitu",
+        "unit_of_measure": "mg/l as N",
+        "parameter_description": "Nitrate plus nitrite, water, in situ, milligrams per liter as nitrogen"
+      },
+      "id": "99133",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "parameter_name": "Nitrate, in situ",
+        "unit_of_measure": "umol/L",
+        "parameter_description": "Nitrate, water, in situ, micromoles per liter"
+      },
+      "id": "99136",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "parameter_name": "Nitrate, in situ",
+        "unit_of_measure": "mg/l as N",
+        "parameter_description": "Nitrate, water, in situ, milligrams per liter as nitrogen"
+      },
+      "id": "99137",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "parameter_name": "NO3:PO4 mole ratio",
+        "unit_of_measure": "None",
+        "parameter_description": "Nitrate (plus nitrite)/orthophosphate, mole ratio"
+      },
+      "id": "99139",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "parameter_name": "Lot number, 100 NTU standard",
+        "unit_of_measure": "nu",
+        "parameter_description": "NWIS lot number, 100 NTU stabilized formazin turbidity standard"
+      },
+      "id": "99209",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "parameter_name": "Lot number, 1000 NTU standard",
+        "unit_of_measure": "nu",
+        "parameter_description": "NWIS lot number, 1,000 NTU stabilized formazin turbidity standard"
+      },
+      "id": "99210",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "parameter_name": "Lot number, 4000 NTU standard",
+        "unit_of_measure": "nu",
+        "parameter_description": "NWIS lot number, 4,000 NTU stabilized formazin turbidity standard"
+      },
+      "id": "99211",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "parameter_name": "Lot number, 10 NTU standard",
+        "unit_of_measure": "nu",
+        "parameter_description": "NWIS lot number, 10 NTU stabilized formazin turbidity standard"
+      },
+      "id": "99212",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "parameter_name": "Lot number, 20 NTU standard",
+        "unit_of_measure": "nu",
+        "parameter_description": "NWIS lot number, 20 NTU stabilized formazin turbidity standard"
+      },
+      "id": "99213",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "parameter_name": "Lot number, 40 NTU standard",
+        "unit_of_measure": "nu",
+        "parameter_description": "NWIS lot number, 40 NTU stabilized formazin turbidity standard"
+      },
+      "id": "99214",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "parameter_name": "Lot number, 200 NTU standard",
+        "unit_of_measure": "nu",
+        "parameter_description": "NWIS lot number, 200 NTU stabilized formazin turbidity standard"
+      },
+      "id": "99215",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "parameter_name": "Lot number, 400 NTU standard",
+        "unit_of_measure": "nu",
+        "parameter_description": "NWIS lot number, 400 NTU stabilized formazin turbidity standard"
+      },
+      "id": "99216",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "parameter_name": "Lot number, 800 NTU standard",
+        "unit_of_measure": "nu",
+        "parameter_description": "NWIS lot number, 800 NTU stabilized formazin turbidity standard"
+      },
+      "id": "99217",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "parameter_name": "Lot number, 2000 NTU standard",
+        "unit_of_measure": "nu",
+        "parameter_description": "NWIS lot number, 2,000 NTU stabilized formazin turbidity standard"
+      },
+      "id": "99219",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "parameter_name": "DO sensor charge",
+        "unit_of_measure": "nu",
+        "parameter_description": "Dissolved oxygen charge, membrane DO sensor performance, number"
+      },
+      "id": "99233",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "parameter_name": "Total nitrogen, wf, estim.",
+        "unit_of_measure": "mg/l as N",
+        "parameter_description": "Total nitrogen [nitrate + nitrite + ammonia + organic-N], water, filtered, estimated by regression equation, milligrams per liter as nitrogen"
+      },
+      "id": "99410",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "parameter_name": "Nitrate, wf, estim. regress",
+        "unit_of_measure": "mg/l as N",
+        "parameter_description": "Nitrate, water, filtered, estimated by regression equation, milligrams per liter as nitrogen"
+      },
+      "id": "99411",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "parameter_name": "Total nitrogen, wu, estim",
+        "unit_of_measure": "mg/l as N",
+        "parameter_description": "Total nitrogen [nitrate + nitrite + ammonia + organic-N], water, unfiltered, estimated by regression equation, milligrams per liter as nitrogen"
+      },
+      "id": "99435",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "parameter_name": "DO, effluent, day 0, unf",
+        "unit_of_measure": "mg/l",
+        "parameter_description": "Dissolved oxygen (DO), 100 percent effluent water sample on day 0 of 7-day exposure, unfiltered, milligrams per liter"
+      },
+      "id": "99455",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "parameter_name": "DO, effluent, day 2, unf",
+        "unit_of_measure": "mg/l",
+        "parameter_description": "Dissolved oxygen (DO), 100 percent effluent water sample on day 2 of 7-day exposure, unfiltered, milligrams per liter"
+      },
+      "id": "99456",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "parameter_name": "DO, effluent, day 7, unf",
+        "unit_of_measure": "mg/l",
+        "parameter_description": "Dissolved oxygen (DO), 100 percent effluent water sample on day 7 of 7-day exposure, unfiltered, milligrams per liter"
+      },
+      "id": "99457",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "parameter_name": "Turbidity, wu, Hach2100, lab",
+        "unit_of_measure": "NTU",
+        "parameter_description": "Turbidity, water, unfiltered, laboratory, Hach 2100AN, nephelometric turbidity units"
+      },
+      "id": "99872",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "parameter_name": "NO3+NO2, wf, field",
+        "unit_of_measure": "mg/l as N",
+        "parameter_description": "Nitrate plus nitrite, water, filtered, field, milligrams per liter as nitrogen"
+      },
+      "id": "99889",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "parameter_name": "Dissolved oxygen, mid-depth",
+        "unit_of_measure": "mg/l",
+        "parameter_description": "Dissolved oxygen, water, unfiltered, mid-depth of water column, milligrams per liter"
+      },
+      "id": "99985",
+      "geometry": null
+    }
+  ],
+  "numberReturned": 110,
+  "numberMatched": 219,
+  "links": [
+    {
+      "type": "application/geo+json",
+      "rel": "self",
+      "title": "This document as GeoJSON",
+      "href": "https://api.waterdata.usgs.gov/ogcapi/v1/collections/parameter-codes/items?f=json&offset=109&limit=50000&properties=parameter_name,unit_of_measure,parameter_description"
+    },
+    {
+      "type": "application/json",
+      "title": "Parameter codes",
+      "rel": "collection",
+      "href": "https://api.waterdata.usgs.gov/ogcapi/v1/collections/parameter-codes"
+    }
+  ],
+  "timeStamp": "2026-09-25T04:44:37.170844Z"
+}

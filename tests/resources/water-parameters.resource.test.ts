@@ -6,6 +6,7 @@
 import { createMockContext } from '@cyanheads/mcp-ts-core/testing';
 import { describe, expect, it } from 'vitest';
 import { waterParametersResource } from '@/mcp-server/resources/definitions/water-parameters.resource.js';
+import { waterListParameters } from '@/mcp-server/tools/definitions/water-list-parameters.tool.js';
 
 describe('waterParametersResource', () => {
   it('returns the full parameter catalog', async () => {
@@ -62,5 +63,30 @@ describe('waterParametersResource', () => {
     const r1 = (await waterParametersResource.handler({}, ctx)) as { total: number };
     const r2 = (await waterParametersResource.handler({}, ctx)) as { total: number };
     expect(r1.total).toBe(r2.total);
+  });
+});
+
+describe('waterParametersResource — the shared curated table (#31)', () => {
+  it('serves the same curated entries water_list_parameters lists with no query', async () => {
+    const ctx = createMockContext({ uri: new URL('usgs-water://parameters') });
+    const resource = (await waterParametersResource.handler({}, ctx)) as {
+      parameters: Array<{ code: string; group: string; name: string; unit: string }>;
+    };
+    const tool = await waterListParameters.handler(
+      waterListParameters.input.parse({}),
+      createMockContext({ errors: waterListParameters.errors }),
+    );
+
+    expect(resource.parameters).toEqual(
+      tool.parameters.map(({ code, name, unit, group }) => ({ code, name, unit, group })),
+    );
+    const byCode = new Map(resource.parameters.map((p) => [p.code, p.name]));
+    expect(byCode.get('62610')).toBe('Groundwater level above NGVD 1929');
+    expect(byCode.get('72150')).toBe('Groundwater level above LMSL');
+  });
+
+  it('describes itself as the curated subset of the USGS catalog', () => {
+    expect(waterParametersResource.description).toMatch(/curated/i);
+    expect(waterParametersResource.description).toContain('water_list_parameters');
   });
 });

@@ -1,0 +1,1118 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "parameter_name": "Temperature, water",
+        "unit_of_measure": "deg C",
+        "parameter_description": "Temperature, water, degrees Celsius"
+      },
+      "id": "00010",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "parameter_name": "Precipitation",
+        "unit_of_measure": "in",
+        "parameter_description": "Precipitation, total, inches"
+      },
+      "id": "00045",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "parameter_name": "Discharge",
+        "unit_of_measure": "ft3/s",
+        "parameter_description": "Discharge, cubic feet per second"
+      },
+      "id": "00060",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "parameter_name": "Discharge, instant.",
+        "unit_of_measure": "ft3/s",
+        "parameter_description": "Discharge, instantaneous, cubic feet per second"
+      },
+      "id": "00061",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "parameter_name": "Gage height",
+        "unit_of_measure": "ft",
+        "parameter_description": "Gage height, feet"
+      },
+      "id": "00065",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "parameter_name": "Turbidity",
+        "unit_of_measure": "JTU",
+        "parameter_description": "Turbidity, water, unfiltered, Jackson Turbidity Units"
+      },
+      "id": "00070",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "parameter_name": "Turbidity, Hellige",
+        "unit_of_measure": "mg/l SiO2",
+        "parameter_description": "Turbidity, water, unfiltered, Hellige turbidimeter, milligrams per liter as silicon dioxide"
+      },
+      "id": "00075",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "parameter_name": "Turbidity",
+        "unit_of_measure": "NTU",
+        "parameter_description": "Turbidity, water, unfiltered, nephelometric turbidity units"
+      },
+      "id": "00076",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "parameter_name": "Specific cond at 25C",
+        "unit_of_measure": "uS/cm @25C",
+        "parameter_description": "Specific conductance, water, unfiltered, microsiemens per centimeter at 25 degrees Celsius"
+      },
+      "id": "00095",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "parameter_name": "Dissolved oxygen",
+        "unit_of_measure": "mg/l",
+        "parameter_description": "Dissolved oxygen, water, unfiltered, milligrams per liter"
+      },
+      "id": "00300",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "parameter_name": "Diss oxygen,%saturtn",
+        "unit_of_measure": "% saturatn",
+        "parameter_description": "Dissolved oxygen, water, unfiltered, percent of saturation"
+      },
+      "id": "00301",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "parameter_name": "pH",
+        "unit_of_measure": "std units",
+        "parameter_description": "pH, water, unfiltered, field, standard units"
+      },
+      "id": "00400",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "parameter_name": "pH, wu, lab",
+        "unit_of_measure": "std units",
+        "parameter_description": "pH, water, unfiltered, laboratory, standard units"
+      },
+      "id": "00403",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "parameter_name": "pH, wf, lab",
+        "unit_of_measure": "std units",
+        "parameter_description": "pH, water, filtered, laboratory, standard units"
+      },
+      "id": "00408",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "parameter_name": "ANC, wu,fxdEP,fld",
+        "unit_of_measure": "mg/l CaCO3",
+        "parameter_description": "Acid neutralizing capacity, water, unfiltered, fixed endpoint (pH 4.5) titration, field, milligrams per liter as calcium carbonate"
+      },
+      "id": "00410",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "parameter_name": "ANC, wu, methyl orange EP",
+        "unit_of_measure": "mg/l CaCO3",
+        "parameter_description": "Acid neutralizing capacity, water, unfiltered, methyl orange endpoint (pH 3.1-4.4) titration, milligrams per liter as calcium carbonate"
+      },
+      "id": "00411",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "parameter_name": "ANC, wu, phenolphthalein EP",
+        "unit_of_measure": "mg/l CaCO3",
+        "parameter_description": "Acid neutralizing capacity, water, unfiltered, phenolphthalein endpoint (pH 8.5-9.0) titration, milligrams per liter as calcium carbonate"
+      },
+      "id": "00415",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "parameter_name": "ANC, wu,fixedEP,lab",
+        "unit_of_measure": "mg/l CaCO3",
+        "parameter_description": "Acid neutralizing capacity, water, unfiltered, fixed endpoint (pH 4.5) titration, laboratory, milligrams per liter as calcium carbonate"
+      },
+      "id": "00417",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "parameter_name": "Alkalinity, wf,fixedEP,field",
+        "unit_of_measure": "mg/l CaCO3",
+        "parameter_description": "Alkalinity, water, filtered, fixed endpoint (pH 4.5) titration, field, milligrams per liter as calcium carbonate"
+      },
+      "id": "00418",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "parameter_name": "Alkalinity, wf,fixedEP,lab",
+        "unit_of_measure": "mg/l CaCO3",
+        "parameter_description": "Alkalinity, water, filtered, fixed endpoint (pH 4.5) titration, laboratory, milligrams per liter as calcium carbonate"
+      },
+      "id": "00421",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "parameter_name": "pH adj. to 25C, water, lab",
+        "unit_of_measure": "std units",
+        "parameter_description": "pH adjusted to 25 degrees Celsius, water, laboratory, standard units"
+      },
+      "id": "00434",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "parameter_name": "Mineral acidity, wu",
+        "unit_of_measure": "mg/l CaCO3",
+        "parameter_description": "Mineral acidity, water, unfiltered, methyl orange endpoint (pH 3.1-4.4) titration, milligrams per liter as calcium carbonate"
+      },
+      "id": "00436",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "parameter_name": "CO2 acidity, wu,phenolphthal",
+        "unit_of_measure": "mg/l CaCO3",
+        "parameter_description": "Carbon dioxide acidity, water, unfiltered, phenolphthalein endpoint (pH 8.5-9.0) titration, milligrams per liter as calcium carbonate"
+      },
+      "id": "00437",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "parameter_name": "Bicarbonate, wu,fx,f",
+        "unit_of_measure": "mg/l",
+        "parameter_description": "Bicarbonate, water, unfiltered, fixed endpoint (pH 4.5) titration, field, milligrams per liter"
+      },
+      "id": "00440",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "parameter_name": "Carbonate, wu,fixedEP,field",
+        "unit_of_measure": "mg/l",
+        "parameter_description": "Carbonate, water, unfiltered, fixed endpoint (pH 8.3) titration, field, milligrams per liter"
+      },
+      "id": "00445",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "parameter_name": "Carbonate, wu,fixedEP,lab",
+        "unit_of_measure": "mg/l",
+        "parameter_description": "Carbonate, water, unfiltered, fixed endpoint (pH 8.3) titration, laboratory, milligrams per liter"
+      },
+      "id": "00448",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "parameter_name": "Total nitrogen, wu",
+        "unit_of_measure": "mg/l",
+        "parameter_description": "Total nitrogen [nitrate + nitrite + ammonia + organic-N], water, unfiltered, milligrams per liter"
+      },
+      "id": "00600",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "parameter_name": "Total nitrogen, ss",
+        "unit_of_measure": "mg/l",
+        "parameter_description": "Total nitrogen [nitrate + nitrite + ammonia + organic-N], suspended sediment, milligrams per liter"
+      },
+      "id": "00601",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "parameter_name": "Total nitrogen, wf",
+        "unit_of_measure": "mg/l",
+        "parameter_description": "Total nitrogen [nitrate + nitrite + ammonia + organic-N], water, filtered, milligrams per liter"
+      },
+      "id": "00602",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "parameter_name": "Total nitrogen, bs",
+        "unit_of_measure": "mg/kg",
+        "parameter_description": "Total nitrogen [nitrate + nitrite + ammonia + organic-N], bed sediment, dry weight, milligrams per kilogram"
+      },
+      "id": "00603",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "parameter_name": "Ammonia, ss,total",
+        "unit_of_measure": "mg/l as N",
+        "parameter_description": "Ammonia (NH3 + NH4+), suspended sediment, total, milligrams per liter as nitrogen"
+      },
+      "id": "00604",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "parameter_name": "Organic nitrogen, ss,total",
+        "unit_of_measure": "mg/l",
+        "parameter_description": "Organic nitrogen, suspended sediment, total, milligrams per liter as nitrogen"
+      },
+      "id": "00606",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "parameter_name": "Nitrate, wf",
+        "unit_of_measure": "mg/l as N",
+        "parameter_description": "Nitrate, water, filtered, milligrams per liter as nitrogen"
+      },
+      "id": "00618",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "parameter_name": "Nitrate, wu",
+        "unit_of_measure": "mg/l as N",
+        "parameter_description": "Nitrate, water, unfiltered, milligrams per liter as nitrogen"
+      },
+      "id": "00620",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "parameter_name": "Nitrate, bs,total",
+        "unit_of_measure": "mg/kg as N",
+        "parameter_description": "Nitrate, bed sediment, total, dry weight, milligrams per kilogram as nitrogen"
+      },
+      "id": "00621",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "parameter_name": "Ammonia + organic-N, ss,total",
+        "unit_of_measure": "mg/l as N",
+        "parameter_description": "Ammonia plus organic nitrogen, suspended sediment, total, milligrams per liter as nitrogen"
+      },
+      "id": "00624",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "parameter_name": "NO3+NO2, wu",
+        "unit_of_measure": "mg/l as N",
+        "parameter_description": "Nitrate plus nitrite, water, unfiltered, milligrams per liter as nitrogen"
+      },
+      "id": "00630",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "parameter_name": "NO3+NO2, wf",
+        "unit_of_measure": "mg/l as N",
+        "parameter_description": "Nitrate plus nitrite, water, filtered, milligrams per liter as nitrogen"
+      },
+      "id": "00631",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "parameter_name": "Nitrate + nitrite, bs,total",
+        "unit_of_measure": "mg/kg as N",
+        "parameter_description": "Nitrate plus nitrite, bed sediment, total, dry weight, milligrams per kilogram as nitrogen"
+      },
+      "id": "00633",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "parameter_name": "Phosphorus, ss,total",
+        "unit_of_measure": "mg/l as P",
+        "parameter_description": "Phosphorus, suspended sediment, total, milligrams per liter as phosphorus"
+      },
+      "id": "00667",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "parameter_name": "Orthophosphate, ss,total",
+        "unit_of_measure": "mg/l as P",
+        "parameter_description": "Orthophosphate, suspended sediment, total, milligrams per liter as phosphorus"
+      },
+      "id": "00674",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "parameter_name": "Hydrolyzable phosphorus, ss,t",
+        "unit_of_measure": "mg/l as P",
+        "parameter_description": "Hydrolyzable phosphorus, suspended sediment, total, milligrams per liter as phosphorus"
+      },
+      "id": "00675",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "parameter_name": "Organic phosphorus, ss,total",
+        "unit_of_measure": "mg/l as P",
+        "parameter_description": "Organic phosphorus, suspended sediment, total, milligrams per liter as phosphorus"
+      },
+      "id": "00676",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "parameter_name": "Organic carbon, ss",
+        "unit_of_measure": "mg/kg",
+        "parameter_description": "Organic carbon, suspended sediment, dry weight, milligrams per kilogram"
+      },
+      "id": "00683",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "parameter_name": "Inorg carbon, ss,total",
+        "unit_of_measure": "mg/l",
+        "parameter_description": "Inorganic carbon, suspended sediment, total, milligrams per liter"
+      },
+      "id": "00688",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "parameter_name": "Organic carbon, ss,t",
+        "unit_of_measure": "mg/l",
+        "parameter_description": "Organic carbon, suspended sediment, total, milligrams per liter"
+      },
+      "id": "00689",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "parameter_name": "Total carbon, ss",
+        "unit_of_measure": "mg/l",
+        "parameter_description": "Carbon [inorganic plus organic], suspended sediment, total, milligrams per liter"
+      },
+      "id": "00694",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "parameter_name": "Magnesium, ss,total",
+        "unit_of_measure": "mg/l",
+        "parameter_description": "Magnesium, suspended sediment, total, milligrams per liter"
+      },
+      "id": "00926",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "parameter_name": "Arsenic, ss, total",
+        "unit_of_measure": "ug/l",
+        "parameter_description": "Arsenic, suspended sediment, total, micrograms per liter"
+      },
+      "id": "01001",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "parameter_name": "Barium, ss,recov",
+        "unit_of_measure": "ug/l",
+        "parameter_description": "Barium, suspended sediment, recoverable, micrograms per liter"
+      },
+      "id": "01006",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "parameter_name": "Beryllium, ss,recov",
+        "unit_of_measure": "ug/l",
+        "parameter_description": "Beryllium, suspended sediment, recoverable, micrograms per liter"
+      },
+      "id": "01011",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "parameter_name": "Bismuth, ss",
+        "unit_of_measure": "ug/l",
+        "parameter_description": "Bismuth, suspended sediment, micrograms per liter"
+      },
+      "id": "01016",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "parameter_name": "Boron, ss,recov",
+        "unit_of_measure": "ug/l",
+        "parameter_description": "Boron, suspended sediment, recoverable, micrograms per liter"
+      },
+      "id": "01021",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "parameter_name": "Cadmium, ss,recov",
+        "unit_of_measure": "ug/l",
+        "parameter_description": "Cadmium, suspended sediment, recoverable, micrograms per liter"
+      },
+      "id": "01026",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "parameter_name": "Chromium, ss,recov",
+        "unit_of_measure": "ug/l",
+        "parameter_description": "Chromium, suspended sediment, recoverable, micrograms per liter"
+      },
+      "id": "01031",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "parameter_name": "Cobalt, ss,recov",
+        "unit_of_measure": "ug/l",
+        "parameter_description": "Cobalt, suspended sediment, recoverable, micrograms per liter"
+      },
+      "id": "01036",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "parameter_name": "Copper, ss,recov",
+        "unit_of_measure": "ug/l",
+        "parameter_description": "Copper, suspended sediment, recoverable, micrograms per liter"
+      },
+      "id": "01041",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "parameter_name": "Iron, ss,recov",
+        "unit_of_measure": "ug/l",
+        "parameter_description": "Iron, suspended sediment, recoverable, micrograms per liter"
+      },
+      "id": "01044",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "parameter_name": "Lead, ss,recov",
+        "unit_of_measure": "ug/l",
+        "parameter_description": "Lead, suspended sediment, recoverable, micrograms per liter"
+      },
+      "id": "01050",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "parameter_name": "Manganese, ss,recov",
+        "unit_of_measure": "ug/l",
+        "parameter_description": "Manganese, suspended sediment, recoverable, micrograms per liter"
+      },
+      "id": "01054",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "parameter_name": "Thallium, ss,recov",
+        "unit_of_measure": "ug/l",
+        "parameter_description": "Thallium, suspended sediment, recoverable, micrograms per liter"
+      },
+      "id": "01058",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "parameter_name": "Molybdenum, ss,recov",
+        "unit_of_measure": "ug/l",
+        "parameter_description": "Molybdenum, suspended sediment, recoverable, micrograms per liter"
+      },
+      "id": "01061",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "parameter_name": "Nickel, ss,recov",
+        "unit_of_measure": "ug/l",
+        "parameter_description": "Nickel, suspended sediment, recoverable, micrograms per liter"
+      },
+      "id": "01066",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "parameter_name": "Silver, ss,recov",
+        "unit_of_measure": "ug/l",
+        "parameter_description": "Silver, suspended sediment, recoverable, micrograms per liter"
+      },
+      "id": "01076",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "parameter_name": "Strontium, ss,recov",
+        "unit_of_measure": "ug/l",
+        "parameter_description": "Strontium, suspended sediment, recoverable, micrograms per liter"
+      },
+      "id": "01081",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "parameter_name": "Vanadium, ss,total",
+        "unit_of_measure": "ug/l",
+        "parameter_description": "Vanadium, suspended sediment, total, micrograms per liter"
+      },
+      "id": "01086",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "parameter_name": "Zinc, ss,recov",
+        "unit_of_measure": "ug/l",
+        "parameter_description": "Zinc, suspended sediment, recoverable, micrograms per liter"
+      },
+      "id": "01091",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "parameter_name": "Antimony, ss,total",
+        "unit_of_measure": "ug/l",
+        "parameter_description": "Antimony, suspended sediment, total, micrograms per liter"
+      },
+      "id": "01096",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "parameter_name": "Tin, ss,recov",
+        "unit_of_measure": "ug/l",
+        "parameter_description": "Tin, suspended sediment, recoverable, micrograms per liter"
+      },
+      "id": "01101",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "parameter_name": "Aluminum, ss,recov",
+        "unit_of_measure": "ug/l",
+        "parameter_description": "Aluminum, suspended sediment, recoverable, micrograms per liter"
+      },
+      "id": "01107",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "parameter_name": "Germanium, ss,total",
+        "unit_of_measure": "ug/l",
+        "parameter_description": "Germanium, suspended sediment, total, micrograms per liter"
+      },
+      "id": "01126",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "parameter_name": "Lithium, ss,recov",
+        "unit_of_measure": "ug/l",
+        "parameter_description": "Lithium, suspended sediment, recoverable, micrograms per liter"
+      },
+      "id": "01131",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "parameter_name": "Selenium, ss,total",
+        "unit_of_measure": "ug/l",
+        "parameter_description": "Selenium, suspended sediment, total, micrograms per liter"
+      },
+      "id": "01146",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "parameter_name": "Titanium, ss,total",
+        "unit_of_measure": "ug/l",
+        "parameter_description": "Titanium, suspended sediment, total, micrograms per liter"
+      },
+      "id": "01151",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "parameter_name": "Tungsten, ss",
+        "unit_of_measure": "ug/l",
+        "parameter_description": "Tungsten, suspended sediment, micrograms per liter"
+      },
+      "id": "01156",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "parameter_name": "Turbidity, severity",
+        "unit_of_measure": "code",
+        "parameter_description": "Turbidity, severity, code"
+      },
+      "id": "01350",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "parameter_name": "Total nitrogen, bs,cmp dgst",
+        "unit_of_measure": "%",
+        "parameter_description": "Total nitrogen [nitrate + nitrite + ammonia + organic-N], bed sediment, complete digestion, dry weight, percent"
+      },
+      "id": "01397",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "parameter_name": "Total nitrogen, soil,cmp dgst",
+        "unit_of_measure": "mg/l",
+        "parameter_description": "Total nitrogen [nitrate + nitrite + ammonia + organic-N], soil, complete digestion, milligrams per liter"
+      },
+      "id": "01425",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "parameter_name": "Total nitrogen, tissue",
+        "unit_of_measure": "mg/l",
+        "parameter_description": "Total nitrogen [nitrate + nitrite + ammonia + organic-N], biota, tissue, milligrams per liter as nitrogen"
+      },
+      "id": "01465",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "parameter_name": "Total nitrogen, ss",
+        "unit_of_measure": "%",
+        "parameter_description": "Total nitrogen [nitrate + nitrite + ammonia + organic-N], suspended sediment, dry weight, percent"
+      },
+      "id": "01470",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "parameter_name": "Total nitrogen, soil",
+        "unit_of_measure": "%",
+        "parameter_description": "Total nitrogen [nitrate + nitrite + ammonia + organic-N], soil, dry weight, percent"
+      },
+      "id": "01471",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "parameter_name": "Total nitrogen, tissue",
+        "unit_of_measure": "%",
+        "parameter_description": "Total nitrogen [nitrate + nitrite + ammonia + organic-N], biota, tissue, dry weight, percent"
+      },
+      "id": "01472",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "parameter_name": "TotNitrogen,bs&lt;62.5u,ws,cdgst",
+        "unit_of_measure": "%",
+        "parameter_description": "Total nitrogen [nitrate + nitrite + ammonia + organic-N], bed sediment smaller than 62.5 microns, wet sieved, laboratory, complete digestion, dry weight, percent"
+      },
+      "id": "03953",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "parameter_name": "Bedload discharge, daily mean",
+        "unit_of_measure": "ton/d/ft",
+        "parameter_description": "Bedload sediment discharge, daily mean, per unit width of river, composite samples, short tons per day per foot of width"
+      },
+      "id": "04122",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "parameter_name": "Discharge",
+        "unit_of_measure": "m3/sec",
+        "parameter_description": "Discharge, cubic meters per second"
+      },
+      "id": "30208",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "parameter_name": "Instantaneous Discharge",
+        "unit_of_measure": "m3/sec",
+        "parameter_description": "Discharge, instantaneous, cubic meters per second"
+      },
+      "id": "30209",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "parameter_name": "Nitrate, soil",
+        "unit_of_measure": "mg/kg as N",
+        "parameter_description": "Nitrate, soil, recoverable, dry weight, milligrams per kilogram as nitrogen"
+      },
+      "id": "30387",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "parameter_name": "NO3 + NO2, soil",
+        "unit_of_measure": "mg/kg as N",
+        "parameter_description": "Nitrate plus nitrite, soil, recoverable, dry weight, milligrams per kilogram as nitrogen"
+      },
+      "id": "30388",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "parameter_name": "Nitrate-reducing bacteria, bc",
+        "unit_of_measure": "MPN/g",
+        "parameter_description": "Nitrate-reducing bacteria, borehole cuttings, wet sieved, wet weight, most probable number per gram"
+      },
+      "id": "31717",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "parameter_name": "Turbidity, wu, vert. light",
+        "unit_of_measure": "FNU",
+        "parameter_description": "Turbidity, water, unfiltered, vertical-cavity surface-emitting laser diode light source, 830-950 nm, formazin nephelometric units (FNU)"
+      },
+      "id": "32265",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "parameter_name": "Dark measurement",
+        "unit_of_measure": "count",
+        "parameter_description": "Dark measurement spectral average, water, in situ, ultraviolet nitrate analyzer, raw counts"
+      },
+      "id": "32325",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "parameter_name": "Light measurement",
+        "unit_of_measure": "count",
+        "parameter_description": "Light measurement spectral average, water, in situ, ultraviolet nitrate analyzer, raw counts"
+      },
+      "id": "32326",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "parameter_name": "Total nitrogen, bs&lt;62.5um",
+        "unit_of_measure": "%",
+        "parameter_description": "Total nitrogen [nitrate + nitrite + ammonia + organic-N], bed sediment smaller than 62.5 micrometers, dry sieved, laboratory, dry weight, percent"
+      },
+      "id": "35052",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "parameter_name": "Discharge",
+        "unit_of_measure": "gal/min",
+        "parameter_description": "Discharge, gallons per minute"
+      },
+      "id": "50042",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "parameter_name": "Nitrate, wu, field",
+        "unit_of_measure": "mg/l",
+        "parameter_description": "Nitrate, water, unfiltered, field, milligrams per liter"
+      },
+      "id": "51185",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "parameter_name": "Oxygen, fraction of diss gas",
+        "unit_of_measure": "%",
+        "parameter_description": "Oxygen, water, mole percent of dissolved gases"
+      },
+      "id": "51191",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "parameter_name": "Nitrate, w, in situ",
+        "unit_of_measure": "mg/l",
+        "parameter_description": "Nitrate, water, in situ, milligrams per liter as nitrate"
+      },
+      "id": "51290",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "parameter_name": "Nitrate + nitrite, bs&lt;63um",
+        "unit_of_measure": "mg/kg as N",
+        "parameter_description": "Nitrate plus nitrite, bed sediment &lt;63 microns, dry weight, milligrams per kilogram as nitrogen"
+      },
+      "id": "52140",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "parameter_name": "Nitrate, bs, total",
+        "unit_of_measure": "mg/kg",
+        "parameter_description": "Nitrate, bed sediment, total, dry weight, milligrams per kilogram as nitrate"
+      },
+      "id": "52152",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "parameter_name": "Turbidity, wu,field",
+        "unit_of_measure": "NTU",
+        "parameter_description": "Turbidity, water, unfiltered, field, nephelometric turbidity units"
+      },
+      "id": "61028",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "parameter_name": "Total nitrogen, bs",
+        "unit_of_measure": "% by wt",
+        "parameter_description": "Total nitrogen [nitrate + nitrite + ammonia + organic-N], bed sediment, dry weight, percent"
+      },
+      "id": "62464",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "parameter_name": "Elevation, GW, NGVD29",
+        "unit_of_measure": "ft",
+        "parameter_description": "Groundwater level above NGVD 1929, feet"
+      },
+      "id": "62610",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "parameter_name": "Total nitrogen, ss",
+        "unit_of_measure": "%",
+        "parameter_description": "Total nitrogen [nitrate + nitrite + ammonia + organic-N], suspended sediment, dry weight, percent"
+      },
+      "id": "62845",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "parameter_name": "Total nitrogen, wf",
+        "unit_of_measure": "mg/l",
+        "parameter_description": "Total nitrogen [nitrate + nitrite + ammonia + organic-N], water, filtered, analytically determined, milligrams per liter"
+      },
+      "id": "62854",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "parameter_name": "Total nitrogen, wu",
+        "unit_of_measure": "mg/l",
+        "parameter_description": "Total nitrogen [nitrate + nitrite + ammonia + organic-N], water, unfiltered, analytically determined, milligrams per liter"
+      },
+      "id": "62855",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "parameter_name": "Discharge, storm event peak",
+        "unit_of_measure": "ft3/s",
+        "parameter_description": "Discharge, peak for storm event, cubic feet per second"
+      },
+      "id": "62856",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "parameter_name": "Nitrate, solids",
+        "unit_of_measure": "mg/kg as N",
+        "parameter_description": "Nitrate, solids, dry weight, milligrams per kilogram as nitrogen"
+      },
+      "id": "62953",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "parameter_name": "Dissolved oxygen, lab",
+        "unit_of_measure": "mg/l",
+        "parameter_description": "Dissolved oxygen, water, unfiltered, lab, milligrams per liter"
+      },
+      "id": "62971",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "parameter_name": "delta N-15/N-14, NO3, solids",
+        "unit_of_measure": "per mil",
+        "parameter_description": "delta nitrogen-15/nitrogen-14 of nitrate, solids, per mil"
+      },
+      "id": "63036",
+      "geometry": null
+    }
+  ],
+  "numberReturned": 109,
+  "numberMatched": 219,
+  "links": [
+    {
+      "type": "application/geo+json",
+      "rel": "self",
+      "title": "This document as GeoJSON",
+      "href": "https://api.waterdata.usgs.gov/ogcapi/v1/collections/parameter-codes/items?f=json&limit=50000&properties=parameter_name,unit_of_measure,parameter_description"
+    },
+    {
+      "type": "application/geo+json",
+      "rel": "next",
+      "title": "Items (next)",
+      "href": "https://api.waterdata.usgs.gov/ogcapi/v1/collections/parameter-codes/items?f=json&offset=109&limit=50000&properties=parameter_name,unit_of_measure,parameter_description"
+    },
+    {
+      "type": "application/json",
+      "title": "Parameter codes",
+      "rel": "collection",
+      "href": "https://api.waterdata.usgs.gov/ogcapi/v1/collections/parameter-codes"
+    }
+  ],
+  "timeStamp": "2026-09-25T04:44:37.170844Z"
+}

@@ -12,11 +12,15 @@ const ServerConfigSchema = z.object({
     .default(
       'usgs-water-mcp-server/0.2.5 (contact: https://github.com/cyanheads/usgs-water-mcp-server)',
     )
-    .describe('User-Agent header sent to USGS NWIS. USGS requests a descriptive User-Agent.'),
+    .describe(
+      'User-Agent header sent to USGS — NWIS and the parameter-code catalog. USGS requests a descriptive User-Agent.',
+    ),
   requestTimeoutMs: z.coerce
     .number()
     .default(30_000)
-    .describe('HTTP request timeout in milliseconds for NWIS calls.'),
+    .describe(
+      'HTTP request timeout in milliseconds for USGS calls — NWIS and the parameter-code catalog.',
+    ),
 });
 
 let _config: z.infer<typeof ServerConfigSchema> | undefined;
