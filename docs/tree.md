@@ -1,6 +1,6 @@
 # usgs-water-mcp-server - Directory Structure
 
-Generated on: 2026-09-25 05:01:47
+Generated on: 2026-10-04 06:55:59
 
 ```text
 usgs-water-mcp-server/
@@ -26,6 +26,7 @@ usgs-water-mcp-server/
 ├── changelog/
 │   ├── 0.1.x/
 │   ├── 0.2.x/
+│   ├── 0.3.x/
 │   └── template.md
 ├── docs/
 │   ├── design.md
@@ -128,9 +129,11 @@ usgs-water-mcp-server/
 │   ├── clean-mcpb.ts
 │   ├── clean.ts
 │   ├── devcheck.ts
+│   ├── install-otel.ts
 │   ├── lint-mcp.ts
 │   ├── lint-packaging.ts
 │   ├── list-skills.ts
+│   ├── prune-musl-packages.ts
 │   ├── release-github.ts
 │   └── tree.ts
 ├── src/
@@ -148,6 +151,7 @@ usgs-water-mcp-server/
 │   │       └── definitions/
 │   │           ├── index.ts
 │   │           ├── water-dataframe-describe.tool.ts
+│   │           ├── water-dataframe-drop.tool.ts
 │   │           ├── water-dataframe-query.tool.ts
 │   │           ├── water-find-sites.tool.ts
 │   │           ├── water-get-conditions.tool.ts
@@ -168,6 +172,8 @@ usgs-water-mcp-server/
 │   │       └── parameter-catalog.ts
 │   └── index.ts
 ├── tests/
+│   ├── config/
+│   │   └── server-config.test.ts
 │   ├── fixtures/
 │   │   ├── nwis/
 │   │   │   ├── dv-01646500-00010-20190901-20190905-stat00003.json
@@ -210,6 +216,8 @@ usgs-water-mcp-server/
 │   │   └── parameter-catalog.test.ts
 │   └── tools/
 │       ├── water-dataframe-describe.tool.test.ts
+│       ├── water-dataframe-drop.gate.test.ts
+│       ├── water-dataframe-drop.tool.test.ts
 │       ├── water-dataframe-query.tool.test.ts
 │       ├── water-find-sites.tool.test.ts
 │       ├── water-get-conditions.tool.test.ts

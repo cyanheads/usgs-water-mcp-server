@@ -2,6 +2,10 @@
 
 All notable changes to this project. Each entry links to its full per-version file in [changelog/](changelog/).
 
+## [0.3.0](changelog/0.3.x/0.3.0.md) — 2026-10-03
+
+Adds the opt-in water_dataframe_drop tool, stops the server at startup on an invalid USGS_REQUEST_TIMEOUT_MS, and moves to mcp-ts-core 0.13.11, whose tool errors end with their request id.
+
 ## [0.2.6](changelog/0.2.x/0.2.6.md) — 2026-09-24
 
 NWIS series are read per statistic and sensor method, the -999999 no-data value reads as missing, and water_list_parameters searches the full USGS parameter-code catalog.
