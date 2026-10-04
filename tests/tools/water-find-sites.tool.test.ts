@@ -17,7 +17,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { waterFindSites } from '@/mcp-server/tools/definitions/water-find-sites.tool.js';
 import type { NwisSite } from '@/services/nwis/types.js';
 import { textContent } from '../helpers/content-block.js';
-import { captureError, declaredRecovery } from '../helpers/error-contract.js';
+import { captureError, contractError, declaredRecovery } from '../helpers/error-contract.js';
 
 const recovery = (reason: string) => declaredRecovery(waterFindSites.errors, reason);
 
@@ -193,9 +193,9 @@ describe('waterFindSites', () => {
 
   it('throws no_sites_found when service returns empty array', async () => {
     mockFindSites.mockResolvedValue([]);
-    const ctx = createMockContext({ errors: waterFindSites.errors });
-    const input = waterFindSites.input.parse({ stateCd: 'AK', siteType: 'OC' });
-    await expect(waterFindSites.handler(input, ctx)).rejects.toMatchObject({
+    await expect(
+      contractError(waterFindSites, { stateCd: 'AK', siteType: 'OC' }),
+    ).resolves.toMatchObject({
       code: JsonRpcErrorCode.NotFound,
       data: { reason: 'no_sites_found', recovery: recovery('no_sites_found') },
     });
@@ -205,14 +205,11 @@ describe('waterFindSites', () => {
     // The issue's repro: a bbox over open ocean matching nothing. The authored recovery has to
     // reach error.data so both structuredContent and the mirrored content[] text carry it.
     mockFindSites.mockResolvedValue([]);
-    const ctx = createMockContext({ errors: waterFindSites.errors });
-    const input = waterFindSites.input.parse({ bbox: '-160.0,5.0,-159.9,5.1' });
-    const error = (await captureError(() => waterFindSites.handler(input, ctx))) as {
-      data?: { recovery?: { hint?: string } };
-    };
-    expect(error.data?.recovery?.hint).toBe(
-      'Broaden the bounding box, remove parameterCd or siteType filters, or try a different state/HUC.',
-    );
+    const result = await runToolContract(waterFindSites, { bbox: '-160.0,5.0,-159.9,5.1' });
+    const hint =
+      'Broaden the bounding box, remove parameterCd or siteType filters, or try a different state/HUC.';
+    expect(result.structuredContent).toMatchObject({ error: { data: { recovery: { hint } } } });
+    expect(textContent(result.content[0])).toContain(hint);
   });
 
   it('maps an NWIS rejection to invalid_request, surfacing the field NWIS named', async () => {
@@ -225,9 +222,7 @@ describe('waterFindSites', () => {
         { httpStatus: 400 },
       ),
     );
-    const ctx = createMockContext({ errors: waterFindSites.errors });
-    const input = waterFindSites.input.parse({ stateCd: 'ZZ' });
-    await expect(waterFindSites.handler(input, ctx)).rejects.toMatchObject({
+    await expect(contractError(waterFindSites, { stateCd: 'ZZ' })).resolves.toMatchObject({
       code: JsonRpcErrorCode.ValidationError,
       data: { reason: 'invalid_request', recovery: recovery('invalid_request') },
       message: expect.stringContaining('stateCd not found'),
@@ -238,9 +233,7 @@ describe('waterFindSites', () => {
     mockFindSites.mockRejectedValue(
       serviceUnavailable('NWIS returned HTTP 503: Service Unavailable', { status: 503 }),
     );
-    const ctx = createMockContext({ errors: waterFindSites.errors });
-    const input = waterFindSites.input.parse({ stateCd: 'VA' });
-    await expect(waterFindSites.handler(input, ctx)).rejects.toMatchObject({
+    await expect(contractError(waterFindSites, { stateCd: 'VA' })).resolves.toMatchObject({
       code: JsonRpcErrorCode.ServiceUnavailable,
       data: { reason: 'upstream_error', recovery: recovery('upstream_error') },
     });
@@ -463,9 +456,7 @@ describe('waterFindSites', () => {
     const NARROWING = { siteType: 'ST', parameterCd: '00060', hasDataTypeCd: 'iv' };
 
     it('fails with missing_major_filter before any NWIS call when none is present', async () => {
-      const ctx = createMockContext({ errors: waterFindSites.errors });
-      const input = waterFindSites.input.parse(NARROWING);
-      await expect(waterFindSites.handler(input, ctx)).rejects.toMatchObject({
+      await expect(contractError(waterFindSites, NARROWING)).resolves.toMatchObject({
         code: JsonRpcErrorCode.ValidationError,
         data: {
           reason: 'missing_major_filter',
@@ -478,13 +469,11 @@ describe('waterFindSites', () => {
     });
 
     it('fails with conflicting_major_filters naming the fields that were sent', async () => {
-      const ctx = createMockContext({ errors: waterFindSites.errors });
-      const input = waterFindSites.input.parse({
+      const error = await contractError(waterFindSites, {
         stateCd: 'PA',
         countyCd: '42043',
         siteType: 'ST',
       });
-      const error = (await captureError(() => waterFindSites.handler(input, ctx))) as McpError;
 
       expect(error).toMatchObject({
         code: JsonRpcErrorCode.ValidationError,
@@ -869,10 +858,13 @@ describe('waterFindSites', () => {
 
       expect(error).toMatchObject({
         code: JsonRpcErrorCode.NotFound,
-        data: { reason: 'canvas_not_found', recovery: recovery('canvas_not_found') },
+        data: { reason: 'canvas_not_found' },
       });
-      expect(error.data?.['recovery']).toMatchObject({ hint: expect.stringMatching(/omit/i) });
       expect(error.cause).toBeInstanceOf(McpError);
+
+      const wire = await contractError(waterFindSites, input);
+      expect(wire.data).toMatchObject({ recovery: recovery('canvas_not_found') });
+      expect(wire.data['recovery']).toMatchObject({ hint: expect.stringMatching(/omit/i) });
     });
 
     it('lets an unrelated acquire failure through untouched', async () => {

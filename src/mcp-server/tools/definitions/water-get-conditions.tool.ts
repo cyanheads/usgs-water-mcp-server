@@ -453,10 +453,7 @@ export const waterGetConditions = tool('water_get_conditions', {
       ]);
     } catch (err: unknown) {
       const failure = classifyNwisFailure(err);
-      if (failure)
-        throw ctx.fail(failure.reason, failure.message, ctx.recoveryFor(failure.reason), {
-          cause: err,
-        });
+      if (failure) throw ctx.fail(failure.reason, failure.message, undefined, { cause: err });
       throw err;
     }
 
@@ -467,7 +464,6 @@ export const waterGetConditions = tool('water_get_conditions', {
       throw ctx.fail(
         'no_data_for_parameter',
         `No data returned for site ${input.site} parameter ${input.parameterCd} — the site may not exist, or may not measure this parameter. Use water_find_sites with a parameterCd filter to verify parameter availability.`,
-        ctx.recoveryFor('no_data_for_parameter'),
       );
     }
 
@@ -484,7 +480,6 @@ export const waterGetConditions = tool('water_get_conditions', {
       throw ctx.fail(
         'no_data_for_parameter',
         `No current reading for site ${input.site} parameter ${input.parameterCd} in the last 2 hours — the site reports this parameter but returned no value in the current period. Use water_get_series for historical values.`,
-        ctx.recoveryFor('no_data_for_parameter'),
       );
     }
     const ts = latest.series;

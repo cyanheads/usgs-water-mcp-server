@@ -14,7 +14,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { waterGetReadings } from '@/mcp-server/tools/definitions/water-get-readings.tool.js';
 import type { NwisTimeSeries } from '@/services/nwis/types.js';
 import { textContent } from '../helpers/content-block.js';
-import { declaredRecovery } from '../helpers/error-contract.js';
+import { contractError, declaredRecovery } from '../helpers/error-contract.js';
 import { allText } from '../helpers/nwis-fixtures.js';
 
 const recovery = (reason: string) => declaredRecovery(waterGetReadings.errors, reason);
@@ -94,9 +94,7 @@ describe('waterGetReadings', () => {
 
   it('throws no_data_for_parameter when service returns empty array (ambiguous: site not found or no data)', async () => {
     mockGetReadings.mockResolvedValue([]);
-    const ctx = createMockContext({ errors: waterGetReadings.errors });
-    const input = waterGetReadings.input.parse({ sites: ['99999999'] });
-    await expect(waterGetReadings.handler(input, ctx)).rejects.toMatchObject({
+    await expect(contractError(waterGetReadings, { sites: ['99999999'] })).resolves.toMatchObject({
       code: JsonRpcErrorCode.NotFound,
       data: { reason: 'no_data_for_parameter', recovery: recovery('no_data_for_parameter') },
     });
@@ -104,9 +102,9 @@ describe('waterGetReadings', () => {
 
   it('throws no_data_for_parameter when all series have empty values', async () => {
     mockGetReadings.mockResolvedValue([{ ...MOCK_SERIES[0]!, values: [] }]);
-    const ctx = createMockContext({ errors: waterGetReadings.errors });
-    const input = waterGetReadings.input.parse({ sites: ['01646500'], parameterCd: ['99999'] });
-    await expect(waterGetReadings.handler(input, ctx)).rejects.toMatchObject({
+    await expect(
+      contractError(waterGetReadings, { sites: ['01646500'], parameterCd: ['99999'] }),
+    ).resolves.toMatchObject({
       code: JsonRpcErrorCode.NotFound,
       data: { reason: 'no_data_for_parameter', recovery: recovery('no_data_for_parameter') },
     });
@@ -120,9 +118,7 @@ describe('waterGetReadings', () => {
         httpStatus: 400,
       }),
     );
-    const ctx = createMockContext({ errors: waterGetReadings.errors });
-    const input = waterGetReadings.input.parse({ sites: ['01646500'] });
-    await expect(waterGetReadings.handler(input, ctx)).rejects.toMatchObject({
+    await expect(contractError(waterGetReadings, { sites: ['01646500'] })).resolves.toMatchObject({
       code: JsonRpcErrorCode.ValidationError,
       data: { reason: 'invalid_request', recovery: recovery('invalid_request') },
       message: expect.stringContaining('period: Invalid format'),
@@ -133,9 +129,7 @@ describe('waterGetReadings', () => {
     mockGetReadings.mockRejectedValue(
       serviceUnavailable('NWIS returned HTTP 503: Service Unavailable', { status: 503 }),
     );
-    const ctx = createMockContext({ errors: waterGetReadings.errors });
-    const input = waterGetReadings.input.parse({ sites: ['01646500'] });
-    await expect(waterGetReadings.handler(input, ctx)).rejects.toMatchObject({
+    await expect(contractError(waterGetReadings, { sites: ['01646500'] })).resolves.toMatchObject({
       code: JsonRpcErrorCode.ServiceUnavailable,
       data: { reason: 'upstream_error', recovery: recovery('upstream_error') },
     });

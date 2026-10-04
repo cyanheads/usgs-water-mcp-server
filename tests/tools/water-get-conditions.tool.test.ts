@@ -14,7 +14,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { waterGetConditions } from '@/mcp-server/tools/definitions/water-get-conditions.tool.js';
 import type { NwisStatResult, NwisStatRow, NwisTimeSeries } from '@/services/nwis/types.js';
 import { textContent } from '../helpers/content-block.js';
-import { declaredRecovery } from '../helpers/error-contract.js';
+import { contractError, declaredRecovery } from '../helpers/error-contract.js';
 import { allText } from '../helpers/nwis-fixtures.js';
 
 const recovery = (reason: string) => declaredRecovery(waterGetConditions.errors, reason);
@@ -580,9 +580,9 @@ describe('waterGetConditions', () => {
     mockGetReadings.mockResolvedValue([]);
     mockGetStats.mockResolvedValue(MOCK_STAT);
 
-    const ctx = createMockContext({ errors: waterGetConditions.errors });
-    const input = waterGetConditions.input.parse({ site: '99999999', parameterCd: '00060' });
-    await expect(waterGetConditions.handler(input, ctx)).rejects.toMatchObject({
+    await expect(
+      contractError(waterGetConditions, { site: '99999999', parameterCd: '00060' }),
+    ).resolves.toMatchObject({
       code: JsonRpcErrorCode.NotFound,
       data: { reason: 'no_data_for_parameter', recovery: recovery('no_data_for_parameter') },
     });
@@ -592,9 +592,9 @@ describe('waterGetConditions', () => {
     mockGetReadings.mockResolvedValue([{ ...MOCK_IV[0]!, values: [] }]);
     mockGetStats.mockResolvedValue(MOCK_STAT);
 
-    const ctx = createMockContext({ errors: waterGetConditions.errors });
-    const input = waterGetConditions.input.parse({ site: '01646500', parameterCd: '99999' });
-    await expect(waterGetConditions.handler(input, ctx)).rejects.toMatchObject({
+    await expect(
+      contractError(waterGetConditions, { site: '01646500', parameterCd: '99999' }),
+    ).resolves.toMatchObject({
       code: JsonRpcErrorCode.NotFound,
       data: { reason: 'no_data_for_parameter', recovery: recovery('no_data_for_parameter') },
     });
@@ -609,9 +609,9 @@ describe('waterGetConditions', () => {
     );
     mockGetStats.mockResolvedValue(MOCK_STAT);
 
-    const ctx = createMockContext({ errors: waterGetConditions.errors });
-    const input = waterGetConditions.input.parse({ site: '01646500', parameterCd: '00060' });
-    await expect(waterGetConditions.handler(input, ctx)).rejects.toMatchObject({
+    await expect(
+      contractError(waterGetConditions, { site: '01646500', parameterCd: '00060' }),
+    ).resolves.toMatchObject({
       code: JsonRpcErrorCode.ServiceUnavailable,
       data: { reason: 'upstream_error', recovery: recovery('upstream_error') },
     });
@@ -626,9 +626,9 @@ describe('waterGetConditions', () => {
     );
     mockGetStats.mockResolvedValue(MOCK_STAT);
 
-    const ctx = createMockContext({ errors: waterGetConditions.errors });
-    const input = waterGetConditions.input.parse({ site: '01646500', parameterCd: '00060' });
-    await expect(waterGetConditions.handler(input, ctx)).rejects.toMatchObject({
+    await expect(
+      contractError(waterGetConditions, { site: '01646500', parameterCd: '00060' }),
+    ).resolves.toMatchObject({
       code: JsonRpcErrorCode.ValidationError,
       data: { reason: 'invalid_request', recovery: recovery('invalid_request') },
       message: expect.stringContaining('parameterCd: Invalid format'),

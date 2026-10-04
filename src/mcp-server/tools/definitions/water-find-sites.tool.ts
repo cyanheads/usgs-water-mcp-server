@@ -290,14 +290,12 @@ export const waterFindSites = tool('water_find_sites', {
       throw ctx.fail(
         'missing_major_filter',
         'A geographic filter is required: supply exactly one of bbox, stateCd, countyCd, or huc.',
-        ctx.recoveryFor('missing_major_filter'),
       );
     }
     if (majors.length > 1) {
       throw ctx.fail(
         'conflicting_major_filters',
         `NWIS accepts one major filter per request; this call sent ${majors.length}: ${majors.join(', ')}.`,
-        ctx.recoveryFor('conflicting_major_filters'),
       );
     }
 
@@ -348,19 +346,12 @@ export const waterFindSites = tool('water_find_sites', {
       sites = await findSites(params, ctx);
     } catch (err: unknown) {
       const failure = classifyNwisFailure(err);
-      if (failure)
-        throw ctx.fail(failure.reason, failure.message, ctx.recoveryFor(failure.reason), {
-          cause: err,
-        });
+      if (failure) throw ctx.fail(failure.reason, failure.message, undefined, { cause: err });
       throw err;
     }
 
     if (sites.length === 0) {
-      throw ctx.fail(
-        'no_sites_found',
-        'No USGS sites match the specified filters.',
-        ctx.recoveryFor('no_sites_found'),
-      );
+      throw ctx.fail('no_sites_found', 'No USGS sites match the specified filters.');
     }
 
     const upstreamTotal = sites.length;

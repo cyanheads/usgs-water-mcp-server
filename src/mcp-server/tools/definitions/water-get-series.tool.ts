@@ -342,14 +342,12 @@ export const waterGetSeries = tool('water_get_series', {
       throw ctx.fail(
         'invalid_date_range',
         `Invalid startDate "${input.startDate}" — not a real calendar date. Use YYYY-MM-DD (e.g. month must be 01–12, day must be valid for the month).`,
-        ctx.recoveryFor('invalid_date_range'),
       );
     }
     if (Number.isNaN(endParsed.getTime()) || toUtcDate(endParsed) !== input.endDate) {
       throw ctx.fail(
         'invalid_date_range',
         `Invalid endDate "${input.endDate}" — not a real calendar date. Use YYYY-MM-DD (e.g. month must be 01–12, day must be valid for the month).`,
-        ctx.recoveryFor('invalid_date_range'),
       );
     }
     // Validate date range order
@@ -357,7 +355,6 @@ export const waterGetSeries = tool('water_get_series', {
       throw ctx.fail(
         'invalid_date_range',
         `startDate (${input.startDate}) must be before endDate (${input.endDate}).`,
-        ctx.recoveryFor('invalid_date_range'),
       );
     }
 
@@ -366,18 +363,13 @@ export const waterGetSeries = tool('water_get_series', {
     const statCd = optionalText(input.statCd);
     const methodId = optionalText(input.methodId);
     if (statCd && !/^\d{5}$/.test(statCd)) {
-      throw ctx.fail(
-        'invalid_stat_cd',
-        `statCd "${statCd}" is not a 5-digit NWIS statistic code.`,
-        ctx.recoveryFor('invalid_stat_cd'),
-      );
+      throw ctx.fail('invalid_stat_cd', `statCd "${statCd}" is not a 5-digit NWIS statistic code.`);
     }
     // The IV service rejects the statCd keyword outright (HTTP 400), and every IV series is "00000".
     if (statCd && input.seriesType === 'instantaneous' && statCd !== INSTANTANEOUS_STAT_CD) {
       throw ctx.fail(
         'stat_cd_for_instantaneous',
         `statCd "${statCd}" selects a daily statistic, but seriesType is "instantaneous" — instantaneous values carry only statistic "${INSTANTANEOUS_STAT_CD}".`,
-        ctx.recoveryFor('stat_cd_for_instantaneous'),
       );
     }
 
@@ -415,10 +407,7 @@ export const waterGetSeries = tool('water_get_series', {
       );
     } catch (err: unknown) {
       const failure = classifyNwisFailure(err);
-      if (failure)
-        throw ctx.fail(failure.reason, failure.message, ctx.recoveryFor(failure.reason), {
-          cause: err,
-        });
+      if (failure) throw ctx.fail(failure.reason, failure.message, undefined, { cause: err });
       throw err;
     }
 
@@ -449,14 +438,12 @@ export const waterGetSeries = tool('water_get_series', {
       throw ctx.fail(
         'no_data_for_range',
         `No data returned for site ${input.site} parameter ${input.parameterCd} — site may not exist, or no data in the requested date range (${input.startDate} to ${input.endDate}).${statNote}`,
-        ctx.recoveryFor('no_data_for_range'),
       );
     }
     if (ts.values.length === 0) {
       throw ctx.fail(
         'no_data_for_range',
         `No data for site ${input.site} parameter ${input.parameterCd} in the requested date range.`,
-        ctx.recoveryFor('no_data_for_range'),
       );
     }
 

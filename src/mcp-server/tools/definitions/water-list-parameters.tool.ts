@@ -108,7 +108,6 @@ export const waterListParameters = tool('water_list_parameters', {
       throw ctx.fail(
         'query_with_group',
         `query "${query}" cannot be combined with group "${input.group}" — group filters the curated list only, and the USGS catalog has no matching grouping.`,
-        ctx.recoveryFor('query_with_group'),
       );
     }
 
@@ -117,9 +116,7 @@ export const waterListParameters = tool('water_list_parameters', {
       catalog = await getParameterCatalog(ctx);
     } catch (err: unknown) {
       if (err instanceof McpError && err.code === JsonRpcErrorCode.ServiceUnavailable) {
-        throw ctx.fail('upstream_error', err.message, ctx.recoveryFor('upstream_error'), {
-          cause: err,
-        });
+        throw ctx.fail('upstream_error', err.message, undefined, { cause: err });
       }
       throw err;
     }

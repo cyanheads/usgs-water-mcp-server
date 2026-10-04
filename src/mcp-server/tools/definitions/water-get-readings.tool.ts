@@ -229,10 +229,7 @@ export const waterGetReadings = tool('water_get_readings', {
       series = await getReadings(readingsParams, ctx);
     } catch (err: unknown) {
       const failure = classifyNwisFailure(err);
-      if (failure)
-        throw ctx.fail(failure.reason, failure.message, ctx.recoveryFor(failure.reason), {
-          cause: err,
-        });
+      if (failure) throw ctx.fail(failure.reason, failure.message, undefined, { cause: err });
       throw err;
     }
 
@@ -242,7 +239,6 @@ export const waterGetReadings = tool('water_get_readings', {
       throw ctx.fail(
         'no_data_for_parameter',
         'No data returned for the given sites and parameters — the site(s) may not exist, or may not measure the requested parameter(s) in the requested period. Use water_find_sites with a parameterCd filter to verify parameter availability at a site.',
-        ctx.recoveryFor('no_data_for_parameter'),
       );
     }
 
@@ -252,7 +248,6 @@ export const waterGetReadings = tool('water_get_readings', {
       throw ctx.fail(
         'no_data_for_parameter',
         'Sites found but no data available for the specified parameters in the requested period.',
-        ctx.recoveryFor('no_data_for_parameter'),
       );
     }
 

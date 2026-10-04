@@ -16,7 +16,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { waterGetSeries } from '@/mcp-server/tools/definitions/water-get-series.tool.js';
 import type { NwisTimeSeries } from '@/services/nwis/types.js';
 import { textContent } from '../helpers/content-block.js';
-import { captureError, declaredRecovery } from '../helpers/error-contract.js';
+import { captureError, contractError, declaredRecovery } from '../helpers/error-contract.js';
 
 const recovery = (reason: string) => declaredRecovery(waterGetSeries.errors, reason);
 
@@ -274,8 +274,7 @@ describe('waterGetSeries', () => {
   });
 
   it('throws invalid_date_range for calendar-invalid startDate (month 13)', async () => {
-    const ctx = createMockContext({ errors: waterGetSeries.errors });
-    // Bypass Zod regex with a raw object — the regex allows YYYY-MM-DD shape, handler validates calendar
+    // The schema regex allows the YYYY-MM-DD shape; the handler validates the calendar date.
     const input = {
       site: '01646500',
       parameterCd: '00060',
@@ -283,14 +282,13 @@ describe('waterGetSeries', () => {
       endDate: '2024-12-31',
       seriesType: 'daily' as const,
     };
-    await expect(waterGetSeries.handler(input, ctx)).rejects.toMatchObject({
+    await expect(contractError(waterGetSeries, input)).resolves.toMatchObject({
       code: JsonRpcErrorCode.ValidationError,
       data: { reason: 'invalid_date_range', recovery: recovery('invalid_date_range') },
     });
   });
 
   it('throws invalid_date_range for rollover startDate (Feb 30 → normalizes to Mar 1)', async () => {
-    const ctx = createMockContext({ errors: waterGetSeries.errors });
     const input = {
       site: '01646500',
       parameterCd: '00060',
@@ -298,21 +296,20 @@ describe('waterGetSeries', () => {
       endDate: '2024-12-31',
       seriesType: 'daily' as const,
     };
-    await expect(waterGetSeries.handler(input, ctx)).rejects.toMatchObject({
+    await expect(contractError(waterGetSeries, input)).resolves.toMatchObject({
       code: JsonRpcErrorCode.ValidationError,
       data: { reason: 'invalid_date_range', recovery: recovery('invalid_date_range') },
     });
   });
 
   it('throws invalid_date_range when endDate is before startDate', async () => {
-    const ctx = createMockContext({ errors: waterGetSeries.errors });
-    const input = waterGetSeries.input.parse({
+    const input = {
       site: '01646500',
       parameterCd: '00060',
       startDate: '2024-12-31',
       endDate: '2024-01-01',
-    });
-    await expect(waterGetSeries.handler(input, ctx)).rejects.toMatchObject({
+    };
+    await expect(contractError(waterGetSeries, input)).resolves.toMatchObject({
       code: JsonRpcErrorCode.ValidationError,
       data: { reason: 'invalid_date_range', recovery: recovery('invalid_date_range') },
     });
@@ -322,14 +319,13 @@ describe('waterGetSeries', () => {
     // NWIS returns timeSeries:[] for both unknown sites and out-of-range dates;
     // no_data_for_range is the more actionable error (callers can retry with a narrower range).
     mockGetSeries.mockResolvedValue([]);
-    const ctx = createMockContext({ errors: waterGetSeries.errors });
-    const input = waterGetSeries.input.parse({
+    const input = {
       site: '99999999',
       parameterCd: '00060',
       startDate: '2024-01-01',
       endDate: '2024-12-31',
-    });
-    await expect(waterGetSeries.handler(input, ctx)).rejects.toMatchObject({
+    };
+    await expect(contractError(waterGetSeries, input)).resolves.toMatchObject({
       code: JsonRpcErrorCode.NotFound,
       data: { reason: 'no_data_for_range', recovery: recovery('no_data_for_range') },
     });
@@ -337,14 +333,13 @@ describe('waterGetSeries', () => {
 
   it('throws no_data_for_range when series has no values', async () => {
     mockGetSeries.mockResolvedValue([makeSeries(0)]);
-    const ctx = createMockContext({ errors: waterGetSeries.errors });
-    const input = waterGetSeries.input.parse({
+    const input = {
       site: '01646500',
       parameterCd: '00060',
       startDate: '1800-01-01',
       endDate: '1800-12-31',
-    });
-    await expect(waterGetSeries.handler(input, ctx)).rejects.toMatchObject({
+    };
+    await expect(contractError(waterGetSeries, input)).resolves.toMatchObject({
       code: JsonRpcErrorCode.NotFound,
       data: { reason: 'no_data_for_range', recovery: recovery('no_data_for_range') },
     });
@@ -359,14 +354,13 @@ describe('waterGetSeries', () => {
         { httpStatus: 400 },
       ),
     );
-    const ctx = createMockContext({ errors: waterGetSeries.errors });
-    const input = waterGetSeries.input.parse({
+    const input = {
       site: '01646500',
       parameterCd: '00060',
       startDate: '2024-01-01',
       endDate: '2024-12-31',
-    });
-    await expect(waterGetSeries.handler(input, ctx)).rejects.toMatchObject({
+    };
+    await expect(contractError(waterGetSeries, input)).resolves.toMatchObject({
       code: JsonRpcErrorCode.ValidationError,
       data: { reason: 'invalid_request', recovery: recovery('invalid_request') },
       message: expect.stringContaining('ParameterCd'),
@@ -376,14 +370,13 @@ describe('waterGetSeries', () => {
   it('still reports the handler-owned date checks as invalid_date_range', async () => {
     // invalid_date_range survives for the case it actually describes: this tool's own
     // calendar/order validation, which never reaches NWIS.
-    const ctx = createMockContext({ errors: waterGetSeries.errors });
-    const input = waterGetSeries.input.parse({
+    const input = {
       site: '01646500',
       parameterCd: '00060',
       startDate: '2024-12-31',
       endDate: '2024-01-01',
-    });
-    await expect(waterGetSeries.handler(input, ctx)).rejects.toMatchObject({
+    };
+    await expect(contractError(waterGetSeries, input)).resolves.toMatchObject({
       data: { reason: 'invalid_date_range', recovery: recovery('invalid_date_range') },
     });
     expect(mockGetSeries).not.toHaveBeenCalled();
@@ -393,14 +386,13 @@ describe('waterGetSeries', () => {
     mockGetSeries.mockRejectedValue(
       serviceUnavailable('NWIS returned HTTP 503: Service Unavailable', { status: 503 }),
     );
-    const ctx = createMockContext({ errors: waterGetSeries.errors });
-    const input = waterGetSeries.input.parse({
+    const input = {
       site: '01646500',
       parameterCd: '00060',
       startDate: '2024-01-01',
       endDate: '2024-12-31',
-    });
-    await expect(waterGetSeries.handler(input, ctx)).rejects.toMatchObject({
+    };
+    await expect(contractError(waterGetSeries, input)).resolves.toMatchObject({
       code: JsonRpcErrorCode.ServiceUnavailable,
       data: { reason: 'upstream_error', recovery: recovery('upstream_error') },
     });
@@ -817,10 +809,13 @@ describe('waterGetSeries', () => {
 
       expect(error).toMatchObject({
         code: JsonRpcErrorCode.NotFound,
-        data: { reason: 'canvas_not_found', recovery: recovery('canvas_not_found') },
+        data: { reason: 'canvas_not_found' },
       });
-      expect(error.data?.['recovery']).toMatchObject({ hint: expect.stringMatching(/omit/i) });
       expect(error.cause).toBeInstanceOf(McpError);
+
+      const wire = await contractError(waterGetSeries, input);
+      expect(wire.data).toMatchObject({ recovery: recovery('canvas_not_found') });
+      expect(wire.data['recovery']).toMatchObject({ hint: expect.stringMatching(/omit/i) });
     });
 
     it('lets an unrelated acquire failure through untouched', async () => {
