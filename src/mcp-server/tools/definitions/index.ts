@@ -4,6 +4,7 @@
  */
 
 export { waterDataframeDescribe } from './water-dataframe-describe.tool.js';
+export { waterDataframeDrop } from './water-dataframe-drop.tool.js';
 export { waterDataframeQuery } from './water-dataframe-query.tool.js';
 export { waterFindSites } from './water-find-sites.tool.js';
 export { waterGetConditions } from './water-get-conditions.tool.js';

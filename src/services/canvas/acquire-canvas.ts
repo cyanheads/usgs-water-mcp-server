@@ -10,10 +10,10 @@ import { McpError } from '@cyanheads/mcp-ts-core/errors';
 
 /**
  * Acquire the canvas a caller named by id. A `canvas_not_found` rejection from the registry is
- * re-thrown through `ctx.fail('canvas_not_found', …)` so it carries the calling tool's declared
- * recovery hint — the registry's own hint never names omitting canvas_id, which is the fresh-canvas
- * path the producing tools offer. Every other rejection (`canvas_capacity_exhausted`, a provider
- * fault) propagates as the same error instance.
+ * re-thrown through `ctx.fail('canvas_not_found', …)` without a hint, so the framework fills the
+ * calling tool's declared recovery — the registry's own hint never names omitting canvas_id, which
+ * is the fresh-canvas path the producing tools offer. Every other rejection
+ * (`canvas_capacity_exhausted`, a provider fault) propagates as the same error instance.
  *
  * `ctx` is typed as the non-generic `HandlerContext<'canvas_not_found'>`: `fail` and `recoveryFor`
  * are contravariant in their reason, so any handler context whose contract declares
@@ -28,12 +28,9 @@ export async function acquireCanvas(
     return await canvas.acquire(canvasId, ctx);
   } catch (err: unknown) {
     if (err instanceof McpError && err.data?.['reason'] === 'canvas_not_found') {
-      throw ctx.fail(
-        'canvas_not_found',
-        `Canvas ${canvasId} not found or expired.`,
-        ctx.recoveryFor('canvas_not_found'),
-        { cause: err },
-      );
+      throw ctx.fail('canvas_not_found', `Canvas ${canvasId} not found or expired.`, undefined, {
+        cause: err,
+      });
     }
     throw err;
   }

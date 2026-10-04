@@ -2,9 +2,9 @@
 
 **Server:** usgs-water-mcp-server
 **Version:** 0.2.6
-**Framework:** [@cyanheads/mcp-ts-core](https://www.npmjs.com/package/@cyanheads/mcp-ts-core) `^0.13.6`
+**Framework:** [@cyanheads/mcp-ts-core](https://www.npmjs.com/package/@cyanheads/mcp-ts-core) `^0.13.11`
 **Engines:** Bun ≥1.4.0, Node ≥24.0.0
-**MCP SDK:** `@modelcontextprotocol/server` ^2.0.0
+**MCP SDK:** `@modelcontextprotocol/server` ^2.2.0
 **Zod:** ^4.6.5
 
 > **Read the framework docs first:** `node_modules/@cyanheads/mcp-ts-core/CLAUDE.md` contains the full API reference — builders, Context, error codes, exports, patterns. This file covers server-specific conventions only.
@@ -18,6 +18,7 @@
 - **Use `ctx.state`** for tenant-scoped storage. Never access persistence directly.
 - **Need input the caller didn't supply?** `return ctx.requestInput(...)` and read `ctx.inputs` when the handler is re-entered. Never `await` for user input mid-handler.
 - **Secrets in env vars only** — never hardcoded.
+- **Cut noise.** Add only what earns its place: no speculative generality, no guards for states the framework already prevents (Zod-validated params, classified errors), no abstraction until a third caller proves it, no option nothing sets.
 - **Close the loop on issues.** When implementing work tracked by a GitHub issue, comment on the issue with what landed and close it. Do both — a comment without a close leaves stale issues open; a close without a comment leaves no record of what shipped. The comment is for future readers — state the concrete changes, not the conversation that produced them.
 
 ---
@@ -58,7 +59,7 @@ export const waterFindSites = tool('water_find_sites', {
 
   async handler(input, ctx) {
     const sites = await findSites({ stateCd: input.stateCd, siteType: input.siteType }, ctx);
-    if (sites.length === 0) throw ctx.fail('no_sites_found', 'No USGS sites match the specified filters.', ctx.recoveryFor('no_sites_found'));
+    if (sites.length === 0) throw ctx.fail('no_sites_found', 'No USGS sites match the specified filters.');
     ctx.log.info('Sites found', { count: sites.length });
     return { sites, total: sites.length };
   },
@@ -151,7 +152,9 @@ Handlers receive a unified `ctx` object. Key properties used in this server:
 
 Handlers throw — the framework catches, classifies, and formats.
 
-**Typed error contract (preferred).** Declare `errors: [{ reason, code, when, recovery, retryable?, severity?, thrownBy? }]` inline on each `tool()` / `resource()` to receive `ctx.fail(reason, …)` typed against the reason union. TypeScript catches typos, `data.reason` is auto-populated, and the linter enforces conformance. Pass `ctx.recoveryFor('reason')` as the throw data so the declared recovery hint reaches the wire — forwarding it is lint-enforced per throw site (`error-contract-recovery-unforwarded`). Mark an entry the service layer throws with `thrownBy: 'service'` so `error-contract-unthrown` skips it; this server's NWIS tools use it for `invalid_request` and `upstream_error`, which `classifyNwisFailure()` produces. Baseline codes (`InternalError`, `ServiceUnavailable`, `Timeout`, `ValidationError`, `SerializationError`, `RequestCancelled`) bubble freely and don't need declaring.
+**Typed error contract (preferred).** Declare `errors: [{ reason, code, when, recovery, retryable?, severity?, thrownBy? }]` inline on each `tool()` / `resource()` to receive `ctx.fail(reason, …)` typed against the reason union. TypeScript catches typos, `data.reason` is auto-populated, and the linter enforces conformance. `recovery` is required (≥ 5 words, lint-validated) — the single source of truth for the agent's next move. The framework puts it on the wire whenever a failure carrying that `reason` arrives without a hint — a bare `ctx.fail('reason')` or a service throw with `data: { reason }` — as `data.recovery.hint`, mirrored into `content[]` text unless the message already contains it verbatim; override with an explicit `{ recovery: { hint: '...' } }` when dynamic runtime context matters. Every error envelope also carries `data.requestId`, the id the server's log records for that call carry, and `content[]` closes with `(reason … · request <id>)`. A handler's own throw holds no filled hint, so tests assert a tool's wire recovery through `runToolContract`. Mark an entry the service layer throws with `thrownBy: 'service'` so `error-contract-unthrown` skips it; this server's NWIS tools use it for `invalid_request` and `upstream_error`, which `classifyNwisFailure()` produces. Baseline codes (`InternalError`, `ServiceUnavailable`, `Timeout`, `ValidationError`, `SerializationError`, `RequestCancelled`) bubble freely and don't need declaring.
+
+**Declare contracts inline on each tool.** The contract is part of the tool's public surface — one file should give the full picture. Don't extract a shared `errors[]` constant; per-tool repetition is the intended cost of locality.
 
 **Fallback:** throw via factories or plain `Error`.
 
@@ -171,7 +174,7 @@ See framework CLAUDE.md and the `api-errors` skill for the full auto-classificat
 src/
   index.ts                              # createApp() entry point — registers tools/resources, inits canvas
   config/
-    server-config.ts                    # USGS_USER_AGENT, USGS_REQUEST_TIMEOUT_MS (Zod schema)
+    server-config.ts                    # USGS_USER_AGENT, USGS_REQUEST_TIMEOUT_MS, WATER_DATAFRAME_DROP_ENABLED (Zod schema)
   services/
     canvas/
       acquire-canvas.ts                 # acquireCanvas() — caller-supplied canvas_id → canvas, canvas_not_found via ctx.fail
@@ -193,6 +196,7 @@ src/
       water-get-conditions.tool.ts      # Current reading + percentile classification
       water-dataframe-describe.tool.ts  # List tables on a DataCanvas
       water-dataframe-query.tool.ts     # SQL SELECT against DataCanvas tables
+      water-dataframe-drop.tool.ts      # Drop one DataCanvas table — disabledTool() unless WATER_DATAFRAME_DROP_ENABLED=true
     resources/definitions/
       water-site.resource.ts            # usgs-water://site/{siteId}
       water-parameters.resource.ts      # usgs-water://parameters
@@ -213,7 +217,7 @@ src/
 
 ## Skills
 
-Skills are modular instructions in `framework-skills/` at the project root. Read them directly when a task matches — e.g., `framework-skills/add-tool/SKILL.md` when adding a tool. `bun run list-skills` prints the full registry. The directory is deliberately not `skills/`: Claude Code and Codex auto-load a plugin's root `skills/`, so a server that ships `.claude-plugin/` or `.codex-plugin/` would hand these development skills to every agent that installs it.
+Skills are modular instructions in `framework-skills/` at the project root. Read them directly when a task matches — e.g., `framework-skills/add-tool/SKILL.md` when adding a tool. `bun run list-skills` prints the full registry. The directory is deliberately not `skills/`: Claude Code and Codex auto-load a plugin's root `skills/`, so a server that ships `.claude-plugin/` or `.codex-plugin/` would hand these development skills to every agent that installs it. Keep `skills/` free for skills meant for those agents.
 
 **Agent skill directory:** Copy skills into the directory your agent discovers (Claude Code: `.claude/skills/`, others: equivalent). Skills then load as context without referencing `framework-skills/` paths. After framework updates, run the `maintenance` skill — Phase B re-syncs the agent directory.
 
@@ -241,19 +245,21 @@ Available skills:
 | `orchestrations` | Chain task skills into a gated multi-phase pipeline — build-out, QA-fix, update-ship — when you can spawn sub-agents |
 | `report-issue-framework` | File a bug or feature request against `@cyanheads/mcp-ts-core` via `gh` CLI |
 | `report-issue-local` | File a bug or feature request against this server's own repo via `gh` CLI |
+| `techniques` | Catalog of response/data-shaping techniques — overflow handling, payload shaping, retrieval patterns |
 | `api-auth` | Auth modes, scopes, JWT/OAuth |
 | `api-canvas` | DataCanvas: register tabular data, run SQL, export, plus the `spillover()` helper for big result sets — Tier 3 opt-in |
 | `api-config` | AppConfig, parseConfig, env vars |
-| `api-context` | Context interface, logger, state, and multi-round-trip input |
+| `api-context` | Context interface, RequestContext, logger, state, multi-round-trip input |
 | `api-errors` | McpError, JsonRpcErrorCode, error patterns |
 | `api-linter` | Definition linter rule catalog — invoked by `bun run lint:mcp` and `devcheck` |
-| `api-mirror` | MirrorService for a persistent self-refreshing local mirror — Tier 3 opt-in |
+| `api-mirror` | MirrorService: persistent self-refreshing local mirror (embedded SQLite + FTS5) of a bulk upstream dataset — Tier 3 opt-in |
 | `api-services` | LLM, Speech, Graph services |
 | `api-testing` | createMockContext, test patterns |
 | `api-utils` | Formatting, parsing, security, pagination, scheduling, telemetry helpers |
 | `api-telemetry` | OTel catalog: spans, metrics, completion logs, env config, cardinality rules |
 | `api-workers` | Cloudflare Workers runtime |
-| `techniques` | Response/data-shaping techniques for overflow, payload shaping, and retrieval patterns |
+
+**Chaining skills into pipelines.** When the user wants a multi-phase effort — build this server out, QA-and-fix the surface, update-and-ship — *and you can spawn sub-agents*, `framework-skills/orchestrations/SKILL.md` sequences the task skills above into a gated pipeline with verification at each step. Read it to drive the run. Optional: skip it if you can't orchestrate sub-agents, and ignore it entirely if you were *spawned* as one — you've already been scoped to a single phase.
 
 When you complete a skill's checklist, check the boxes and add a completion timestamp at the end (e.g., `Completed: 2026-06-05`).
 
@@ -269,9 +275,9 @@ When you complete a skill's checklist, check the boxes and add a completion time
 | `bun run rebuild` | Clean + build |
 | `bun run clean` | Remove build artifacts |
 | `bun run devcheck` | Lint + format + typecheck + security + changelog sync |
-| `bun run audit:fix` | `bun audit fix` — upgrade vulnerable packages to the lowest safe version within existing ranges. First response when `devcheck` flags a transitive advisory; then `bun update <name>`, then `bun dedupe` |
-| `bun run audit:refresh` | Delete `bun.lock` and reinstall. Last resort — re-resolves every ranged dep, the `@cyanheads/mcp-ts-core` pin included |
-| `bun run lint:mcp` | Run the MCP definition linter standalone |
+| `bun run audit:fix` | `bun audit fix` — upgrade vulnerable packages to the lowest safe version within existing ranges (`--dry-run` previews, `--latest` rewrites ranges). First response when `devcheck` flags a transitive advisory; then `bun update <name>`, then `bun dedupe` |
+| `bun run audit:refresh` | Delete `bun.lock` and reinstall. Last resort after `audit:fix`, `bun update <name>`, and `bun dedupe` — re-resolves every ranged dep (the framework pin included) and rewrites the lockfile as `lockfileVersion: 2` |
+| `bun run lint:mcp` | Run the MCP definition linter standalone (rule catalog: `api-linter` skill) |
 | `bun run lint:packaging` | Check packaging identity, env-var alignment, and bundle contents |
 | `bun run list-skills` | Print the skill registry |
 | `bun run tree` | Generate directory structure doc |
@@ -292,7 +298,7 @@ When you complete a skill's checklist, check the boxes and add a completion time
 
 `bun run bundle` produces a `.mcpb` extension bundle for one-click install in Claude Desktop. The cleanup step prunes dev dependencies, agent docs, and platform-specific native bindings so the bundle stays portable. DataCanvas remains an optional peer loaded lazily; a bundle without the DuckDB native still runs every non-canvas tool. MCPB is stdio-only — HTTP and Cloudflare Workers deployments are unaffected.
 
-**Adding an env var requires both files:** `server.json` (registry discovery, `environmentVariables[]`) and `manifest.json` (bundle install UX, `mcp_config.env` + `user_config`). `lint:packaging` (run by `devcheck`) verifies the env var names match.
+**Adding an env var requires both files:** `server.json` (registry discovery, `environmentVariables[]`) and `manifest.json` (bundle install UX, `mcp_config.env` + `user_config`). `lint:packaging` (run by `devcheck`) verifies the env var names match, that every `user_config` option is wired into `mcp_config.env` as `"X": "${user_config.X}"` (the host substitutes nothing else — `"${X}"` reaches the server as that literal string), and that an optional string option carries `"default": ""`.
 
 ---
 

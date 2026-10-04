@@ -21,6 +21,12 @@ const ServerConfigSchema = z.object({
     .describe(
       'HTTP request timeout in milliseconds for USGS calls — NWIS and the parameter-code catalog.',
     ),
+  dataframeDropEnabled: z
+    .stringbool()
+    .default(false)
+    .describe(
+      'Register water_dataframe_drop as a callable tool. Off by default: the tool stays listed as disabled and cannot be called.',
+    ),
 });
 
 let _config: z.infer<typeof ServerConfigSchema> | undefined;
@@ -30,6 +36,7 @@ export function getServerConfig() {
   _config ??= parseEnvConfig(ServerConfigSchema, {
     userAgent: 'USGS_USER_AGENT',
     requestTimeoutMs: 'USGS_REQUEST_TIMEOUT_MS',
+    dataframeDropEnabled: 'WATER_DATAFRAME_DROP_ENABLED',
   });
   return _config;
 }

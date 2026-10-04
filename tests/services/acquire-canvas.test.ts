@@ -49,7 +49,9 @@ describe('acquireCanvas', () => {
     expect(acquire).toHaveBeenCalledWith('abcdefghij', ctx);
   });
 
-  it("re-throws canvas_not_found through the caller's contract, message and hint", async () => {
+  it("re-throws canvas_not_found through the caller's contract, leaving the registry's hint behind", async () => {
+    // The throw carries no hint of its own: the calling tool's declared recovery is filled in at
+    // the tool boundary (asserted in each tool's contract tests), never the registry's.
     const original = registryNotFound();
     const ctx = createMockContext({ errors: CONTRACT });
     const error = await captureError(() =>
@@ -60,11 +62,9 @@ describe('acquireCanvas', () => {
     expect(error).toMatchObject({
       code: JsonRpcErrorCode.NotFound,
       message: 'Canvas abcdefghij not found or expired.',
-      data: {
-        reason: 'canvas_not_found',
-        recovery: { hint: 'Omit canvas_id to start a fresh canvas for this call.' },
-      },
+      data: { reason: 'canvas_not_found' },
     });
+    expect((error as McpError).data?.['recovery']).toBeUndefined();
     expect((error as McpError).cause).toBe(original);
   });
 

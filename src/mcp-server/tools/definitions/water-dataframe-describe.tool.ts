@@ -13,7 +13,7 @@ import { getCanvas } from '@/services/canvas/canvas-accessor.js';
 
 export const waterDataframeDescribe = tool('water_dataframe_describe', {
   description:
-    'List tables and columns staged on a DataCanvas by water_get_series or water_find_sites. Call this after water_get_series or water_find_sites returns a canvas_id to discover the exact table name and column types before writing a query. Then pass the table name to water_dataframe_query. Requires DataCanvas to be enabled on this server instance. Returns an error if DataCanvas is not available.',
+    'List tables and columns staged on a DataCanvas by water_get_series or water_find_sites. Call this after water_get_series or water_find_sites returns a canvas_id to discover the exact table name and column types before writing a query. Then pass the table name to water_dataframe_query, or to water_dataframe_drop (when this server enables it) to remove a table you no longer need. Requires DataCanvas to be enabled on this server instance. Returns an error if DataCanvas is not available.',
   annotations: { readOnlyHint: true, idempotentHint: true, openWorldHint: false },
   input: z.object({
     canvas_id: CanvasIdSchema.describe(
@@ -77,11 +77,7 @@ export const waterDataframeDescribe = tool('water_dataframe_describe', {
       ctx.log.info(
         'DataCanvas not enabled; set CANVAS_PROVIDER_TYPE=duckdb to enable SQL queries over staged series.',
       );
-      throw ctx.fail(
-        'canvas_disabled',
-        'DataCanvas is not enabled on this server instance.',
-        ctx.recoveryFor('canvas_disabled'),
-      );
+      throw ctx.fail('canvas_disabled', 'DataCanvas is not enabled on this server instance.');
     }
 
     ctx.log.info('Describing canvas', { canvas_id: input.canvas_id });

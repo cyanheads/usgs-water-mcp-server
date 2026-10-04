@@ -52,7 +52,7 @@ const MISSING_TABLE_REASON = 'missing_table';
 
 export const waterDataframeQuery = tool('water_dataframe_query', {
   description:
-    'Run a read-only SQL SELECT against water data tables staged on a DataCanvas by water_get_series or water_find_sites. Workflow: run water_get_series or water_find_sites (get canvas_id + table_name) → water_dataframe_describe (confirm the table and its columns) → water_dataframe_query (SQL analysis). Only SELECT statements are permitted. At most 10,000 rows are returned; a query matching more is capped and the response sets truncated=true — scope with WHERE/LIMIT, and use SELECT COUNT(*) or water_dataframe_describe to learn the true match count. Requires DataCanvas to be enabled on this server instance. Returns an error if DataCanvas is not available.',
+    'Run a read-only SQL SELECT against water data tables staged on a DataCanvas by water_get_series or water_find_sites. Workflow: run water_get_series or water_find_sites (get canvas_id + table_name) → water_dataframe_describe (confirm the table and its columns) → water_dataframe_query (SQL analysis), then optionally water_dataframe_drop (when this server enables it) to remove a table you are done with. Only SELECT statements are permitted. At most 10,000 rows are returned; a query matching more is capped and the response sets truncated=true — scope with WHERE/LIMIT, and use SELECT COUNT(*) or water_dataframe_describe to learn the true match count. Requires DataCanvas to be enabled on this server instance. Returns an error if DataCanvas is not available.',
   annotations: { readOnlyHint: true, idempotentHint: true, openWorldHint: false },
   input: z.object({
     canvas_id: CanvasIdSchema.describe(
@@ -133,11 +133,7 @@ export const waterDataframeQuery = tool('water_dataframe_query', {
       ctx.log.info(
         'DataCanvas not enabled; set CANVAS_PROVIDER_TYPE=duckdb to enable SQL queries over staged series.',
       );
-      throw ctx.fail(
-        'canvas_disabled',
-        'DataCanvas is not enabled on this server instance.',
-        ctx.recoveryFor('canvas_disabled'),
-      );
+      throw ctx.fail('canvas_disabled', 'DataCanvas is not enabled on this server instance.');
     }
 
     ctx.log.info('Running dataframe query', { canvas_id: input.canvas_id });
@@ -160,7 +156,7 @@ export const waterDataframeQuery = tool('water_dataframe_query', {
           throw ctx.fail(
             'table_not_found',
             `${subject} is not staged on canvas ${input.canvas_id}.`,
-            ctx.recoveryFor('table_not_found'),
+            undefined,
             { cause: err },
           );
         }
@@ -168,15 +164,13 @@ export const waterDataframeQuery = tool('water_dataframe_query', {
           throw ctx.fail(
             'system_catalog_access',
             'System catalog tables are not queryable here; only the tables staged on this canvas are.',
-            ctx.recoveryFor('system_catalog_access'),
+            undefined,
             { cause: err },
           );
         }
         const scoped = typeof reason === 'string' ? SQL_GATE_MESSAGES[reason] : undefined;
         if (scoped !== undefined) {
-          throw ctx.fail('invalid_sql', scoped ?? err.message, ctx.recoveryFor('invalid_sql'), {
-            cause: err,
-          });
+          throw ctx.fail('invalid_sql', scoped ?? err.message, undefined, { cause: err });
         }
       }
       throw err;

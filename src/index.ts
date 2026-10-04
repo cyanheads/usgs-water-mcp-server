@@ -5,12 +5,14 @@
  */
 
 import { createApp } from '@cyanheads/mcp-ts-core';
+import { getServerConfig } from './config/server-config.js';
 import {
   waterParametersResource,
   waterSiteResource,
 } from './mcp-server/resources/definitions/index.js';
 import {
   waterDataframeDescribe,
+  waterDataframeDrop,
   waterDataframeQuery,
   waterFindSites,
   waterGetConditions,
@@ -31,6 +33,7 @@ await createApp({
     waterGetConditions,
     waterDataframeQuery,
     waterDataframeDescribe,
+    waterDataframeDrop,
   ],
   resources: [waterSiteResource, waterParametersResource],
   prompts: [],
@@ -38,7 +41,7 @@ await createApp({
 - Start with water_list_parameters to discover parameter codes (00060=Discharge, 00065=Gage height); pass its query to search the full USGS parameter-code catalog for codes beyond the common ones (turbidity, nitrate, chlorophyll, suspended sediment)
 - Use water_find_sites to find sites by bbox, state, county, or HUC watershed
 - water_get_readings returns the latest ~15-min real-time values for up to 100 sites, one series per sensor (method) when a site measures a parameter more than one way
-- water_get_series returns one historical daily or instantaneous series, most recent records inline — the daily mean by default, with statCd and methodId to pick another statistic or sensor from those listed in otherSeries; large ranges spill the complete series to DataCanvas when enabled on this server instance — inspect the staged table with water_dataframe_describe, then read it with water_dataframe_query
+- water_get_series returns one historical daily or instantaneous series, most recent records inline — the daily mean by default, with statCd and methodId to pick another statistic or sensor from those listed in otherSeries; large ranges spill the complete series to DataCanvas when enabled on this server instance — inspect the staged table with water_dataframe_describe, then read it with water_dataframe_query; where this server enables it, water_dataframe_drop removes a staged table you no longer need
 - water_get_conditions gives a current reading ranked against the full period-of-record percentiles
 - Groundwater depth (parameter 72019) uses the standard IV service — gwlevels was decommissioned Nov 2025`,
 
@@ -51,6 +54,8 @@ await createApp({
   sessionMode: 'stateless',
 
   setup(core) {
+    // Parse server config now so an invalid USGS_* value fails startup, not every tool call.
+    getServerConfig();
     setCanvas(core.canvas);
   },
 });

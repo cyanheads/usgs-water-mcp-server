@@ -9,7 +9,7 @@ import { createMockContext } from '@cyanheads/mcp-ts-core/testing';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { waterDataframeDescribe } from '@/mcp-server/tools/definitions/water-dataframe-describe.tool.js';
 import { textContent } from '../helpers/content-block.js';
-import { captureError, declaredRecovery } from '../helpers/error-contract.js';
+import { captureError, contractError, declaredRecovery } from '../helpers/error-contract.js';
 
 let mockCanvasInstance: unknown;
 
@@ -55,11 +55,26 @@ describe('waterDataframeDescribe', () => {
     mockCanvasInstance = undefined;
   });
 
+  it('names the tools that stage data and the tool that queries it', () => {
+    const { description } = waterDataframeDescribe;
+    for (const companion of ['water_get_series', 'water_find_sites', 'water_dataframe_query']) {
+      expect(description).toContain(companion);
+    }
+    expect(description).toContain('Requires DataCanvas to be enabled on this server instance.');
+  });
+
+  it('points at water_dataframe_drop only as an opt-in, never as always available', () => {
+    // water_dataframe_drop is registered disabled unless the deployment opts in.
+    expect(waterDataframeDescribe.description).toContain(
+      'water_dataframe_drop (when this server enables it)',
+    );
+  });
+
   it('throws canvas_disabled when canvas is not configured', async () => {
     mockCanvasInstance = undefined;
-    const ctx = createMockContext({ errors: waterDataframeDescribe.errors });
-    const input = waterDataframeDescribe.input.parse({ canvas_id: 'canvas0001' });
-    await expect(waterDataframeDescribe.handler(input, ctx)).rejects.toMatchObject({
+    await expect(
+      contractError(waterDataframeDescribe, { canvas_id: 'canvas0001' }),
+    ).resolves.toMatchObject({
       code: JsonRpcErrorCode.InvalidRequest,
       data: { reason: 'canvas_disabled', recovery: recovery('canvas_disabled') },
     });
@@ -79,9 +94,9 @@ describe('waterDataframeDescribe', () => {
     mockCanvasInstance = {
       acquire: vi.fn().mockRejectedValue(canvasNotFound('stalecanv1')),
     };
-    const ctx = createMockContext({ errors: waterDataframeDescribe.errors });
-    const input = waterDataframeDescribe.input.parse({ canvas_id: 'stalecanv1' });
-    await expect(waterDataframeDescribe.handler(input, ctx)).rejects.toMatchObject({
+    await expect(
+      contractError(waterDataframeDescribe, { canvas_id: 'stalecanv1' }),
+    ).resolves.toMatchObject({
       code: JsonRpcErrorCode.NotFound,
       data: { reason: 'canvas_not_found', recovery: recovery('canvas_not_found') },
     });

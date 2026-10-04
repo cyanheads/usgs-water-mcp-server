@@ -10,7 +10,7 @@ import { createMockContext } from '@cyanheads/mcp-ts-core/testing';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { waterDataframeQuery } from '@/mcp-server/tools/definitions/water-dataframe-query.tool.js';
 import { textContent } from '../helpers/content-block.js';
-import { captureError, declaredRecovery } from '../helpers/error-contract.js';
+import { captureError, contractError, declaredRecovery } from '../helpers/error-contract.js';
 
 let mockCanvasInstance: unknown;
 
@@ -118,14 +118,28 @@ describe('waterDataframeQuery', () => {
     mockCanvasInstance = undefined;
   });
 
+  it('names the tools that stage data and the tool that describes it', () => {
+    const { description } = waterDataframeQuery;
+    for (const companion of ['water_get_series', 'water_find_sites', 'water_dataframe_describe']) {
+      expect(description).toContain(companion);
+    }
+    expect(description).toContain('Requires DataCanvas to be enabled on this server instance.');
+  });
+
+  it('points at water_dataframe_drop only as an opt-in, never as always available', () => {
+    // water_dataframe_drop is registered disabled unless the deployment opts in.
+    expect(waterDataframeQuery.description).toContain(
+      'water_dataframe_drop (when this server enables it)',
+    );
+  });
+
   it('throws canvas_disabled when canvas is not configured', async () => {
     mockCanvasInstance = undefined;
-    const ctx = createMockContext({ errors: waterDataframeQuery.errors });
-    const input = waterDataframeQuery.input.parse({
+    const input = {
       canvas_id: 'canvas0001',
       sql: 'SELECT * FROM water_series_01646500_00060 LIMIT 10',
-    });
-    await expect(waterDataframeQuery.handler(input, ctx)).rejects.toMatchObject({
+    };
+    await expect(contractError(waterDataframeQuery, input)).resolves.toMatchObject({
       code: JsonRpcErrorCode.InvalidRequest,
       data: { reason: 'canvas_disabled', recovery: recovery('canvas_disabled') },
     });
@@ -148,12 +162,11 @@ describe('waterDataframeQuery', () => {
     mockCanvasInstance = {
       acquire: vi.fn().mockRejectedValue(CANVAS_ERRORS.canvasNotFound('stalecanv1')),
     };
-    const ctx = createMockContext({ errors: waterDataframeQuery.errors });
-    const input = waterDataframeQuery.input.parse({
+    const input = {
       canvas_id: 'stalecanv1',
       sql: 'SELECT date_time, value FROM water_series_01646500_00060',
-    });
-    await expect(waterDataframeQuery.handler(input, ctx)).rejects.toMatchObject({
+    };
+    await expect(contractError(waterDataframeQuery, input)).resolves.toMatchObject({
       code: JsonRpcErrorCode.NotFound,
       data: { reason: 'canvas_not_found', recovery: recovery('canvas_not_found') },
     });
@@ -185,12 +198,10 @@ describe('waterDataframeQuery', () => {
     mockCanvasInstance = canvasRejecting(
       CANVAS_ERRORS.binderFailure('Referenced column "valu" not found in FROM clause!'),
     );
-    const ctx = createMockContext({ errors: waterDataframeQuery.errors });
-    const input = waterDataframeQuery.input.parse({
+    const error = await contractError(waterDataframeQuery, {
       canvas_id: 'canvas0001',
       sql: 'SELECT valu FROM water_series_01646500_00060',
     });
-    const error = (await captureError(() => waterDataframeQuery.handler(input, ctx))) as Error;
     expect(error).toMatchObject({
       code: JsonRpcErrorCode.ValidationError,
       data: { reason: 'invalid_sql', recovery: recovery('invalid_sql') },
@@ -216,12 +227,10 @@ describe('waterDataframeQuery', () => {
 
   it('rewords the non-SELECT rejection so it never names registerTable/drop/clear (regression: #25)', async () => {
     mockCanvasInstance = canvasRejecting(CANVAS_ERRORS.nonSelect('DELETE'));
-    const ctx = createMockContext({ errors: waterDataframeQuery.errors });
-    const input = waterDataframeQuery.input.parse({
+    const error = await contractError(waterDataframeQuery, {
       canvas_id: 'canvas0001',
       sql: 'DELETE FROM water_series_01646500_00060',
     });
-    const error = (await captureError(() => waterDataframeQuery.handler(input, ctx))) as Error;
     expect(error).toMatchObject({
       code: JsonRpcErrorCode.ValidationError,
       data: { reason: 'invalid_sql', recovery: recovery('invalid_sql') },
@@ -235,12 +244,10 @@ describe('waterDataframeQuery', () => {
 
   it('rewords the system-catalog rejection so it never names denySystemCatalogs (regression: #25)', async () => {
     mockCanvasInstance = canvasRejecting(CANVAS_ERRORS.systemCatalog('information_schema'));
-    const ctx = createMockContext({ errors: waterDataframeQuery.errors });
-    const input = waterDataframeQuery.input.parse({
+    const error = await contractError(waterDataframeQuery, {
       canvas_id: 'canvas0001',
       sql: 'SELECT * FROM information_schema.tables',
     });
-    const error = (await captureError(() => waterDataframeQuery.handler(input, ctx))) as Error;
     // Its own contract reason, not invalid_sql: the SELECT-only/no-read_csv recovery invalid_sql
     // declares does not address a catalog reference, and a mismatched hint is the #24 defect.
     expect(error).toMatchObject({
@@ -258,12 +265,10 @@ describe('waterDataframeQuery', () => {
 
   it('maps a query against an unstaged table to table_not_found and drops the describe() reference', async () => {
     mockCanvasInstance = canvasRejecting(CANVAS_ERRORS.missingTable('water_series_09380000_00060'));
-    const ctx = createMockContext({ errors: waterDataframeQuery.errors });
-    const input = waterDataframeQuery.input.parse({
+    const error = await contractError(waterDataframeQuery, {
       canvas_id: 'canvas0001',
       sql: 'SELECT * FROM water_series_09380000_00060',
     });
-    const error = (await captureError(() => waterDataframeQuery.handler(input, ctx))) as Error;
     expect(error).toMatchObject({
       code: JsonRpcErrorCode.NotFound,
       data: { reason: 'table_not_found', recovery: recovery('table_not_found') },
@@ -290,12 +295,10 @@ describe('waterDataframeQuery', () => {
     'maps the engine-side %s rejection to invalid_sql, keeping the engine message',
     async (reason, message) => {
       mockCanvasInstance = canvasRejecting(CANVAS_ERRORS.engineFailure(reason, message));
-      const ctx = createMockContext({ errors: waterDataframeQuery.errors });
-      const input = waterDataframeQuery.input.parse({
+      const error = await contractError(waterDataframeQuery, {
         canvas_id: 'canvas0001',
         sql: 'SELECT CAST(value AS DOUBLE) FROM water_series_01646500_00060',
       });
-      const error = (await captureError(() => waterDataframeQuery.handler(input, ctx))) as Error;
       expect(error).toMatchObject({
         code: JsonRpcErrorCode.ValidationError,
         data: { reason: 'invalid_sql', recovery: recovery('invalid_sql') },

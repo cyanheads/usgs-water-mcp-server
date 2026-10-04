@@ -18,18 +18,8 @@
       "registryType": "npm",
       "registryBaseUrl": "https://registry.npmjs.org",
       "identifier": "@cyanheads/usgs-water-mcp-server",
-      "runtimeHint": "bun",
+      "runtimeHint": "npx",
       "version": "0.2.6",
-      "packageArguments": [
-        {
-          "type": "positional",
-          "value": "run"
-        },
-        {
-          "type": "positional",
-          "value": "start:stdio"
-        }
-      ],
       "environmentVariables": [
         {
           "name": "USGS_USER_AGENT",
@@ -43,6 +33,13 @@
           "format": "string",
           "isRequired": false,
           "default": "30000"
+        },
+        {
+          "name": "WATER_DATAFRAME_DROP_ENABLED",
+          "description": "Set to true to make water_dataframe_drop callable — it removes one staged table from a DataCanvas. Off by default, which lists the tool as disabled. Needs CANVAS_PROVIDER_TYPE=duckdb to have anything to drop.",
+          "format": "string",
+          "isRequired": false,
+          "default": "false"
         },
         {
           "name": "MCP_LOG_LEVEL",
@@ -60,19 +57,15 @@
       "registryType": "npm",
       "registryBaseUrl": "https://registry.npmjs.org",
       "identifier": "@cyanheads/usgs-water-mcp-server",
-      "runtimeHint": "bun",
+      "runtimeHint": "npx",
       "version": "0.2.6",
-      "packageArguments": [
-        {
-          "type": "positional",
-          "value": "run"
-        },
-        {
-          "type": "positional",
-          "value": "start:http"
-        }
-      ],
       "environmentVariables": [
+        {
+          "name": "MCP_TRANSPORT_TYPE",
+          "description": "Selects the HTTP transport.",
+          "format": "string",
+          "value": "http"
+        },
         {
           "name": "USGS_USER_AGENT",
           "description": "Custom User-Agent string for USGS requests (NWIS and the parameter-code catalog). Defaults to a descriptive identifier including the repo URL.",
@@ -85,6 +78,13 @@
           "format": "string",
           "isRequired": false,
           "default": "30000"
+        },
+        {
+          "name": "WATER_DATAFRAME_DROP_ENABLED",
+          "description": "Set to true to make water_dataframe_drop callable — it removes one staged table from a DataCanvas. Off by default, which lists the tool as disabled. Needs CANVAS_PROVIDER_TYPE=duckdb to have anything to drop.",
+          "format": "string",
+          "isRequired": false,
+          "default": "false"
         },
         {
           "name": "MCP_HTTP_HOST",
