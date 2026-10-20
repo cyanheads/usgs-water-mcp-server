@@ -7,7 +7,7 @@
 
 <div align="center">
 
-[![Version](https://img.shields.io/badge/Version-0.3.0-blue.svg?style=flat-square)](./CHANGELOG.md) [![License](https://img.shields.io/badge/License-Apache%202.0-orange.svg?style=flat-square)](./LICENSE) [![Docker](https://img.shields.io/badge/Docker-ghcr.io-2496ED?style=flat-square&logo=docker&logoColor=white)](https://github.com/users/cyanheads/packages/container/package/usgs-water-mcp-server) [![MCP SDK](https://img.shields.io/badge/MCP%20SDK-^2.3.1-green.svg?style=flat-square)](https://modelcontextprotocol.io/) [![npm](https://img.shields.io/npm/v/@cyanheads/usgs-water-mcp-server?style=flat-square&logo=npm&logoColor=white)](https://www.npmjs.com/package/@cyanheads/usgs-water-mcp-server) [![TypeScript](https://img.shields.io/badge/TypeScript-^7.0.2-3178C6.svg?style=flat-square)](https://www.typescriptlang.org/) [![Bun](https://img.shields.io/badge/Bun-v1.4.3-blueviolet.svg?style=flat-square)](https://bun.sh/)
+[![Version](https://img.shields.io/badge/Version-0.4.0-blue.svg?style=flat-square)](./CHANGELOG.md) [![License](https://img.shields.io/badge/License-Apache%202.0-orange.svg?style=flat-square)](./LICENSE) [![Docker](https://img.shields.io/badge/Docker-ghcr.io-2496ED?style=flat-square&logo=docker&logoColor=white)](https://github.com/users/cyanheads/packages/container/package/usgs-water-mcp-server) [![MCP SDK](https://img.shields.io/badge/MCP%20SDK-^2.3.1-green.svg?style=flat-square)](https://modelcontextprotocol.io/) [![npm](https://img.shields.io/npm/v/@cyanheads/usgs-water-mcp-server?style=flat-square&logo=npm&logoColor=white)](https://www.npmjs.com/package/@cyanheads/usgs-water-mcp-server) [![TypeScript](https://img.shields.io/badge/TypeScript-^7.0.2-3178C6.svg?style=flat-square)](https://www.typescriptlang.org/) [![Bun](https://img.shields.io/badge/Bun-v1.4.3-blueviolet.svg?style=flat-square)](https://bun.sh/)
 
 </div>
 
@@ -276,7 +276,7 @@ cp .env.example .env
 | Variable | Description | Default |
 |:---------|:------------|:--------|
 | `CANVAS_PROVIDER_TYPE` | DataCanvas spillover for large results from `water_get_series` and `water_find_sites`; set to `none` to disable. The portable desktop bundle sets `none`. | `duckdb` |
-| `USGS_USER_AGENT` | Custom User-Agent string sent to USGS NWIS and OGC discovery endpoints. USGS requests a descriptive User-Agent per their terms. | `usgs-water-mcp-server/0.3.0 (contact: https://github.com/cyanheads/usgs-water-mcp-server)` |
+| `USGS_USER_AGENT` | Custom User-Agent string sent to USGS NWIS and OGC discovery endpoints. USGS requests a descriptive User-Agent per their terms. | `usgs-water-mcp-server/0.4.0 (contact: https://github.com/cyanheads/usgs-water-mcp-server)` |
 | `USGS_REQUEST_TIMEOUT_MS` | HTTP request timeout in milliseconds for USGS NWIS and OGC calls. Site-series discovery also has a shared 45-second deadline. | `30000` |
 | `WATER_DATAFRAME_DROP_ENABLED` | Set to `true` to make `water_dataframe_drop` callable. Off, the tool is listed as disabled. Needs `CANVAS_PROVIDER_TYPE=duckdb` to have anything to drop. | `false` |
 | `MCP_TRANSPORT_TYPE` | Transport: `stdio` or `http`. | `stdio` |

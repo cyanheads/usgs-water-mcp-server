@@ -1,6 +1,6 @@
 # usgs-water-mcp-server - Directory Structure
 
-Generated on: 2026-10-04 06:55:59
+Generated on: 2026-10-20 07:42:20
 
 ```text
 usgs-water-mcp-server/
@@ -27,6 +27,7 @@ usgs-water-mcp-server/
 │   ├── 0.1.x/
 │   ├── 0.2.x/
 │   ├── 0.3.x/
+│   ├── 0.4.x/
 │   └── template.md
 ├── docs/
 │   ├── design.md
@@ -157,6 +158,7 @@ usgs-water-mcp-server/
 │   │           ├── water-get-conditions.tool.ts
 │   │           ├── water-get-readings.tool.ts
 │   │           ├── water-get-series.tool.ts
+│   │           ├── water-get-site-data-catalog.tool.ts
 │   │           └── water-list-parameters.tool.ts
 │   ├── services/
 │   │   ├── canvas/
@@ -169,11 +171,13 @@ usgs-water-mcp-server/
 │   │   │   └── types.ts
 │   │   └── waterdata/
 │   │       ├── curated-parameters.ts
-│   │       └── parameter-catalog.ts
+│   │       ├── parameter-catalog.ts
+│   │       └── site-data-catalog.ts
 │   └── index.ts
 ├── tests/
 │   ├── config/
-│   │   └── server-config.test.ts
+│   │   ├── server-config.test.ts
+│   │   └── startup.test.ts
 │   ├── fixtures/
 │   │   ├── nwis/
 │   │   │   ├── dv-01646500-00010-20190901-20190905-stat00003.json
@@ -199,7 +203,11 @@ usgs-water-mcp-server/
 │   │   │   └── stat-14233500-00060-0924.rdb
 │   │   └── waterdata/
 │   │       ├── parameter-codes-page-1.json
-│   │       └── parameter-codes-page-2.json
+│   │       ├── parameter-codes-page-2.json
+│   │       ├── site-location-known.json
+│   │       ├── site-ogc-sparse.json
+│   │       ├── site-page-one.json
+│   │       └── site-page-two.json
 │   ├── helpers/
 │   │   ├── content-block.ts
 │   │   ├── error-contract.ts
@@ -213,7 +221,9 @@ usgs-water-mcp-server/
 │   │   ├── acquire-canvas.test.ts
 │   │   ├── canvas-table-name.test.ts
 │   │   ├── nwis-service.test.ts
-│   │   └── parameter-catalog.test.ts
+│   │   ├── nwis-timeout.test.ts
+│   │   ├── parameter-catalog.test.ts
+│   │   └── site-data-catalog.test.ts
 │   └── tools/
 │       ├── water-dataframe-describe.tool.test.ts
 │       ├── water-dataframe-drop.gate.test.ts
