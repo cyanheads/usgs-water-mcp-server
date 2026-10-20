@@ -35,6 +35,16 @@ describe('getServerConfig — WATER_DATAFRAME_DROP_ENABLED', () => {
     ['1', true],
     ['false', false],
     ['0', false],
+    ['yes', true],
+    ['on', true],
+    ['y', true],
+    ['enabled', true],
+    ['no', false],
+    ['off', false],
+    ['n', false],
+    ['disabled', false],
+    ['On', true],
+    ['OFF', false],
   ])('parses %s as %s', async (value, expected) => {
     await expect(parseWithDropFlag(value)).resolves.toMatchObject({
       dataframeDropEnabled: expected,
@@ -43,6 +53,7 @@ describe('getServerConfig — WATER_DATAFRAME_DROP_ENABLED', () => {
 
   it.each([
     ['a blank value', ''],
+    ['whitespace', '   '],
     ['an unsubstituted host placeholder', `\${WATER_DATAFRAME_DROP_ENABLED}`],
   ])('reads %s as unset and keeps the default', async (_label, value) => {
     await expect(parseWithDropFlag(value)).resolves.toMatchObject({
@@ -54,5 +65,22 @@ describe('getServerConfig — WATER_DATAFRAME_DROP_ENABLED', () => {
     const error = await captureError(() => parseWithDropFlag('maybe'));
     expect(error).toMatchObject({ code: JsonRpcErrorCode.ConfigurationError });
     expect((error as Error).message).toContain('WATER_DATAFRAME_DROP_ENABLED');
+  });
+
+  it('reads the registration flag without validating unrelated configuration', async () => {
+    vi.resetModules();
+    vi.stubEnv('USGS_REQUEST_TIMEOUT_MS', 'abc');
+    vi.stubEnv('WATER_DATAFRAME_DROP_ENABLED', 'true');
+    const { isDataframeDropEnabled, getServerConfig } = await import('@/config/server-config.js');
+    expect(isDataframeDropEnabled()).toBe(true);
+    expect(() => getServerConfig()).toThrow('USGS_REQUEST_TIMEOUT_MS');
+  });
+
+  it('defers an invalid registration flag to full startup validation', async () => {
+    vi.resetModules();
+    vi.stubEnv('WATER_DATAFRAME_DROP_ENABLED', 'garbage');
+    const { isDataframeDropEnabled, getServerConfig } = await import('@/config/server-config.js');
+    expect(isDataframeDropEnabled()).toBe(false);
+    expect(() => getServerConfig()).toThrow('WATER_DATAFRAME_DROP_ENABLED');
   });
 });

@@ -256,8 +256,17 @@ export const waterFindSites = tool('water_find_sites', {
     {
       reason: 'upstream_error',
       code: JsonRpcErrorCode.ServiceUnavailable,
-      when: 'NWIS returned a 5xx error or the request timed out.',
+      when: 'NWIS returned a 5xx error.',
       recovery: 'The USGS service is temporarily unavailable. Retry after a short backoff.',
+      retryable: true,
+      thrownBy: 'service',
+    },
+    {
+      reason: 'upstream_timeout',
+      code: JsonRpcErrorCode.Timeout,
+      when: 'The NWIS request exceeded its deadline.',
+      recovery:
+        'Retry after a short backoff; narrow the geographic filters if the request repeatedly times out.',
       retryable: true,
       thrownBy: 'service',
     },
@@ -346,7 +355,7 @@ export const waterFindSites = tool('water_find_sites', {
       sites = await findSites(params, ctx);
     } catch (err: unknown) {
       const failure = classifyNwisFailure(err);
-      if (failure) throw ctx.fail(failure.reason, failure.message, undefined, { cause: err });
+      if (failure) throw ctx.fail(failure.reason, failure.message, failure.data, { cause: err });
       throw err;
     }
 

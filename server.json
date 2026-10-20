@@ -23,13 +23,13 @@
       "environmentVariables": [
         {
           "name": "USGS_USER_AGENT",
-          "description": "Custom User-Agent string for USGS requests (NWIS and the parameter-code catalog). Defaults to a descriptive identifier including the repo URL.",
+          "description": "Custom User-Agent string for USGS NWIS and OGC discovery endpoints. Defaults to a descriptive identifier including the repo URL.",
           "format": "string",
           "isRequired": false
         },
         {
           "name": "USGS_REQUEST_TIMEOUT_MS",
-          "description": "HTTP request timeout in milliseconds for USGS calls (NWIS and the parameter-code catalog). Default: 30000.",
+          "description": "HTTP request timeout in milliseconds for USGS NWIS and OGC calls. Site-series discovery also has a shared 45-second deadline. Default: 30000.",
           "format": "string",
           "isRequired": false,
           "default": "30000"
@@ -68,13 +68,13 @@
         },
         {
           "name": "USGS_USER_AGENT",
-          "description": "Custom User-Agent string for USGS requests (NWIS and the parameter-code catalog). Defaults to a descriptive identifier including the repo URL.",
+          "description": "Custom User-Agent string for USGS NWIS and OGC discovery endpoints. Defaults to a descriptive identifier including the repo URL.",
           "format": "string",
           "isRequired": false
         },
         {
           "name": "USGS_REQUEST_TIMEOUT_MS",
-          "description": "HTTP request timeout in milliseconds for USGS calls (NWIS and the parameter-code catalog). Default: 30000.",
+          "description": "HTTP request timeout in milliseconds for USGS NWIS and OGC calls. Site-series discovery also has a shared 45-second deadline. Default: 30000.",
           "format": "string",
           "isRequired": false,
           "default": "30000"

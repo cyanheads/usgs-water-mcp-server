@@ -97,9 +97,11 @@ async function fetchText(url: string, ctx: Context): Promise<string> {
 
 /** An NWIS failure mapped onto the reason vocabulary every network-calling tool declares. */
 export interface NwisFailure {
+  /** Deadline diagnostics retained when the calling definition adds its declared reason. */
+  data?: McpError['data'];
   /** NWIS's own message, which names the offending field verbatim on a rejected request. */
   message: string;
-  reason: 'invalid_request' | 'upstream_error';
+  reason: 'invalid_request' | 'upstream_error' | 'upstream_timeout';
 }
 
 /**
@@ -113,11 +115,15 @@ export interface NwisFailure {
  * `ParameterCd: length must be…`), and inferring a field from the wrapper text is what made a
  * malformed period surface as a malformed site number.
  *
- * Returns null for anything this module did not classify — raw network faults and aborts — which
+ * Timeout errors keep their code and deadline/retry metadata. Returns null for anything this
+ * module did not classify — raw network faults and caller cancellations — which
  * callers rethrow for the framework's auto-classifier to handle.
  */
 export function classifyNwisFailure(err: unknown): NwisFailure | null {
   if (!(err instanceof McpError)) return null;
+  if (err.code === JsonRpcErrorCode.Timeout) {
+    return { reason: 'upstream_timeout', message: err.message, data: err.data };
+  }
   if (err.code === JsonRpcErrorCode.ValidationError) {
     return { reason: 'invalid_request', message: err.message };
   }

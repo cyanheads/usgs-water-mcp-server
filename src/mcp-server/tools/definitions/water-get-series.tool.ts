@@ -306,8 +306,17 @@ export const waterGetSeries = tool('water_get_series', {
     {
       reason: 'upstream_error',
       code: JsonRpcErrorCode.ServiceUnavailable,
-      when: 'NWIS returned a 5xx error, timed out, or sent a response body that is not valid WaterML-JSON (cut off mid-document), and retrying did not clear it.',
+      when: 'NWIS returned a 5xx error or sent a response body that is not valid WaterML-JSON (cut off mid-document), and retrying did not clear it.',
       recovery: 'The USGS service is temporarily unavailable. Retry after a short backoff.',
+      retryable: true,
+      thrownBy: 'service',
+    },
+    {
+      reason: 'upstream_timeout',
+      code: JsonRpcErrorCode.Timeout,
+      when: 'The NWIS request exceeded its deadline.',
+      recovery:
+        'Retry after a short backoff; request a shorter date range if it repeatedly times out.',
       retryable: true,
       thrownBy: 'service',
     },
@@ -407,7 +416,7 @@ export const waterGetSeries = tool('water_get_series', {
       );
     } catch (err: unknown) {
       const failure = classifyNwisFailure(err);
-      if (failure) throw ctx.fail(failure.reason, failure.message, undefined, { cause: err });
+      if (failure) throw ctx.fail(failure.reason, failure.message, failure.data, { cause: err });
       throw err;
     }
 

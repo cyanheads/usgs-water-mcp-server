@@ -36,8 +36,16 @@ export const waterSiteResource = resource('usgs-water://site/{siteId}', {
     {
       reason: 'upstream_error',
       code: JsonRpcErrorCode.ServiceUnavailable,
-      when: 'NWIS returned a 5xx error or the request timed out.',
+      when: 'NWIS returned a 5xx error.',
       recovery: 'The USGS service is temporarily unavailable. Retry after a short backoff.',
+      retryable: true,
+      thrownBy: 'service',
+    },
+    {
+      reason: 'upstream_timeout',
+      code: JsonRpcErrorCode.Timeout,
+      when: 'The NWIS site request exceeded its deadline.',
+      recovery: 'Retry after a short backoff to retrieve the site metadata.',
       retryable: true,
       thrownBy: 'service',
     },
@@ -52,9 +60,17 @@ export const waterSiteResource = resource('usgs-water://site/{siteId}', {
     } catch (err: unknown) {
       const failure = classifyNwisFailure(err);
       if (failure)
-        throw ctx.fail(failure.reason, failure.message, ctx.recoveryFor(failure.reason), {
-          cause: err,
-        });
+        throw ctx.fail(
+          failure.reason,
+          failure.message,
+          {
+            ...failure.data,
+            ...ctx.recoveryFor(failure.reason),
+          },
+          {
+            cause: err,
+          },
+        );
       throw err;
     }
 

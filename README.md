@@ -1,13 +1,13 @@
 <div align="center">
   <h1>@cyanheads/usgs-water-mcp-server</h1>
   <p><b>Query real-time and historical water data from ~8,000 USGS stream gages and groundwater wells via MCP. STDIO or Streamable HTTP.</b>
-  <div>8 Tools • 2 Resources</div>
+  <div>9 Tools • 2 Resources</div>
   </p>
 </div>
 
 <div align="center">
 
-[![Version](https://img.shields.io/badge/Version-0.3.0-blue.svg?style=flat-square)](./CHANGELOG.md) [![License](https://img.shields.io/badge/License-Apache%202.0-orange.svg?style=flat-square)](./LICENSE) [![Docker](https://img.shields.io/badge/Docker-ghcr.io-2496ED?style=flat-square&logo=docker&logoColor=white)](https://github.com/users/cyanheads/packages/container/package/usgs-water-mcp-server) [![MCP SDK](https://img.shields.io/badge/MCP%20SDK-^2.2.0-green.svg?style=flat-square)](https://modelcontextprotocol.io/) [![npm](https://img.shields.io/npm/v/@cyanheads/usgs-water-mcp-server?style=flat-square&logo=npm&logoColor=white)](https://www.npmjs.com/package/@cyanheads/usgs-water-mcp-server) [![TypeScript](https://img.shields.io/badge/TypeScript-^7.0.2-3178C6.svg?style=flat-square)](https://www.typescriptlang.org/) [![Bun](https://img.shields.io/badge/Bun-v1.4.2-blueviolet.svg?style=flat-square)](https://bun.sh/)
+[![Version](https://img.shields.io/badge/Version-0.3.0-blue.svg?style=flat-square)](./CHANGELOG.md) [![License](https://img.shields.io/badge/License-Apache%202.0-orange.svg?style=flat-square)](./LICENSE) [![Docker](https://img.shields.io/badge/Docker-ghcr.io-2496ED?style=flat-square&logo=docker&logoColor=white)](https://github.com/users/cyanheads/packages/container/package/usgs-water-mcp-server) [![MCP SDK](https://img.shields.io/badge/MCP%20SDK-^2.3.1-green.svg?style=flat-square)](https://modelcontextprotocol.io/) [![npm](https://img.shields.io/npm/v/@cyanheads/usgs-water-mcp-server?style=flat-square&logo=npm&logoColor=white)](https://www.npmjs.com/package/@cyanheads/usgs-water-mcp-server) [![TypeScript](https://img.shields.io/badge/TypeScript-^7.0.2-3178C6.svg?style=flat-square)](https://www.typescriptlang.org/) [![Bun](https://img.shields.io/badge/Bun-v1.4.3-blueviolet.svg?style=flat-square)](https://bun.sh/)
 
 </div>
 
@@ -29,7 +29,7 @@
 
 ## Overview
 
-USGS NWIS water data — ~8,000 active stream gages and groundwater wells across the US and territories. Find monitoring sites, pull the latest readings or a historical time series, and rank current conditions against decades of percentile records from any MCP client. Runs as a stdio process, a local Streamable HTTP server, or the public hosted endpoint above.
+Real-time and historical water data from ~8,000 active USGS stream gages and groundwater wells across the US and territories. Find monitoring sites, pull the latest readings or a historical series, and see how today's flow compares with decades of records.
 
 ### Tools
 
@@ -39,6 +39,7 @@ USGS NWIS water data — ~8,000 active stream gages and groundwater wells across
 | `water_find_sites` | Find USGS monitoring sites by bounding box, state, county, or HUC watershed. Filter by site type and parameter availability. Large match sets spill to DataCanvas. |
 | `water_get_readings` | Get the latest instantaneous values (~15 min real-time) for up to 100 USGS sites. |
 | `water_get_series` | Get a time series of daily or instantaneous values for a site over a date range. Large ranges spill to DataCanvas. |
+| `water_get_site_data_catalog` | Discover a site's parameters, sensors, statistics, and full UTC record bounds, with cursor pagination. |
 | `water_get_conditions` | Get current hydrologic conditions ranked against the full period-of-record percentile statistics. |
 | `water_dataframe_describe` | List tables and columns staged on a DataCanvas by `water_get_series` or `water_find_sites`. |
 | `water_dataframe_query` | Run a read-only SQL SELECT against the time-series and site tables staged by `water_get_series` and `water_find_sites`. |
@@ -86,6 +87,15 @@ All resource data is also reachable via tools. Use `water_find_sites` for geogra
 
 ---
 
+### `water_get_site_data_catalog` <sub>tool</sub>
+
+- One `site`, optional `parameterCd` and `seriesType`, and `limit` (1–1000; default 100). Reuse the same filters and limit with `nextCursor` until it is null. An unknown site fails as `not_found`; a known site with no matching metadata returns `series: []`
+- Each row preserves its OGC `timeSeriesId`, parameter name/unit, nullable statistic, sensor description, raw computation fields, and full UTC `beginDate`/`endDate`. `Daily` maps to `daily`; `Points` with `Instantaneous` maps to `instantaneous`; other computations have null `seriesType`
+- For `water_get_series`, take YYYY-MM-DD from the bounds, pass `statCd` only for daily rows, and select `methodId` from the series response, never an OGC ID. Bounds may contain gaps and lag observations; null bounds remain unknown
+- Site identity and metadata share a 45-second deadline including retries. Malformed or rejected continuation cursors fail as `invalid_cursor`; restart without cursor
+
+---
+
 ### `water_get_conditions` <sub>tool</sub>
 
 - One `site` and `parameterCd`; ranks the current instantaneous reading against the period-of-record daily-mean percentiles for its calendar day as a `percentileClass` — `record-high` (≥p95), `above-normal`, `normal`, `below-normal`, `low`, `record-low` (<p05), or `unknown` for a no-data reading — with `percentileLabel` stating the threshold in plain language and `comparisonBasis` noting that the ranking is approximate, not a flood-stage or drought determination
@@ -102,7 +112,7 @@ All resource data is also reachable via tools. Use `water_find_sites` for geogra
 
 ### `water_dataframe_query` <sub>tool</sub>
 
-- A single read-only `SELECT` against the staged tables; other statements and system-catalog access (`information_schema`, `pg_catalog`, `duckdb_*`) are rejected
+- A single read-only `SELECT` against the staged tables; other statements, system-catalog access (`information_schema`, `pg_catalog`, `duckdb_*`), engine-setting functions, dynamic SQL, and file references are rejected. `query()` accepts a single SQL string literal, checked under the same restrictions
 - Capped at 10,000 rows per query; `truncated: true` signals more matched — narrow with `WHERE`/`LIMIT`, or run `SELECT COUNT(*)` for the true total
 
 ---
@@ -133,7 +143,7 @@ Built on [`@cyanheads/mcp-ts-core`](https://github.com/cyanheads/mcp-ts-core): s
 
 USGS Water-specific:
 
-- Wraps NWIS IV (instantaneous), DV (daily), site, and stat endpoints plus the USGS Water Data parameter-code catalog — no API key required, fully public
+- Wraps NWIS IV (instantaneous), DV (daily), site, and stat endpoints plus USGS Water Data parameter codes, monitoring locations, and time-series metadata — no API key required, fully public
 - Input formats are checked at the edge against what NWIS actually accepts — site numbers, parameter codes, ISO 8601 periods, HUC, FIPS county, state, and bbox each carry a validated pattern advertised in the tool's JSON Schema
 - HTML error detection: NWIS returns 400 with an HTML body for bad input, and the service layer extracts NWIS's own message and maps it to a typed failure
 - DataCanvas spillover: `water_get_series` (long date ranges) and `water_find_sites` (match sets past the 500-site cap) stage the full result as a DuckDB-backed table, queryable via `water_dataframe_query`; the spillover and the dataframe tools require `CANVAS_PROVIDER_TYPE=duckdb`, and `water_dataframe_drop` also needs `WATER_DATAFRAME_DROP_ENABLED=true`
@@ -220,7 +230,7 @@ Or with Docker:
 }
 ```
 
-To enable DataCanvas for SQL analytics over large result sets (time series and site match sets), add `CANVAS_PROVIDER_TYPE=duckdb` to the `env` block in any of the configs above.
+DataCanvas is enabled by default for SQL analytics over large result sets. Set `CANVAS_PROVIDER_TYPE=none` to return inline previews only. The portable Claude Desktop bundle disables DataCanvas because it omits platform-specific DuckDB binaries.
 
 For Streamable HTTP, set the transport and start the server:
 
@@ -265,9 +275,9 @@ cp .env.example .env
 
 | Variable | Description | Default |
 |:---------|:------------|:--------|
-| `CANVAS_PROVIDER_TYPE` | Set to `duckdb` to enable DataCanvas spillover for large results from `water_get_series` and `water_find_sites`. | — |
-| `USGS_USER_AGENT` | Custom User-Agent string sent to USGS — NWIS and the parameter-code catalog. USGS requests a descriptive User-Agent per their terms. | `usgs-water-mcp-server/0.3.0 (contact: https://github.com/cyanheads/usgs-water-mcp-server)` |
-| `USGS_REQUEST_TIMEOUT_MS` | HTTP request timeout in milliseconds for USGS calls — NWIS and the parameter-code catalog. | `30000` |
+| `CANVAS_PROVIDER_TYPE` | DataCanvas spillover for large results from `water_get_series` and `water_find_sites`; set to `none` to disable. The portable desktop bundle sets `none`. | `duckdb` |
+| `USGS_USER_AGENT` | Custom User-Agent string sent to USGS NWIS and OGC discovery endpoints. USGS requests a descriptive User-Agent per their terms. | `usgs-water-mcp-server/0.3.0 (contact: https://github.com/cyanheads/usgs-water-mcp-server)` |
+| `USGS_REQUEST_TIMEOUT_MS` | HTTP request timeout in milliseconds for USGS NWIS and OGC calls. Site-series discovery also has a shared 45-second deadline. | `30000` |
 | `WATER_DATAFRAME_DROP_ENABLED` | Set to `true` to make `water_dataframe_drop` callable. Off, the tool is listed as disabled. Needs `CANVAS_PROVIDER_TYPE=duckdb` to have anything to drop. | `false` |
 | `MCP_TRANSPORT_TYPE` | Transport: `stdio` or `http`. | `stdio` |
 | `MCP_HTTP_PORT` | Port for HTTP server. | `3010` |
@@ -322,7 +332,7 @@ The Dockerfile defaults to HTTP transport, stateless session mode, and logs to `
 | `src/mcp-server/tools` | Tool definitions (`*.tool.ts`). |
 | `src/mcp-server/resources` | Resource definitions (`*.resource.ts`). |
 | `src/services/nwis` | NWIS HTTP client — IV, DV, site, and stat endpoints with HTML error detection. |
-| `src/services/waterdata` | USGS Water Data parameter-code catalog reader (24-hour cache) and the curated parameter table. |
+| `src/services/waterdata` | USGS Water Data site-series discovery, parameter-code catalog reader (24-hour cache), and curated parameter table. |
 | `src/services/canvas` | DataCanvas accessor, caller-supplied `canvas_id` resolution, and deterministic table names for DuckDB-backed spillover. |
 | `tests/` | Unit and integration tests mirroring `src/`. |
 

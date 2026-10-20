@@ -10,4 +10,5 @@ export { waterFindSites } from './water-find-sites.tool.js';
 export { waterGetConditions } from './water-get-conditions.tool.js';
 export { waterGetReadings } from './water-get-readings.tool.js';
 export { waterGetSeries } from './water-get-series.tool.js';
+export { waterGetSiteDataCatalog } from './water-get-site-data-catalog.tool.js';
 export { waterListParameters } from './water-list-parameters.tool.js';

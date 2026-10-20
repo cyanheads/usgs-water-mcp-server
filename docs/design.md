@@ -12,6 +12,8 @@
 | `water_get_conditions` | Get current conditions at a site placed in historical context: today's value ranked against the site's daily percentile record for the same calendar day. Returns the current reading alongside the percentile class (`record-high` / `above-normal` / `normal` / `below-normal` / `low` / `record-low`), a `percentileLabel` stating that class's threshold in plain language, and a `comparisonBasis` disclosing that an instantaneous reading is ranked against approved daily-mean percentiles. The reading comes from one of the site's methods for the parameter, named by `methodId` — the method a stat series is described as when one is, otherwise the most recent; percentiles come from the stat series that method's description identifies (`methodMatched` reports whether the two descriptions are identical). A "how unusual is this reading" ranking — not a flood-stage or drought determination, which need authoritative thresholds this tool does not fetch. | `site`, `parameterCd` | `readOnlyHint: true`, `idempotentHint: true`, `openWorldHint: true` |
 | `water_list_parameters` | Look up USGS parameter codes. Without `query`: the curated table of well-known codes with names, units, and domain — no network call — so an agent learns that `00060` = "Discharge" (cfs), `00065` = "Gage height" (ft), `00010` = "Temperature" (°C), `72019` = "Depth to water, below land surface" (ft). With `query`: a word-prefix search of the full USGS parameter-code catalog (~19,600 codes) by name and description, or a bare 5-digit code lookup; entries carry `source` (`curated` \| `usgs-catalog`), curated matches first, capped at 25 with `total`/`truncated`. | `group` (curated filter: `streamflow` \| `groundwater` \| `temperature` \| `meteorological` \| `water-quality` \| `all`), `query` (catalog search; not combinable with a `group` other than `all`) | `readOnlyHint: true`, `idempotentHint: true`, `openWorldHint: true` |
 
+`water_get_site_data_catalog` discovers one site's series through OGC v1 monitoring locations and time-series metadata. Inputs are `site`, optional `parameterCd`/`seriesType`, `limit` (1–1000, default 100), and an opaque `cursor`. Output preserves `siteNumber`, nullable `siteName`, distinct `series` rows, and nullable `nextCursor`.
+
 ### Resources
 
 | URI Template | Description | Pagination |
@@ -55,8 +57,9 @@ Primary use cases: see whether a river is running unusually high or low for the 
 |:--------|:------|:--------|
 | `nwis-service` | USGS NWIS Water Services (`waterservices.usgs.gov`) — IV, DV, site, stat endpoints | Every data tool and the site resource |
 | `waterdata/parameter-catalog` | USGS Water Data OGC API `collections/parameter-codes` (`api.waterdata.usgs.gov/ogcapi/v1`) — the full parameter-code catalog, read whole and cached | `water_list_parameters` (`query`) |
+| `waterdata/site-data-catalog` | OGC v1 `monitoring-locations` identity and `time-series-metadata` pages | `water_get_site_data_catalog` |
 
-No OGC API service at launch. The OGC API (`api.waterdata.usgs.gov/ogcapi/v0`) is the USGS long-term replacement for NWIS, but its geosearch (monitoring-locations bbox) is currently unreliable (returns 0 results in probing), and its IV/DV equivalents (`latest-continuous`, `daily`) require different site ID format (`USGS-01646500` vs `01646500`). NWIS iv/dv/site/stat remain stable, JSON-capable, and well-documented. OGC API adoption is noted as a future path once its search is reliable. The one exception is the parameter-code catalog, which has no NWIS equivalent — see "Parameter codes: curated table plus full-catalog search".
+Existing readings, historical series, site search, and statistics use NWIS. Parameter-code discovery and per-site series metadata use OGC v1; neither changes existing NWIS requests. OGC location IDs are `USGS-<site>`, while callers keep the digit-only site number.
 
 ---
 
@@ -64,7 +67,7 @@ No OGC API service at launch. The OGC API (`api.waterdata.usgs.gov/ogcapi/v0`) i
 
 | Env Var | Required | Description |
 |:--------|:---------|:------------|
-| `CANVAS_PROVIDER_TYPE` | No | Set to `duckdb` to enable DataCanvas spillover for large result sets (`water_get_series` series, `water_find_sites` match sets). Optional — without it, both tools return a truncated preview with an overflow signal. |
+| `CANVAS_PROVIDER_TYPE` | No | DataCanvas spillover for large result sets (`water_get_series` series, `water_find_sites` match sets). Defaults to `duckdb`; with `none`, both tools return a truncated preview with an overflow signal. |
 | `USGS_USER_AGENT` | No | Custom User-Agent string for USGS requests. USGS requests a descriptive User-Agent per their terms; defaults to `usgs-water-mcp-server/0.3.0 (contact: https://github.com/cyanheads/usgs-water-mcp-server)`. |
 | `USGS_REQUEST_TIMEOUT_MS` | No | HTTP timeout in milliseconds for every USGS request — NWIS and the parameter-code catalog. Default `30000`. |
 | `WATER_DATAFRAME_DROP_ENABLED` | No | `true` makes `water_dataframe_drop` callable; off (the default), it is registered through `disabledTool()`. Parsed with `z.stringbool()`, so a blank value reads as unset. |
@@ -210,9 +213,9 @@ The `siteId` param carries the shared 8–15 digit `SiteNumberSchema`, so a malf
 
 ## Design Decisions
 
-### Endpoint selection: NWIS as primary, OGC API deferred
+### Endpoint selection: NWIS observations and OGC discovery
 
-**Decision:** Use NWIS (`waterservices.usgs.gov`) as the sole data source at launch. Do not use `api.waterdata.usgs.gov` OGC API except as a future adoption path.
+**Decision:** Keep existing observation retrieval on NWIS (`waterservices.usgs.gov`); use OGC v1 for parameter-code discovery and per-site series metadata. Site-series discovery resolves monitoring-location identity first so an unknown site differs from a known site with no matching rows.
 
 **Rationale verified by live probing (2026-06-04):**
 - NWIS IV (`/nwis/iv?format=json`) is live, returns structured JSON (WaterML-JSON), supports multi-site batching, and is well-documented
@@ -243,9 +246,9 @@ The `siteId` param carries the shared 8–15 digit `SiteNumberSchema`, so a malf
 
 **Why:** NWIS sometimes answers HTTP 200 with a body cut off mid-document. Parsed after the retry, it escaped as a raw `SyntaxError` that `classifyNwisFailure()` could not type, and the caller got a generic internal error. Every well-formed IV/DV response carries `value.timeSeries` — an empty array when nothing matched — so its absence marks a broken body rather than an empty result.
 
-### DataCanvas: opt-in for large result sets
+### DataCanvas: on by default for large result sets
 
-**Decision:** `water_get_series` and `water_find_sites` stage large result sets to DataCanvas when `CANVAS_PROVIDER_TYPE=duckdb` is set. Without DuckDB, each returns a bounded preview with a `truncated` flag: `water_get_series` the most recent 500 rows with a `totalRecords` count, `water_find_sites` the first 500 sites with an `upstreamTotal` count. This avoids making DuckDB a hard dependency while still enabling SQL-based analysis for agents that want it.
+**Decision:** `water_get_series` and `water_find_sites` stage large result sets to DataCanvas, which is on by default (`CANVAS_PROVIDER_TYPE=duckdb`). With `CANVAS_PROVIDER_TYPE=none`, which the portable `.mcpb` bundle sets because it ships without the DuckDB native, each returns a bounded preview with a `truncated` flag: `water_get_series` the most recent 500 rows with a `totalRecords` count, `water_find_sites` the first 500 sites with an `upstreamTotal` count. DuckDB stays optional at runtime, so a deployment without it still answers every non-canvas call.
 
 **`water_find_sites` stages via `registerTable`, not `spillover()`.** `water_get_series` truncates on a character budget (`spillover()`'s `previewChars`), so `spillover()` — which registers to canvas only when the source exceeds that budget — fits it directly. `water_find_sites` truncates on a hard **count** (`SITE_CAP = 500`, shipped in v0.1.4), and the full match set must land on canvas whenever the count exceeds the cap, independent of serialized size. Driving that off a character budget would silently drop the sites just past the cap for match sets that happen to fit under the budget, so the handler registers the full set directly via `CanvasInstance.registerTable`. The inline preview stays the original capped site objects — no lossy round-trip out of the snake_case canvas rows, which also sidesteps re-deriving the optional expanded fields.
 
@@ -294,6 +297,12 @@ The `siteId` param carries the shared 8–15 digit `SiteNumberSchema`, so a malf
 **Decision:** The WaterML parser reads each series' `variable.noDataValue` (`-999999`) and maps a record holding it to missing — `value: ""`, the convention a blank record already used — keeping its `dateTime` and `qualifiers`. Every consumer treats it as missing: `water_get_conditions` does not rank it (`percentileClass: unknown`, a `percentileLabel` and `note` naming the qualifiers, `**Current value:** no data [P,Ssn]`) and prefers another method's measured latest reading when one exists; `water_get_readings` and `water_get_series` render it as `no data` with its qualifiers; the staged canvas table holds `NULL`; and the readings series cap and `water_get_series`'s default selection both rank a series whose every record is no data with the empty ones, through one shared test (`carriesValues`).
 
 **Why:** NWIS writes `-999999` for a reading it cannot provide — a seasonal gage out of season (`Ssn`), a discontinued sensor (`Dis`), a dry channel (`Dry`), a rating in development (`Rat`), failed equipment (`Eqp`) — and names the reason in the qualifiers. Passed through as a number, it read as a measurement: `12024000`/`00060` in September reported `-999999 ft3/s` ranked `record-low`. Keeping the record, rather than dropping it, keeps the qualifier — the only statement of why there is no value. The comparison is numeric (`Number(value) === noDataValue`), since the value is a string (`"-999999"`) and `noDataValue` a number (`-999999.0`).
+
+### Site-series metadata discovery
+
+**Decision:** Resolve identity with OGC v1 `monitoring-locations`, then read one `time-series-metadata` page under the same 45-second deadline, retries included. This distinguishes an unknown site from an empty filtered catalog without adding a retiring NWIS dependency. No cache is needed for a single page. Cursors bind site, parameter, series type, and page size; an absolute offset is reconstructed into a fixed-origin URL. Offset paging preserves position when upstream next links switch between cursor and offset styles.
+
+**Values and continuation:** Keep separate sensors/statistics, raw computation fields, null metadata, and full UTC bounds. Only `Daily` maps to `daily`; only `Points` with `Instantaneous` maps to `instantaneous`. For `water_get_series`, take YYYY-MM-DD from bounds and pass a statistic only for daily data; choose NWIS `methodId` from its series response. Bounds may have gaps and lag observations. `nextCursor` discloses and retrieves the remaining pages, so `devcheck.config.json` exempts this cursor-paged tool from the count/truncation heuristic; no total is invented.
 
 ### Parameter codes: curated table plus full-catalog search
 

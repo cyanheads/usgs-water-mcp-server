@@ -15,6 +15,9 @@
   "outdated": {
     "allowlist": []
   },
+  "lint": {
+    "truncationAllowlist": ["water_get_site_data_catalog"]
+  },
   "packaging": {
     "pluginManifests": true
   }

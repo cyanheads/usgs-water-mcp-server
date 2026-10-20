@@ -424,8 +424,17 @@ export const waterGetConditions = tool('water_get_conditions', {
     {
       reason: 'upstream_error',
       code: JsonRpcErrorCode.ServiceUnavailable,
-      when: 'The NWIS IV endpoint returned a 5xx error, timed out, or sent a response body that is not valid WaterML-JSON (cut off mid-document), and retrying did not clear it. A stat-endpoint failure does not raise this — it is reported as historicalContextStatus "unavailable".',
+      when: 'The NWIS IV endpoint returned a 5xx error or sent a response body that is not valid WaterML-JSON (cut off mid-document), and retrying did not clear it. A stat-endpoint failure does not raise this — it is reported as historicalContextStatus "unavailable".',
       recovery: 'The USGS service is temporarily unavailable. Retry after a short backoff.',
+      retryable: true,
+      thrownBy: 'service',
+    },
+    {
+      reason: 'upstream_timeout',
+      code: JsonRpcErrorCode.Timeout,
+      when: 'The NWIS IV request exceeded its deadline. A statistics timeout is reported as historicalContextStatus "unavailable".',
+      recovery:
+        'Retry after a short backoff to retrieve the current reading and its historical context.',
       retryable: true,
       thrownBy: 'service',
     },
@@ -453,7 +462,7 @@ export const waterGetConditions = tool('water_get_conditions', {
       ]);
     } catch (err: unknown) {
       const failure = classifyNwisFailure(err);
-      if (failure) throw ctx.fail(failure.reason, failure.message, undefined, { cause: err });
+      if (failure) throw ctx.fail(failure.reason, failure.message, failure.data, { cause: err });
       throw err;
     }
 

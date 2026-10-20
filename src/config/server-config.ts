@@ -4,7 +4,7 @@
  */
 
 import { z } from '@cyanheads/mcp-ts-core';
-import { parseEnvConfig } from '@cyanheads/mcp-ts-core/config';
+import { normalizeEnv, parseEnvConfig } from '@cyanheads/mcp-ts-core/config';
 
 const ServerConfigSchema = z.object({
   userAgent: z
@@ -13,13 +13,13 @@ const ServerConfigSchema = z.object({
       'usgs-water-mcp-server/0.3.0 (contact: https://github.com/cyanheads/usgs-water-mcp-server)',
     )
     .describe(
-      'User-Agent header sent to USGS — NWIS and the parameter-code catalog. USGS requests a descriptive User-Agent.',
+      'User-Agent header sent to USGS NWIS and OGC discovery endpoints. USGS requests a descriptive User-Agent.',
     ),
   requestTimeoutMs: z.coerce
     .number()
     .default(30_000)
     .describe(
-      'HTTP request timeout in milliseconds for USGS calls — NWIS and the parameter-code catalog.',
+      'HTTP request timeout in milliseconds for USGS NWIS and OGC calls. Site-series discovery also has a shared 45-second deadline.',
     ),
   dataframeDropEnabled: z
     .stringbool()
@@ -30,6 +30,14 @@ const ServerConfigSchema = z.object({
 });
 
 let _config: z.infer<typeof ServerConfigSchema> | undefined;
+
+/** Registration reads only the opt-in flag; setup reports invalid configuration. */
+export function isDataframeDropEnabled(): boolean {
+  const flag = ServerConfigSchema.shape.dataframeDropEnabled.safeParse(
+    normalizeEnv({ flag: process.env.WATER_DATAFRAME_DROP_ENABLED }).flag,
+  );
+  return flag.success && flag.data;
+}
 
 /** Returns the parsed server-specific configuration, lazily initialized. */
 export function getServerConfig() {

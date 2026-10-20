@@ -113,7 +113,7 @@ describe('water_dataframe_drop opt-in gate', () => {
     expect(listed).toEqual(
       expect.arrayContaining(['water_dataframe_describe', 'water_dataframe_query']),
     );
-    expect(listed).toHaveLength(7);
+    expect(listed).toHaveLength(8);
 
     const landing = await landingPage(handler);
     expect(landing).toContain('water_dataframe_drop');
@@ -126,6 +126,6 @@ describe('water_dataframe_drop opt-in gate', () => {
     expect(definitions.waterDataframeDrop).not.toHaveProperty(DISABLED_KEY);
     const listed = await listedToolNames(serve(definitions));
     expect(listed).toContain('water_dataframe_drop');
-    expect(listed).toHaveLength(8);
+    expect(listed).toHaveLength(9);
   });
 });

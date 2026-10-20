@@ -9,7 +9,7 @@
 import { disabledTool, tool, z } from '@cyanheads/mcp-ts-core';
 import { CANVAS_IDENTIFIER_REGEX, CanvasIdSchema } from '@cyanheads/mcp-ts-core/canvas';
 import { JsonRpcErrorCode } from '@cyanheads/mcp-ts-core/errors';
-import { getServerConfig } from '@/config/server-config.js';
+import { isDataframeDropEnabled } from '@/config/server-config.js';
 import { acquireCanvas } from '@/services/canvas/acquire-canvas.js';
 import { getCanvas } from '@/services/canvas/canvas-accessor.js';
 
@@ -139,7 +139,7 @@ const waterDataframeDropDefinition = tool('water_dataframe_drop', {
  * Dropping a table discards staged data, so the tool is opt-in. With the flag off it stays in the
  * manifest and on the landing page as a disabled tool, and clients cannot call it.
  */
-export const waterDataframeDrop = getServerConfig().dataframeDropEnabled
+export const waterDataframeDrop = isDataframeDropEnabled()
   ? waterDataframeDropDefinition
   : disabledTool(waterDataframeDropDefinition, {
       reason: 'Dropping staged tables is turned off in this deployment.',
