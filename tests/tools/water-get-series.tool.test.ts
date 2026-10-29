@@ -892,9 +892,9 @@ describe('waterGetSeries', () => {
       expect(structured.notice).toMatch(/nothing was staged/i);
       expect(structured.canvas_id).toBeUndefined();
 
+      // A quoted notice line carrying the raw text, not a code span.
       const rendered = result.content.map((b) => ('text' in b ? b.text : '')).join('\n');
-      expect(rendered).toContain('canvas0001');
-      expect(rendered).toMatch(/nothing was staged/i);
+      expect(rendered.split('\n')).toContain(`> ${structured.notice}`);
     });
 
     it('says the same when the series clears the record threshold but fits the preview budget', async () => {
@@ -931,7 +931,7 @@ describe('waterGetSeries', () => {
       expect(structured.canvas_id).toBeUndefined();
 
       const rendered = result.content.map((b) => ('text' in b ? b.text : '')).join('\n');
-      expect(rendered).toContain('DataCanvas is not enabled');
+      expect(rendered.split('\n')).toContain(`> ${structured.notice}`);
     });
 
     it('emits no such notice when no canvas_id was supplied', async () => {

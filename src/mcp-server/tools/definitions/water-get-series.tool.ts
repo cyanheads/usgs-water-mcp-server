@@ -563,13 +563,13 @@ export const waterGetSeries = tool('water_get_series', {
       const values = ts.values.slice(totalRecords - spillResult.previewRows.length);
 
       if (spillResult.spilled) {
-        ctx.enrich({
-          notice: `Staged all ${totalRecords} records to table "${spillResult.handle.tableName}" — use water_dataframe_describe to inspect its columns, then water_dataframe_query to analyze the full series with SQL (canvas_id "${instance.canvasId}"). Showing last ${values.length} of ${totalRecords} records inline.`,
-        });
+        ctx.enrich.notice(
+          `Staged all ${totalRecords} records to table "${spillResult.handle.tableName}" — use water_dataframe_describe to inspect its columns, then water_dataframe_query to analyze the full series with SQL (canvas_id "${instance.canvasId}"). Showing last ${values.length} of ${totalRecords} records inline.`,
+        );
       } else if (nothingStagedNotice) {
         // Past the record threshold but under the character budget: spillover() registered nothing,
         // so a supplied canvas_id went unused here exactly as it does below the threshold.
-        ctx.enrich({ notice: nothingStagedNotice });
+        ctx.enrich.notice(nothingStagedNotice);
       }
 
       return {
@@ -594,11 +594,11 @@ export const waterGetSeries = tool('water_get_series', {
       const unusedCanvas = input.canvas_id
         ? ` DataCanvas is not enabled on this server, so the series was not staged and canvas "${input.canvas_id}" went unused.`
         : '';
-      ctx.enrich({
-        notice: `Result truncated to the most recent ${SPILLOVER_THRESHOLD} of ${totalRecords} records — narrow the date range or enable DataCanvas for full access.${unusedCanvas}`,
-      });
+      ctx.enrich.notice(
+        `Result truncated to the most recent ${SPILLOVER_THRESHOLD} of ${totalRecords} records — narrow the date range or enable DataCanvas for full access.${unusedCanvas}`,
+      );
     } else if (nothingStagedNotice) {
-      ctx.enrich({ notice: nothingStagedNotice });
+      ctx.enrich.notice(nothingStagedNotice);
     }
 
     return {

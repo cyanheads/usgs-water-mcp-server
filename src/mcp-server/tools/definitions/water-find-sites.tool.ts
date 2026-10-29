@@ -446,17 +446,11 @@ export const waterFindSites = tool('water_find_sites', {
           : `The ${upstreamTotal}-site match set fits within the ${SITE_CAP}-site inline cap, so it was returned inline and nothing was staged on canvas "${input.canvas_id}".`,
       );
     }
-    const notice = notices.length > 0 ? notices.join(' ') : undefined;
-
-    // Spread `notice` in only when set: passing `notice: undefined` puts the key on the enrichment
-    // store, and the framework's default scalar trailer renderer stringifies it as literal
-    // "undefined" in content[] (no notice.render() is declared). Omitting the key keeps optional
-    // enrichment absent from both surfaces — mirroring how water_get_series enriches notice only on
-    // the truncated path.
-    ctx.enrich({
-      filters: appliedFilters,
-      ...(notice ? { notice } : {}),
-    });
+    ctx.enrich({ filters: appliedFilters });
+    // Set only when there is something to say, so an absent notice stays off both surfaces.
+    // ctx.enrich.notice renders a quoted notice; a bare enrich({ notice }) would render it as a
+    // code span in content[].
+    if (notices.length > 0) ctx.enrich.notice(notices.join(' '));
 
     ctx.log.info('Sites found', {
       count: page.length,

@@ -720,10 +720,10 @@ describe('waterFindSites', () => {
         'Result capped at 500 of 3231 matching sites. Add bbox, countyCd, huc, siteType, parameterCd, or hasDataTypeCd filters to narrow the query.',
       );
 
-      // content[] carries the same enrichment through the default scalar trailer.
+      // content[] carries the same notice as a quoted trailer line, not a code span.
       const rendered = result.content.map((b) => ('text' in b ? b.text : '')).join('\n');
       expect(rendered).not.toContain('CANVAS_PROVIDER_TYPE');
-      expect(rendered).toContain('narrow the query');
+      expect(rendered.split('\n')).toContain(`> ${notice}`);
     });
   });
 
