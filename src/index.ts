@@ -11,7 +11,21 @@ import {
   waterParametersResource,
   waterSiteResource,
 } from './mcp-server/resources/definitions/index.js';
-import {
+import { setCanvas } from './services/canvas/canvas-accessor.js';
+
+// parseConfig() is what loads ./.env under Node (Bun loads it on its own).
+parseConfig();
+// DataCanvas defaults on; set CANVAS_PROVIDER_TYPE=none to disable it.
+process.env.CANVAS_PROVIDER_TYPE =
+  normalizeEnv({ provider: process.env.CANVAS_PROVIDER_TYPE }).provider ?? 'duckdb';
+resetConfig();
+
+/**
+ * Imported after parseConfig(): water_dataframe_drop decides at module load whether it registers
+ * as callable, from WATER_DATAFRAME_DROP_ENABLED, so a static import would read the flag before
+ * a .env value reaches process.env under Node.
+ */
+const {
   waterDataframeDescribe,
   waterDataframeDrop,
   waterDataframeQuery,
@@ -21,14 +35,7 @@ import {
   waterGetSeries,
   waterGetSiteDataCatalog,
   waterListParameters,
-} from './mcp-server/tools/definitions/index.js';
-import { setCanvas } from './services/canvas/canvas-accessor.js';
-
-parseConfig();
-// DataCanvas defaults on; set CANVAS_PROVIDER_TYPE=none to disable it.
-process.env.CANVAS_PROVIDER_TYPE =
-  normalizeEnv({ provider: process.env.CANVAS_PROVIDER_TYPE }).provider ?? 'duckdb';
-resetConfig();
+} = await import('./mcp-server/tools/definitions/index.js');
 
 await createApp({
   name: 'usgs-water-mcp-server',
@@ -53,7 +60,9 @@ await createApp({
 - water_get_readings returns the latest ~15-min real-time values for up to 100 sites, one series per sensor (method) when a site measures a parameter more than one way
 - water_get_series returns one historical daily or instantaneous series, most recent records inline — the daily mean by default, with statCd and methodId to pick another statistic or sensor from those listed in otherSeries; large ranges spill the complete series to DataCanvas when enabled on this server instance — inspect the staged table with water_dataframe_describe, then read it with water_dataframe_query; where this server enables it, water_dataframe_drop removes a staged table you no longer need
 - water_get_conditions gives a current reading ranked against the full period-of-record percentiles
-- Groundwater depth (parameter 72019) uses the standard IV service — gwlevels was decommissioned Nov 2025`,
+- Groundwater depth (parameter 72019) uses the standard IV service — gwlevels was decommissioned Nov 2025
+- The usgs-water-guide skill (skill://usgs-water-guide/SKILL.md) carries the gates for telling live gages from discontinued ones, reading depth-to-water rankings, picking a site's parameter code, time zones and data lag, and SQL over staged series`,
+  skills: 'skills',
 
   /**
    * Every tool here answers from the USGS response alone — none calls
