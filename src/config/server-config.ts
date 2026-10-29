@@ -10,7 +10,7 @@ const ServerConfigSchema = z.object({
   userAgent: z
     .string()
     .default(
-      'usgs-water-mcp-server/0.4.0 (contact: https://github.com/cyanheads/usgs-water-mcp-server)',
+      'usgs-water-mcp-server/0.5.0 (contact: https://github.com/cyanheads/usgs-water-mcp-server)',
     )
     .describe(
       'User-Agent header sent to USGS NWIS and OGC discovery endpoints. USGS requests a descriptive User-Agent.',
