@@ -2,6 +2,10 @@
 
 All notable changes to this project. Each entry links to its full per-version file in [changelog/](changelog/).
 
+## [0.6.0](changelog/0.6.x/0.6.0.md) — 2026-11-11 · ⚠️ Breaking
+
+Ports every tool from the retired USGS WaterServices API to the USGS Water Data APIs, adds lastObservedAt and observedWithin to water_find_sites, ranks depth-to-water as a water level, and adopts mcp-ts-core 0.13.22. Three inputs that 0.5.0 answered are now rejected.
+
 ## [0.5.0](changelog/0.5.x/0.5.0.md) — 2026-10-28
 
 Publishes the usgs-water-guide skill over MCP and in the package, moves to mcp-ts-core 0.13.18 (Markdown-escaped error text, cancelled calls settle as RequestCancelled), and keeps result notices as blockquotes.

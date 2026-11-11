@@ -1,7 +1,7 @@
 # Developer Protocol
 
 **Server:** usgs-water-mcp-server
-**Version:** 0.5.0
+**Version:** 0.6.0
 **Framework:** [@cyanheads/mcp-ts-core](https://www.npmjs.com/package/@cyanheads/mcp-ts-core) `^0.13.22`
 **Engines:** Bun ≥1.4.4, Node ≥24.0.0
 **MCP SDK:** `@modelcontextprotocol/server` ^2.4.0
@@ -125,7 +125,7 @@ import { z } from '@cyanheads/mcp-ts-core';
 import { parseEnvConfig } from '@cyanheads/mcp-ts-core/config';
 
 const ServerConfigSchema = z.object({
-  userAgent: z.string().default('usgs-water-mcp-server/0.5.0 (contact: https://github.com/cyanheads/usgs-water-mcp-server)')
+  userAgent: z.string().default('usgs-water-mcp-server/0.6.0 (contact: https://github.com/cyanheads/usgs-water-mcp-server)')
     .describe('User-Agent header sent to the USGS Water Data APIs.'),
   requestTimeoutMs: z.coerce.number().default(30_000).describe('HTTP request timeout in milliseconds.'),
   apiKey: z.string().optional().describe('Optional api.data.gov key, sent as the X-Api-Key header.'),
