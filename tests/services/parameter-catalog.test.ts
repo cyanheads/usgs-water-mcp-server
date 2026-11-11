@@ -1,54 +1,79 @@
 /**
  * @fileoverview Tests for the USGS parameter-code catalog reader and search, run at the fetch seam:
- * a strict fetch mock serves captured catalog pages, so the real request, paging, response
- * validation, cache, and single-flight logic all execute. Each test loads a fresh module graph so
- * the module-scope cache starts empty.
+ * the Water Data fake serves captured catalog pages, so the real request core (retries, deadline,
+ * error classification), paging, response validation, cache, and single-flight logic all execute.
+ * Each test loads a fresh module graph so the module-scope cache, the client's cooldown gate, and
+ * the parsed config start clean.
  * @module tests/services/parameter-catalog.test
  */
 
 import { JsonRpcErrorCode, McpError } from '@cyanheads/mcp-ts-core/errors';
-import {
-  createFetchMock,
-  createMockContext,
-  type FetchMockHarness,
-} from '@cyanheads/mcp-ts-core/testing';
+import { createMockContext } from '@cyanheads/mcp-ts-core/testing';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { captureError } from '../helpers/error-contract.js';
 import {
   CATALOG_RECORD_COUNT,
   catalogRoutes,
+  createWaterDataFake,
   failingCatalogRoute,
+  jsonResponse,
+  ogcRoute,
   PAGE_2_OFFSET,
-} from '../helpers/waterdata-fixtures.js';
+  rateLimitResponse,
+  stalled,
+  type WaterDataFake,
+  waterDataFixture,
+} from '../helpers/water-data-fake.js';
 
 type CatalogModule = typeof import('@/services/waterdata/parameter-catalog.js');
 
-let http: FetchMockHarness;
+let water: WaterDataFake;
 let catalog: CatalogModule;
 
 beforeEach(async () => {
   vi.resetModules();
+  vi.stubEnv('USGS_API_KEY', undefined);
   catalog = await import('@/services/waterdata/parameter-catalog.js');
-  http = createFetchMock();
-  http.install();
+  water = createWaterDataFake();
+  water.install();
 });
 
 afterEach(() => {
-  http.restore();
   vi.useRealTimers();
-  delete process.env.USGS_REQUEST_TIMEOUT_MS;
+  vi.unstubAllEnvs();
+  water.restore();
 });
+
+/** Fake the clocks the call deadline and the retry backoff read. */
+function useFakeClock() {
+  vi.useFakeTimers({ toFake: ['Date', 'setTimeout', 'clearTimeout'] });
+}
+
+/** Settle a catalog read whose retries wait on the fake clock, capturing its rejection first. */
+async function settle(operation: Promise<unknown>, advanceMs: number): Promise<unknown> {
+  const outcome = operation.then(
+    () => undefined,
+    (error: unknown) => error,
+  );
+  await vi.advanceTimersByTimeAsync(advanceMs);
+  return outcome;
+}
+
+/** Requests the code under test sent for the catalog's first page. */
+function firstPageRequests() {
+  return water.requests.filter((r) => !r.url.searchParams.has('offset'));
+}
 
 describe('getParameterCatalog', () => {
   it('reads every page by following next links, sorted by code', async () => {
-    http.route(...catalogRoutes());
+    water.route(...catalogRoutes());
     const records = await catalog.getParameterCatalog(createMockContext());
 
     expect(records).toHaveLength(CATALOG_RECORD_COUNT);
-    expect(http.calls).toHaveLength(2);
-    const second = new URL(http.calls[1]?.request.url ?? '');
+    expect(water.requests).toHaveLength(2);
+    const second = water.requests[1]!.url;
     expect(second.searchParams.get('offset')).toBe(String(PAGE_2_OFFSET));
-    const first = new URL(http.calls[0]?.request.url ?? '');
+    const first = water.requests[0]!.url;
     expect(first.searchParams.get('limit')).toBe('50000');
     expect(first.searchParams.get('properties')).toBe(
       'parameter_name,unit_of_measure,parameter_description',
@@ -64,7 +89,7 @@ describe('getParameterCatalog', () => {
   });
 
   it('decodes the HTML entities the catalog writes for < and >', async () => {
-    http.route(...catalogRoutes());
+    water.route(...catalogRoutes());
     const records = await catalog.getParameterCatalog(createMockContext());
     expect(records.find((r) => r.code === '52140')).toMatchObject({
       name: 'Nitrate + nitrite, bs<63um',
@@ -74,98 +99,180 @@ describe('getParameterCatalog', () => {
     expect(records.some((r) => /&(lt|gt);/.test(r.name + r.description))).toBe(false);
   });
 
-  it('sends the configured User-Agent', async () => {
-    http.route(...catalogRoutes());
+  it('sends the configured User-Agent and no X-Api-Key without USGS_API_KEY', async () => {
+    water.route(...catalogRoutes());
     await catalog.getParameterCatalog(createMockContext());
-    expect(http.calls[0]?.request.headers.get('user-agent')).toMatch(/^usgs-water-mcp-server\//);
+    expect(water.requests[0]?.headers.get('user-agent')).toMatch(/^usgs-water-mcp-server\//);
+    expect(water.requests.every((r) => !r.headers.has('x-api-key'))).toBe(true);
+  });
+
+  it('sends USGS_API_KEY as X-Api-Key on every page, never in the URL', async () => {
+    vi.stubEnv('USGS_API_KEY', 'catalog-test-key');
+    vi.resetModules();
+    catalog = await import('@/services/waterdata/parameter-catalog.js');
+    water.route(...catalogRoutes());
+    await catalog.getParameterCatalog(createMockContext());
+    expect(water.requests).toHaveLength(2);
+    for (const r of water.requests) {
+      expect(r.headers.get('x-api-key')).toBe('catalog-test-key');
+      expect(r.url.href).not.toContain('catalog-test-key');
+    }
   });
 
   it('serves repeat reads from the cache for 24 hours, then refetches', async () => {
     vi.useFakeTimers({ toFake: ['Date'] });
     vi.setSystemTime(new Date('2026-09-25T00:00:00Z'));
-    http.route(...catalogRoutes());
+    water.route(...catalogRoutes());
     const ctx = createMockContext();
 
     const first = await catalog.getParameterCatalog(ctx);
     vi.setSystemTime(new Date('2026-09-25T23:59:59Z'));
     const cached = await catalog.getParameterCatalog(ctx);
     expect(cached).toBe(first);
-    expect(http.calls).toHaveLength(2);
+    expect(water.requests).toHaveLength(2);
 
     vi.setSystemTime(new Date('2026-09-26T00:00:00Z'));
     const refreshed = await catalog.getParameterCatalog(ctx);
-    expect(http.calls).toHaveLength(4);
+    expect(water.requests).toHaveLength(4);
     expect(refreshed).toEqual(first);
     expect(refreshed).not.toBe(first);
   });
 
   it('shares one in-flight fetch between concurrent callers', async () => {
-    http.route(...catalogRoutes());
+    water.route(...catalogRoutes());
     const [a, b, c] = await Promise.all([
       catalog.getParameterCatalog(createMockContext()),
       catalog.getParameterCatalog(createMockContext()),
       catalog.getParameterCatalog(createMockContext()),
     ]);
-    expect(http.calls).toHaveLength(2);
+    expect(water.requests).toHaveLength(2);
     expect(b).toBe(a);
     expect(c).toBe(a);
   });
 
-  it('raises ServiceUnavailable on an HTTP failure and caches nothing', async () => {
-    http.route({ ...failingCatalogRoute(503, 'Service Unavailable'), once: true });
-    const error = await captureError(() => catalog.getParameterCatalog(createMockContext()));
-    expect(error).toBeInstanceOf(McpError);
-    expect((error as McpError).code).toBe(JsonRpcErrorCode.ServiceUnavailable);
-    expect((error as McpError).message).toMatch(/parameter-code catalog/i);
-
-    http.route(...catalogRoutes());
-    const records = await catalog.getParameterCatalog(createMockContext());
-    expect(records).toHaveLength(CATALOG_RECORD_COUNT);
-    expect(http.calls).toHaveLength(3);
+  it("never fails the shared fetch on the starting caller's cancellation", async () => {
+    water.route(...catalogRoutes());
+    const starter = new AbortController();
+    starter.abort(new DOMException('Caller cancelled the request', 'AbortError'));
+    const [a, b] = await Promise.all([
+      catalog.getParameterCatalog(createMockContext({ signal: starter.signal })),
+      catalog.getParameterCatalog(createMockContext()),
+    ]);
+    expect(a).toHaveLength(CATALOG_RECORD_COUNT);
+    expect(b).toBe(a);
+    expect(water.requests).toHaveLength(2);
   });
 
-  it('raises ServiceUnavailable when a later page fails, discarding the pages already read', async () => {
-    const [page1] = catalogRoutes();
-    http.route(page1!, {
-      method: 'GET',
-      match: (request) => new URL(request.url).searchParams.get('offset') === String(PAGE_2_OFFSET),
-      respond: () => new Response('bad gateway', { status: 502 }),
-      once: true,
-    });
-    const error = await captureError(() => catalog.getParameterCatalog(createMockContext()));
-    expect((error as McpError).code).toBe(JsonRpcErrorCode.ServiceUnavailable);
+  it('retries a transient 503 within the call and returns the catalog', async () => {
+    useFakeClock();
+    water.route(
+      { ...failingCatalogRoute(503, 'Service Unavailable'), once: true },
+      ...catalogRoutes(),
+    );
+    const pending = catalog.getParameterCatalog(createMockContext());
+    await vi.advanceTimersByTimeAsync(10_000);
+    await expect(pending).resolves.toHaveLength(CATALOG_RECORD_COUNT);
+    expect(firstPageRequests()).toHaveLength(2);
+  });
 
-    http.route(...catalogRoutes());
+  it('raises ServiceUnavailable after four 5xx attempts and caches nothing', async () => {
+    useFakeClock();
+    water.route(
+      ...Array.from({ length: 4 }, () => ({
+        ...failingCatalogRoute(503, 'Service Unavailable'),
+        once: true,
+      })),
+    );
+    const error = await settle(catalog.getParameterCatalog(createMockContext()), 10_000);
+    expect(error).toBeInstanceOf(McpError);
+    expect((error as McpError).code).toBe(JsonRpcErrorCode.ServiceUnavailable);
+    expect((error as McpError).message).toBe(
+      'The USGS parameter-code catalog could not be read: USGS Water Data OGC API answered HTTP 503: Service Unavailable (failed after 4 attempts)',
+    );
+    expect(firstPageRequests()).toHaveLength(4);
+
+    water.route(...catalogRoutes());
+    const records = await catalog.getParameterCatalog(createMockContext());
+    expect(records).toHaveLength(CATALOG_RECORD_COUNT);
+    expect(water.requests).toHaveLength(6);
+  });
+
+  it('raises ServiceUnavailable when a later page keeps failing, discarding the pages already read', async () => {
+    useFakeClock();
+    const [page1, page2] = catalogRoutes();
+    const badPage2 = {
+      ...ogcRoute('parameter-codes', () => new Response('bad gateway', { status: 502 }), {
+        query: { offset: String(PAGE_2_OFFSET) },
+      }),
+      once: true,
+    };
+    water.route(page1!, badPage2, badPage2, badPage2, badPage2);
+    const error = await settle(catalog.getParameterCatalog(createMockContext()), 10_000);
+    expect((error as McpError).code).toBe(JsonRpcErrorCode.ServiceUnavailable);
+    expect((error as McpError).message).toMatch(
+      /^The USGS parameter-code catalog could not be read/,
+    );
+    expect(water.requests.filter((r) => r.url.searchParams.has('offset'))).toHaveLength(4);
+
+    water.route(page2!);
     await expect(catalog.getParameterCatalog(createMockContext())).resolves.toHaveLength(
       CATALOG_RECORD_COUNT,
     );
   });
 
-  it('raises ServiceUnavailable when the request times out', async () => {
-    process.env.USGS_REQUEST_TIMEOUT_MS = '50';
-    vi.resetModules();
-    catalog = await import('@/services/waterdata/parameter-catalog.js');
-    http.route({
-      method: 'GET',
-      match: () => true,
-      respond: (request) =>
-        new Promise<Response>((_, reject) => {
-          request.signal.addEventListener('abort', () => reject(request.signal.reason));
-        }),
-    });
-    const error = await captureError(() => catalog.getParameterCatalog(createMockContext()));
+  it('ends a stalled read at its 45-second budget, still as "could not be read"', async () => {
+    useFakeClock();
+    water.route(ogcRoute('parameter-codes', stalled));
+    const error = await settle(catalog.getParameterCatalog(createMockContext()), 60_000);
     expect((error as McpError).code).toBe(JsonRpcErrorCode.ServiceUnavailable);
-    expect((error as McpError).message).toMatch(/parameter-code catalog/i);
+    expect((error as McpError).message).toBe(
+      'The USGS parameter-code catalog could not be read: getParameterCatalog ran out of the 45000 ms budget for this call after 2 attempts.',
+    );
+    // A 30 s attempt, a backoff, and a second attempt cut short by the budget.
+    expect(water.requests).toHaveLength(2);
+    expect(vi.getTimerCount()).toBe(0);
   });
 
-  it('raises ServiceUnavailable on a body that is not a catalog page', async () => {
-    http.route({
-      method: 'GET',
-      match: () => true,
-      respond: () => new Response('<html>maintenance</html>', { status: 200 }),
-    });
+  it('raises ServiceUnavailable at once on a body that is not a catalog page', async () => {
+    water.route(
+      ogcRoute('parameter-codes', () => new Response('<html>maintenance</html>', { status: 200 })),
+    );
     const error = await captureError(() => catalog.getParameterCatalog(createMockContext()));
     expect((error as McpError).code).toBe(JsonRpcErrorCode.ServiceUnavailable);
+    expect((error as McpError).message).toMatch(
+      /^The USGS parameter-code catalog could not be read/,
+    );
+    expect(water.requests).toHaveLength(1);
+  });
+
+  it('passes a rate limit through as RateLimited, keeping its wait', async () => {
+    water.route(ogcRoute('parameter-codes', () => rateLimitResponse(1800)));
+    const error = await captureError(() => catalog.getParameterCatalog(createMockContext()));
+    expect(error).toBeInstanceOf(McpError);
+    expect(error).toMatchObject({
+      code: JsonRpcErrorCode.RateLimited,
+      data: { reason: 'rate_limited', retryAfter: 1800, rateLimitPerHour: 1000 },
+    });
+    expect((error as McpError).message).not.toMatch(/could not be read/);
+    expect(water.requests).toHaveLength(1);
+  });
+
+  it('passes a rejected USGS_API_KEY through as ConfigurationError', async () => {
+    vi.stubEnv('USGS_API_KEY', 'rejected-key');
+    vi.resetModules();
+    catalog = await import('@/services/waterdata/parameter-catalog.js');
+    water.route(
+      ogcRoute('parameter-codes', () =>
+        jsonResponse(waterDataFixture('error-403-api-key-invalid.json'), { status: 403 }),
+      ),
+    );
+    const error = await captureError(() => catalog.getParameterCatalog(createMockContext()));
+    expect(error).toMatchObject({
+      code: JsonRpcErrorCode.ConfigurationError,
+      data: { reason: 'api_key_rejected', upstreamCode: 'API_KEY_INVALID' },
+    });
+    expect((error as McpError).message).not.toMatch(/could not be read/);
+    expect(water.requests).toHaveLength(1);
   });
 });
 

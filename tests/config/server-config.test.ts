@@ -84,3 +84,31 @@ describe('getServerConfig — WATER_DATAFRAME_DROP_ENABLED', () => {
     expect(() => getServerConfig()).toThrow('WATER_DATAFRAME_DROP_ENABLED');
   });
 });
+
+describe('getServerConfig — USGS_API_KEY', () => {
+  afterEach(() => {
+    vi.unstubAllEnvs();
+    vi.resetModules();
+  });
+
+  async function parseWithApiKey(value: string | undefined) {
+    vi.resetModules();
+    vi.stubEnv('USGS_API_KEY', value);
+    const { getServerConfig } = await import('@/config/server-config.js');
+    return getServerConfig();
+  }
+
+  it('keeps a configured key', async () => {
+    await expect(parseWithApiKey('k3y-value')).resolves.toMatchObject({ apiKey: 'k3y-value' });
+  });
+
+  it.each([
+    ['unset', undefined],
+    ['a blank value (the bundle manifest default)', ''],
+    ['whitespace', '   '],
+    ['an unsubstituted host placeholder', `\${user_config.USGS_API_KEY}`],
+  ])('reads %s as no key, so no X-Api-Key header is sent', async (_label, value) => {
+    const config = await parseWithApiKey(value);
+    expect(config.apiKey).toBeUndefined();
+  });
+});

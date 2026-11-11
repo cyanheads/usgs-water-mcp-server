@@ -1,8 +1,9 @@
 /**
  * @fileoverview Find USGS monitoring sites by geographic filter (bbox, state, county, HUC),
- * site type, and parameter availability. Results are paged inline through limit/offset, capped at
- * 500 per page; when the match set exceeds that cap and a DataCanvas provider is enabled, the full
- * set is staged to a canvas table for gap-free retrieval via SQL.
+ * site type, and parameter availability, each row carrying the time of its newest matching
+ * observation. Results are paged inline through limit/offset, capped at 500 per page; when the
+ * match set exceeds that cap and a DataCanvas provider is enabled, the full set is staged to a
+ * canvas table for gap-free retrieval via SQL.
  * @module mcp-server/tools/definitions/water-find-sites.tool
  */
 
@@ -21,48 +22,62 @@ import {
   CountyCdSchema,
   HucSchema,
   ParameterCdListSchema,
+  PeriodSchema,
   StateCdSchema,
-} from '@/services/nwis/input-schemas.js';
-import { classifyNwisFailure, findSites } from '@/services/nwis/nwis-service.js';
+} from '@/services/waterdata/input-schemas.js';
+import {
+  DATA_TYPE_CODES,
+  type FindSitesParams,
+  findSites,
+} from '@/services/waterdata/site-discovery.js';
+import { startRequest } from '@/services/waterdata/water-data-client.js';
+import { classifyWaterDataFailure } from '@/services/waterdata/water-data-errors.js';
 
 /** Maximum sites returned inline in a single response. Prevents token overflows on broad queries. */
 const SITE_CAP = 500;
 
-/** WaterServices constraint: `/nwis/site/` accepts exactly one of these per request. */
+/**
+ * Exactly one geographic scope per call. The OGC collections would take several at once, or none
+ * — a walk of the whole national network, which has no area cap — so the rule keeps every call
+ * bounded and every filter set with one reading.
+ */
 const MAJOR_FILTERS = ['bbox', 'stateCd', 'countyCd', 'huc'] as const;
 
 export const waterFindSites = tool('water_find_sites', {
   description:
-    'Find USGS water monitoring sites by bounding box, state, county, or HUC watershed code, filtered by site type and parameter availability. Returns site numbers, names, coordinates, types, altitude, and (in expanded mode) drainage area. Call this first — water_get_readings, water_get_series, and water_get_conditions all require a site number. Supply exactly one major filter — bbox, stateCd, countyCd, or huc; siteType, parameterCd, and hasDataTypeCd only narrow within it and cannot stand alone. Page through matches with limit/offset (500 per page); truncated=true means matches remain after the returned window and upstreamTotal holds the full count. When the match set exceeds 500 and DataCanvas is enabled, the complete set also stages to a canvas (canvas_id/table_name) — inspect it with water_dataframe_describe, then retrieve it with water_dataframe_query.',
+    'Find USGS water monitoring sites by bounding box, state, county, or HUC watershed code, filtered by site type and parameter availability. Returns site numbers, names, coordinates, types, altitude, the UTC time each site last reported (lastObservedAt), and (in expanded mode) drainage area. Call this first — water_get_readings, water_get_series, and water_get_conditions all require a site number. Supply exactly one major filter — bbox, stateCd, countyCd, or huc; siteType, parameterCd, hasDataTypeCd, and observedWithin only narrow within it and cannot stand alone. parameterCd and hasDataTypeCd match sites that have ever reported, discontinued ones included; set observedWithin to keep only sites reporting now. Page through matches with limit/offset (500 per page); truncated=true means matches remain after the returned window and upstreamTotal holds the full count. When the match set exceeds 500 and DataCanvas is enabled, the complete set also stages to a canvas (canvas_id/table_name) — inspect it with water_dataframe_describe, then retrieve it with water_dataframe_query.',
   annotations: { readOnlyHint: true, idempotentHint: true, openWorldHint: true },
   input: z.object({
     bbox: BboxSchema.optional().describe(
       'Bounding box as "west,south,east,north" in decimal degrees (e.g. "-77.5,38.5,-76.5,39.5" for the DC metro area). One of the four major filters — bbox, stateCd, countyCd, and huc are mutually exclusive with each other, and exactly one must be supplied.',
     ),
     stateCd: StateCdSchema.optional().describe(
-      '2-character US state abbreviation (e.g. "VA", "WA"). Returns all sites in the state for the given filters. Major filter — supply exactly one of bbox, stateCd, countyCd, huc.',
+      '2-letter US state or territory postal code, any case (e.g. "VA", "wa", "PR"). Returns all sites in the state for the given filters. Major filter — supply exactly one of bbox, stateCd, countyCd, huc.',
     ),
     countyCd: CountyCdSchema.optional().describe(
       'FIPS county code(s) as bare 5-digit numbers — state and county digits concatenated, no separator (e.g. "51013" for Arlington, VA). Comma-separate up to 20 (e.g. "51059,51061"). The 5 digits already encode the state, so the code stands alone. Major filter — supply exactly one of bbox, stateCd, countyCd, huc.',
     ),
     huc: HucSchema.optional().describe(
-      'Hydrologic Unit Code (HUC) scoping results to a watershed. Either a 2-digit major HUC (e.g. "02" for the Mid-Atlantic region) or an 8-digit minor HUC (e.g. "02070008" for the Middle Potomac). NWIS accepts no other lengths. Major filter — supply exactly one of bbox, stateCd, countyCd, huc.',
+      'Hydrologic Unit Code (HUC) scoping results to a watershed: a 2-digit region (e.g. "02" for the Mid-Atlantic) or an 8-digit subbasin (e.g. "02070008" for the Middle Potomac). Matches every site whose HUC starts with it. Major filter — supply exactly one of bbox, stateCd, countyCd, huc.',
     ),
     siteType: z
       .string()
       .optional()
       .describe(
-        'Site type filter. Common codes: "ST" (stream), "GW" (groundwater well), "LK" (lake/reservoir), "SP" (spring), "AT" (atmosphere), "OC" (ocean), "ES" (estuary). Comma-separate multiple types (e.g. "ST,GW").',
+        'Site type filter. Common codes: "ST" (stream), "GW" (groundwater well), "LK" (lake/reservoir), "SP" (spring), "AT" (atmosphere), "OC" (ocean), "ES" (estuary). A major type includes its subtypes ("ST" also matches "ST-CA", "ST-DCH", "ST-TS"); a subtype matches only itself. Comma-separate multiple types (e.g. "ST,GW").',
       ),
     parameterCd: ParameterCdListSchema.optional().describe(
-      '5-digit parameter code to require at each returned site (e.g. "00060" for discharge). Use water_list_parameters to discover codes. Comma-separate multiple codes with no spaces (e.g. "00060,00065").',
+      '5-digit parameter code each returned site has ever reported (e.g. "00060" for discharge) — a site whose record ended years ago still matches; read lastObservedAt, or set observedWithin to keep only sites reporting now. Matched against the series hasDataTypeCd selects (continuous, daily, and field-measurement series when it is omitted), never discrete water-quality samples, so a site with only lab-analyzed samples for the code does not match. Use water_list_parameters to discover codes. Comma-separate multiple codes with no spaces (e.g. "00060,00065").',
     ),
     hasDataTypeCd: z
       .string()
       .optional()
       .describe(
-        'Require sites with data of this type. Common values: "iv" (real-time/instantaneous), "dv" (daily values), "gw" (groundwater). Comma-separate multiple types.',
+        'Require sites that have ever reported data of this type: "iv" (instantaneous, continuous record; "uv" and "rt" are aliases), "dv" (daily values), "gw" (groundwater-level field measurements), "pk" (annual peaks). No other code has a source. Comma-separate multiple types. A discontinued site still matches — read lastObservedAt, or set observedWithin to keep only sites reporting now.',
       ),
+    observedWithin: PeriodSchema.optional().describe(
+      'ISO 8601 duration ending now, the form water_get_readings period takes (e.g. "P7D", "PT6H", "P1Y"). Keeps only sites whose lastObservedAt falls inside it — sites reporting now, not discontinued ones. Counts the series parameterCd and hasDataTypeCd select, or any continuous, daily, or field-measurement series when both are omitted. Daily values and field measurements carry a date only and daily values publish a day or two late, so a window under "P3D" can drop a site that reports daily values only.',
+    ),
     siteOutput: z
       .enum(['basic', 'expanded'])
       .default('basic')
@@ -126,7 +141,7 @@ export const waterFindSites = tool('water_find_sites', {
               .string()
               .optional()
               .describe(
-                'Hydrologic Unit Code of the watershed containing this site; width varies (8-digit HUC8 and 12-digit HUC12, e.g. "020700081005", are both common — do not assume a fixed width), and absent when NWIS assigns none. Do not pass it straight back to the huc filter (which takes 2 or 8 digits); HUCs nest, so its first 8 digits are the containing HUC8 that filter accepts.',
+                'Hydrologic Unit Code of the watershed containing this site; width varies (8-digit HUC8 and 12-digit HUC12, e.g. "020700081005", are both common — do not assume a fixed width), and absent when USGS assigns none. Do not pass it straight back to the huc filter (which takes 2 or 8 digits); HUCs nest, so its first 8 digits are the containing HUC8 that filter accepts.',
               ),
             drainageArea: z
               .number()
@@ -146,8 +161,14 @@ export const waterFindSites = tool('water_find_sites', {
               .describe(
                 'Contributing drainage area in square miles (may differ from drainageArea for regulated basins). Populated only when siteOutput="expanded"; absent in basic mode.',
               ),
+            lastObservedAt: z
+              .string()
+              .nullable()
+              .describe(
+                'UTC time (ISO 8601) of the newest observation among this site’s series that match parameterCd and hasDataTypeCd — any continuous, daily, or field-measurement series when both are omitted. A daily value, field measurement, or peak carries a date only and counts from 00:00 UTC on it. A time years in the past marks a discontinued site. Null when the site has no matching series, or none with a recorded time.',
+              ),
           })
-          .describe('A USGS monitoring site with location, type, and available data.'),
+          .describe('A USGS monitoring site with location, type, and when it last reported.'),
       )
       .describe(
         'The requested window of matching USGS monitoring sites — the slice starting at offset, at most limit long (500 max). upstreamTotal holds the full match count; canvas_id/table_name point to the staged full set when it exceeded the cap and DataCanvas is enabled.',
@@ -161,7 +182,7 @@ export const waterFindSites = tool('water_find_sites', {
     truncated: z
       .boolean()
       .describe(
-        'True when matches remain after the returned window (offset + total < upstreamTotal) — false on the last page, and false for a window starting past the end of the match set, where the notice names the valid offset range instead. Advance offset by limit for the next page, narrow filters (add bbox, countyCd, huc, siteType, parameterCd, or hasDataTypeCd), or when canvas_id is present read the staged set with water_dataframe_describe then water_dataframe_query.',
+        'True when matches remain after the returned window (offset + total < upstreamTotal) — false on the last page, and false for a window starting past the end of the match set, where the notice names the valid offset range instead. Advance offset by limit for the next page, narrow filters (add bbox, countyCd, huc, siteType, parameterCd, hasDataTypeCd, or observedWithin), or when canvas_id is present read the staged set with water_dataframe_describe then water_dataframe_query.',
       ),
     upstreamTotal: z
       .number()
@@ -193,6 +214,7 @@ export const waterFindSites = tool('water_find_sites', {
         bbox: z.string().optional().describe('Bounding box filter applied, if any.'),
         huc: z.string().optional().describe('HUC watershed filter applied, if any.'),
         hasDataTypeCd: z.string().optional().describe('Data type filter applied, if any.'),
+        observedWithin: z.string().optional().describe('Recency window applied, if any.'),
         siteOutput: z
           .enum(['basic', 'expanded'])
           .describe('Site output mode used (basic or expanded).'),
@@ -217,6 +239,7 @@ export const waterFindSites = tool('water_find_sites', {
         if (v.bbox) parts.push(`bbox=${v.bbox}`);
         if (v.huc) parts.push(`huc=${v.huc}`);
         if (v.hasDataTypeCd) parts.push(`hasDataTypeCd=${v.hasDataTypeCd}`);
+        if (v.observedWithin) parts.push(`observedWithin=${v.observedWithin}`);
         parts.push(`siteOutput=${v.siteOutput}`);
         return `**Filters applied:** ${parts.join(', ')}`;
       },
@@ -229,42 +252,42 @@ export const waterFindSites = tool('water_find_sites', {
       code: JsonRpcErrorCode.NotFound,
       when: 'No sites match the given geographic and filter criteria.',
       recovery:
-        'Broaden the bounding box, remove parameterCd or siteType filters, or try a different state/HUC.',
+        'Broaden the bounding box, widen or drop observedWithin, remove parameterCd, hasDataTypeCd, or siteType filters, or try a different state/HUC.',
     },
     {
       reason: 'missing_major_filter',
       code: JsonRpcErrorCode.ValidationError,
-      when: 'None of bbox, stateCd, countyCd, or huc was supplied. NWIS scopes every site query by exactly one of them; siteType, parameterCd, and hasDataTypeCd only narrow within that scope.',
+      when: 'None of bbox, stateCd, countyCd, or huc was supplied. Every site search is scoped by exactly one of them; siteType, parameterCd, hasDataTypeCd, and observedWithin only narrow within that scope.',
       recovery:
-        'Add exactly one of bbox, stateCd, countyCd, or huc and retry — a 2-letter stateCd is the broadest scope NWIS will answer.',
+        'Add exactly one of bbox, stateCd, countyCd, or huc and retry — a 2-letter stateCd is the broadest scope this tool searches.',
     },
     {
       reason: 'conflicting_major_filters',
       code: JsonRpcErrorCode.ValidationError,
-      when: 'More than one of bbox, stateCd, countyCd, and huc was supplied. NWIS accepts exactly one per request.',
+      when: 'More than one of bbox, stateCd, countyCd, and huc was supplied. The tool takes exactly one per call.',
       recovery:
         'Keep the single filter that matches the intended scope and drop the others — a 5-digit countyCd already encodes its state, so stateCd adds nothing beside it.',
     },
     {
       reason: 'invalid_request',
       code: JsonRpcErrorCode.ValidationError,
-      when: 'NWIS rejected the request. Filter formats are pattern-validated and the major-filter rule is enforced before the call, so this surfaces a well-formed value NWIS still refused — an unknown state, county, HUC, parameter, or site-type code.',
-      recovery:
-        'Read the NWIS message in this error for what it refused, correct that filter value, and retry. Use water_list_parameters to confirm parameter codes.',
+      when: 'A well-formed filter value has no translation — a stateCd that is no US state or territory, a malformed siteType, or a hasDataTypeCd with no source on the USGS Water Data APIs (refused before any request) — or the USGS Water Data API refused the query.',
+      recovery: `Read this error's message for the value that was refused, correct it, and retry: stateCd takes a state or territory postal code, hasDataTypeCd takes ${DATA_TYPE_CODES}, and water_list_parameters confirms parameter codes.`,
       thrownBy: 'service',
     },
     {
       reason: 'upstream_error',
       code: JsonRpcErrorCode.ServiceUnavailable,
-      when: 'NWIS returned a 5xx error.',
-      recovery: 'The USGS service is temporarily unavailable. Retry after a short backoff.',
+      when: 'The USGS Water Data API failed after retries or sent a response this server could not read.',
+      recovery:
+        'A server error usually clears: retry after a short backoff. An error marked not retryable means the upstream sent a response this server cannot read, and the same request will fail again.',
       retryable: true,
       thrownBy: 'service',
     },
     {
       reason: 'upstream_timeout',
       code: JsonRpcErrorCode.Timeout,
-      when: 'The NWIS request exceeded its deadline.',
+      when: 'The USGS Water Data requests for this call ran past its 45-second budget.',
       recovery:
         'Retry after a short backoff; narrow the geographic filters if the request repeatedly times out.',
       retryable: true,
@@ -273,7 +296,7 @@ export const waterFindSites = tool('water_find_sites', {
     {
       reason: 'canvas_not_found',
       code: JsonRpcErrorCode.NotFound,
-      when: 'The supplied canvas_id names a canvas that never existed or has expired. Raised before the NWIS request, so no upstream call is spent on it.',
+      when: 'The supplied canvas_id names a canvas that never existed or has expired. Raised before any USGS request, so no upstream call is spent on it.',
       recovery:
         'Omit canvas_id to stage this match set on a fresh canvas, or pass an id returned by a call that is still within its canvas lifetime.',
       thrownBy: 'service',
@@ -290,10 +313,8 @@ export const waterFindSites = tool('water_find_sites', {
   ],
 
   async handler(input, ctx) {
-    // NWIS accepts exactly one major filter per /nwis/site/ request, and answers a violation with
-    // prose that names no field ("no major-filter pairs supplied by user"), so the rule is enforced
-    // here rather than forwarded. It cannot live on the schema: a Zod refinement rejects at the SDK
-    // edge as the generic invalid_arguments, bypassing errors[] and its authored recovery hints.
+    // The single-scope rule cannot live on the schema: a Zod refinement rejects at the SDK edge as
+    // the generic invalid_arguments, bypassing errors[] and its authored recovery hints.
     const majors = MAJOR_FILTERS.filter((field) => input[field] !== undefined);
     if (majors.length === 0) {
       throw ctx.fail(
@@ -304,7 +325,7 @@ export const waterFindSites = tool('water_find_sites', {
     if (majors.length > 1) {
       throw ctx.fail(
         'conflicting_major_filters',
-        `NWIS accepts one major filter per request; this call sent ${majors.length}: ${majors.join(', ')}.`,
+        `water_find_sites takes one major filter per call; this call sent ${majors.length}: ${majors.join(', ')}.`,
       );
     }
 
@@ -321,12 +342,13 @@ export const waterFindSites = tool('water_find_sites', {
       bbox: input.bbox,
       huc: input.huc,
       hasDataTypeCd: input.hasDataTypeCd,
+      observedWithin: input.observedWithin,
       siteOutput: input.siteOutput,
     };
 
-    // A supplied canvas_id is resolved before the upstream call so a stale or never-minted id fails
-    // without spending an NWIS round trip. Minting stays lazy — a fresh canvas is acquired further
-    // down, only once a result actually has to stage.
+    // A supplied canvas_id is resolved before the upstream calls so a stale or never-minted id
+    // fails without spending a USGS round trip. Minting stays lazy — a fresh canvas is acquired
+    // further down, only once a result actually has to stage.
     const canvas = getCanvas();
     let instance: CanvasInstance | undefined;
     if (canvas && input.canvas_id) {
@@ -340,11 +362,13 @@ export const waterFindSites = tool('water_find_sites', {
       huc: input.huc,
       siteType: input.siteType,
       parameterCd: input.parameterCd,
+      hasDataTypeCd: input.hasDataTypeCd,
+      observedWithin: input.observedWithin,
     });
 
     let sites: Awaited<ReturnType<typeof findSites>>;
     try {
-      const params: Parameters<typeof findSites>[0] = { siteOutput: input.siteOutput };
+      const params: FindSitesParams = { siteOutput: input.siteOutput };
       if (input.bbox) params.bbox = input.bbox;
       if (input.stateCd) params.stateCd = input.stateCd;
       if (input.countyCd) params.countyCd = input.countyCd;
@@ -352,11 +376,15 @@ export const waterFindSites = tool('water_find_sites', {
       if (input.siteType) params.siteType = input.siteType;
       if (input.parameterCd) params.parameterCd = input.parameterCd;
       if (input.hasDataTypeCd) params.hasDataTypeCd = input.hasDataTypeCd;
-      sites = await findSites(params, ctx);
-    } catch (err: unknown) {
-      const failure = classifyNwisFailure(err);
-      if (failure) throw ctx.fail(failure.reason, failure.message, failure.data, { cause: err });
-      throw err;
+      if (input.observedWithin) params.observedWithin = input.observedWithin;
+      sites = await findSites(params, startRequest(ctx, 'findSites'));
+    } catch (error: unknown) {
+      if (ctx.signal?.aborted) throw error;
+      // Rate limits and a rejected USGS_API_KEY classify to null and pass through with their own
+      // recovery hints.
+      const failure = classifyWaterDataFailure(error);
+      if (!failure) throw error;
+      throw ctx.fail(failure.reason, failure.message, failure.data, { cause: error });
     }
 
     if (sites.length === 0) {
@@ -406,6 +434,7 @@ export const waterFindSites = tool('water_find_sites', {
           drainage_area: s.drainageArea ?? null,
           altitude: s.altitude ?? null,
           contributing_area: s.contributingArea ?? null,
+          last_observed_at: s.lastObservedAt,
         })),
         { signal: ctx.signal },
       );
@@ -414,7 +443,7 @@ export const waterFindSites = tool('water_find_sites', {
     }
 
     const narrowingAdvice =
-      'Add bbox, countyCd, huc, siteType, parameterCd, or hasDataTypeCd filters to narrow the query.';
+      'Add bbox, countyCd, huc, siteType, parameterCd, hasDataTypeCd, or observedWithin filters to narrow the query.';
     const notices: string[] = [];
     if (page.length === 0) {
       // Distinct from no_sites_found: the filters matched upstream, the requested window just
@@ -497,9 +526,10 @@ export const waterFindSites = tool('water_find_sites', {
         `### ${s.siteName} (${s.siteNumber})`,
         `**Type:** ${s.siteType} | **Lat/Lon:** ${s.latitude}, ${s.longitude}`,
       );
-      // HUC, state, and county each render only when present — NWIS omits HUC for some sites, and
-      // state/county populate in expanded mode only. Building the line from the parts that exist
-      // keeps an absent field from printing a bare label (the #22 blank "HUC:" regression).
+      lines.push(`**Last observed:** ${s.lastObservedAt ?? 'none recorded'}`);
+      // HUC, state, and county each render only when present — USGS assigns no HUC to some sites,
+      // and state/county populate in expanded mode only. Building the line from the parts that
+      // exist keeps an absent field from printing a bare label (the #22 blank "HUC:" regression).
       const location: string[] = [];
       if (s.hucCd) location.push(`**HUC:** ${s.hucCd}`);
       if (s.stateCd) location.push(`**State:** ${s.stateCd}`);

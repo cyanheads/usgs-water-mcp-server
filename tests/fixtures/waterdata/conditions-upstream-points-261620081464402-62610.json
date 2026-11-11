@@ -1,0 +1,54 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_id": "USGS-261620081464402",
+        "parameter_code": "62610",
+        "statistic_id": "00011",
+        "begin": "2007-10-01T05:00:00+00:00",
+        "sublocation_identifier": null,
+        "web_description": null,
+        "unit_of_measure": "ft",
+        "parameter_name": "Elevation, GW, NGVD29"
+      },
+      "id": "00b283154be94483aeebd340cf02244a",
+      "geometry": null
+    }
+  ],
+  "numberReturned": 1,
+  "links": [
+    {
+      "type": "application/geo+json",
+      "rel": "self",
+      "title": "This document as GeoJSON",
+      "href": "https://api.waterdata.usgs.gov/ogcapi/v1/collections/time-series-metadata/items?f=json&filter-lang=cql2-text&filter=monitoring_location_id%20IN%20%28%27USGS-261620081464402%27%29%20AND%20parameter_code%20IN%20%28%2762610%27%29&computation_period_identifier=Points&skipGeometry=true&properties=monitoring_location_id,parameter_code,statistic_id,begin,sublocation_identifier,web_description,unit_of_measure,parameter_name&limit=10000"
+    },
+    {
+      "rel": "alternate",
+      "type": "application/ld+json",
+      "title": "This document as RDF (JSON-LD)",
+      "href": "https://api.waterdata.usgs.gov/ogcapi/v1/collections/time-series-metadata/items?f=jsonld&filter-lang=cql2-text&filter=monitoring_location_id%20IN%20%28%27USGS-261620081464402%27%29%20AND%20parameter_code%20IN%20%28%2762610%27%29&computation_period_identifier=Points&skipGeometry=true&properties=monitoring_location_id,parameter_code,statistic_id,begin,sublocation_identifier,web_description,unit_of_measure,parameter_name&limit=10000"
+    },
+    {
+      "type": "text/html",
+      "rel": "alternate",
+      "title": "This document as HTML",
+      "href": "https://api.waterdata.usgs.gov/ogcapi/v1/collections/time-series-metadata/items?f=html&filter-lang=cql2-text&filter=monitoring_location_id%20IN%20%28%27USGS-261620081464402%27%29%20AND%20parameter_code%20IN%20%28%2762610%27%29&computation_period_identifier=Points&skipGeometry=true&properties=monitoring_location_id,parameter_code,statistic_id,begin,sublocation_identifier,web_description,unit_of_measure,parameter_name&limit=10000"
+    },
+    {
+      "type": "text/csv; charset=utf-8",
+      "rel": "alternate",
+      "title": "This document as CSV",
+      "href": "https://api.waterdata.usgs.gov/ogcapi/v1/collections/time-series-metadata/items?f=csv&filter-lang=cql2-text&filter=monitoring_location_id%20IN%20%28%27USGS-261620081464402%27%29%20AND%20parameter_code%20IN%20%28%2762610%27%29&computation_period_identifier=Points&skipGeometry=true&properties=monitoring_location_id,parameter_code,statistic_id,begin,sublocation_identifier,web_description,unit_of_measure,parameter_name&limit=10000"
+    },
+    {
+      "type": "application/json",
+      "title": "Time series metadata",
+      "rel": "collection",
+      "href": "https://api.waterdata.usgs.gov/ogcapi/v1/collections/time-series-metadata"
+    }
+  ],
+  "timeStamp": "2026-11-11T10:33:32.167153Z"
+}

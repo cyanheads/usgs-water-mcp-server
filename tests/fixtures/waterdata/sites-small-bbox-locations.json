@@ -1,0 +1,1794 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_number": "12113415",
+        "monitoring_location_name": "DUWAMISH R AT E MARGINAL WAY BR AT DUWAMISH, WA",
+        "site_type_code": "ST",
+        "altitude": 0.0,
+        "hydrologic_unit_code": "171100130305"
+      },
+      "id": "USGS-12113415",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-122.288141666667, 47.5005055555556]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_number": "12113425",
+        "monitoring_location_name": "DUWAMISH R AT 102ND ST BRIDGE AT DUWAMISH, WA",
+        "site_type_code": "ST",
+        "altitude": 9.0,
+        "hydrologic_unit_code": "171100130305"
+      },
+      "id": "USGS-12113425",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-122.296183333333, 47.5109833333333]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_number": "12113445",
+        "monitoring_location_name": "DUWAMISH RIVER AT PEOPLE'S PARK AT DUWAMISH, WA",
+        "site_type_code": "ST",
+        "altitude": null,
+        "hydrologic_unit_code": "171100130305"
+      },
+      "id": "USGS-12113445",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-122.31113888888889, 47.527138888888885]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_number": "12113470",
+        "monitoring_location_name": "DUWAMISH RIVER AT FIRST AVENUE S AT SEATTLE, WA",
+        "site_type_code": "ST",
+        "altitude": null,
+        "hydrologic_unit_code": "171100130305"
+      },
+      "id": "USGS-12113470",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-122.3348305186108, 47.542293538699646]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_number": "12113485",
+        "monitoring_location_name": "DUWAMISH RIVER AT TERMINAL 3 AT SEATTLE, WA",
+        "site_type_code": "ST",
+        "altitude": null,
+        "hydrologic_unit_code": "171100130305"
+      },
+      "id": "USGS-12113485",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-122.349293092127, 47.5650984771281]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_number": "12113493",
+        "monitoring_location_name": "DUWAMISH RIVER AT TERMINAL 20 AT SEATTLE, WA",
+        "site_type_code": "ST",
+        "altitude": null,
+        "hydrologic_unit_code": "17110013"
+      },
+      "id": "USGS-12113493",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-122.346237647015, 47.5806539764291]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_number": "473012122191101",
+        "monitoring_location_name": "23N/04E-05Q02",
+        "site_type_code": "GW",
+        "altitude": 322.42,
+        "hydrologic_unit_code": "171100130305"
+      },
+      "id": "USGS-473012122191101",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-122.31981944444443, 47.503280555555556]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_number": "473013122190901",
+        "monitoring_location_name": "23N/04E-05Q01",
+        "site_type_code": "GW",
+        "altitude": 335.0,
+        "hydrologic_unit_code": "171100130305"
+      },
+      "id": "USGS-473013122190901",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-122.320402476757, 47.5034322985147]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_number": "473014122173101",
+        "monitoring_location_name": "23N/04E-04R01",
+        "site_type_code": "GW",
+        "altitude": 17.57,
+        "hydrologic_unit_code": "171100130305"
+      },
+      "id": "USGS-473014122173101",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-122.29185, 47.5039]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_number": "473015122152701",
+        "monitoring_location_name": "23N/04E-02Q01",
+        "site_type_code": "GW",
+        "altitude": 350.0,
+        "hydrologic_unit_code": "171100120400"
+      },
+      "id": "USGS-473015122152701",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-122.258733895742, 47.5039882604194]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_number": "473017122201401",
+        "monitoring_location_name": "23N/06E-03Q02",
+        "site_type_code": "GW",
+        "altitude": 200.0,
+        "hydrologic_unit_code": "17110012"
+      },
+      "id": "USGS-473017122201401",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-122.33845860957, 47.5045432843251]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_number": "473028122175701",
+        "monitoring_location_name": "23N/04E-04K01",
+        "site_type_code": "GW",
+        "altitude": 15.0,
+        "hydrologic_unit_code": "171100130305"
+      },
+      "id": "USGS-473028122175701",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-122.299846334169, 47.507599080053]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_number": "473044122195001",
+        "monitoring_location_name": "25N/04E-05E01",
+        "site_type_code": "GW",
+        "altitude": 400.0,
+        "hydrologic_unit_code": "17110012"
+      },
+      "id": "USGS-473044122195001",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-122.331791834055, 47.5120432914908]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_number": "473050122180801",
+        "monitoring_location_name": "23N/04E-04D01",
+        "site_type_code": "GW",
+        "altitude": 17.85,
+        "hydrologic_unit_code": "171100130305"
+      },
+      "id": "USGS-473050122180801",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-122.30226111111111, 47.51413888888889]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_number": "473052122204101",
+        "monitoring_location_name": "24N/04E-06C01",
+        "site_type_code": "GW",
+        "altitude": 407.0,
+        "hydrologic_unit_code": "171100190204"
+      },
+      "id": "USGS-473052122204101",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-122.34483055555555, 47.514430555555556]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_number": "473056122173001",
+        "monitoring_location_name": "23N/04E-04A01",
+        "site_type_code": "GW",
+        "altitude": 15.0,
+        "hydrologic_unit_code": "171100130305"
+      },
+      "id": "USGS-473056122173001",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-122.29567965088, 47.5164879501157]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_number": "473056122175501",
+        "monitoring_location_name": "23N/04E-04B01",
+        "site_type_code": "GW",
+        "altitude": 17.94,
+        "hydrologic_unit_code": "171100130305"
+      },
+      "id": "USGS-473056122175501",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-122.29878055555555, 47.51578888888889]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_number": "473100122173201",
+        "monitoring_location_name": "24N/04E-04A01",
+        "site_type_code": "GW",
+        "altitude": 15.0,
+        "hydrologic_unit_code": "17110012"
+      },
+      "id": "USGS-473100122173201",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-122.293457359077, 47.5164879646467]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_number": "473100122185701",
+        "monitoring_location_name": "23N/04E-05A01",
+        "site_type_code": "GW",
+        "altitude": 23.17,
+        "hydrologic_unit_code": "171100130305"
+      },
+      "id": "USGS-473100122185701",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-122.31583888888889, 47.5166]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_number": "473103122192401",
+        "monitoring_location_name": "24N/04E-42N01",
+        "site_type_code": "GW",
+        "altitude": 34.0,
+        "hydrologic_unit_code": null
+      },
+      "id": "USGS-473103122192401",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-122.32339999999999, 47.517519444444446]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_number": "473116122185701",
+        "monitoring_location_name": "24N/04E-32J03",
+        "site_type_code": "GW",
+        "altitude": 20.98,
+        "hydrologic_unit_code": "171100130305"
+      },
+      "id": "USGS-473116122185701",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-122.31588888888889, 47.521369444444446]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_number": "473117122185701",
+        "monitoring_location_name": "24N/04E-32J02",
+        "site_type_code": "GW",
+        "altitude": 20.61,
+        "hydrologic_unit_code": "171100130305"
+      },
+      "id": "USGS-473117122185701",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-122.31588055555555, 47.521319444444444]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_number": "473117122192801",
+        "monitoring_location_name": "24N/04E-32J01",
+        "site_type_code": "GW",
+        "altitude": 41.0,
+        "hydrologic_unit_code": "171100130305"
+      },
+      "id": "USGS-473117122192801",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-122.32456944444444, 47.52151111111111]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_number": "473124122180501",
+        "monitoring_location_name": "24N/04E-33K01",
+        "site_type_code": "GW",
+        "altitude": 18.28,
+        "hydrologic_unit_code": "171100130305"
+      },
+      "id": "USGS-473124122180501",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-122.30149999999999, 47.52346111111111]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_number": "473126122182401",
+        "monitoring_location_name": "24N/04E-33F01",
+        "site_type_code": "GW",
+        "altitude": 18.64,
+        "hydrologic_unit_code": "171100130305"
+      },
+      "id": "USGS-473126122182401",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-122.30666944444444, 47.5241]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_number": "473135122204201",
+        "monitoring_location_name": "24N/04E-31F01",
+        "site_type_code": "GW",
+        "altitude": 410.0,
+        "hydrologic_unit_code": "171100130305"
+      },
+      "id": "USGS-473135122204201",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-122.346236919346, 47.5262097948227]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_number": "473138122192401",
+        "monitoring_location_name": "24N/04E-32A01",
+        "site_type_code": "GW",
+        "altitude": 14.28,
+        "hydrologic_unit_code": "171100130305"
+      },
+      "id": "USGS-473138122192401",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-122.32346944444444, 47.5273]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_number": "473139122190001",
+        "monitoring_location_name": "24N/04E-32A02",
+        "site_type_code": "GW",
+        "altitude": 17.22,
+        "hydrologic_unit_code": "171100130305"
+      },
+      "id": "USGS-473139122190001",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-122.31654999999999, 47.527369444444446]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_number": "473145122185901",
+        "monitoring_location_name": "24N/04E-42E01",
+        "site_type_code": "GW",
+        "altitude": 14.0,
+        "hydrologic_unit_code": null
+      },
+      "id": "USGS-473145122185901",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-122.31638888888888, 47.52908055555555]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_number": "473145122200001",
+        "monitoring_location_name": "24N/04E-32D01",
+        "site_type_code": "GW",
+        "altitude": 19.0,
+        "hydrologic_unit_code": "171100130305"
+      },
+      "id": "USGS-473145122200001",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-122.33335, 47.52925]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_number": "473149122161701",
+        "monitoring_location_name": "25N/04E-36A01",
+        "site_type_code": "GW",
+        "altitude": 60.0,
+        "hydrologic_unit_code": "171100120400"
+      },
+      "id": "USGS-473149122161701",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-122.272623543283, 47.5300991385993]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_number": "473151122173001",
+        "monitoring_location_name": "24N/04E-33A01",
+        "site_type_code": "GW",
+        "altitude": 90.0,
+        "hydrologic_unit_code": "171100130305"
+      },
+      "id": "USGS-473151122173001",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-122.292901966378, 47.5306545607653]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_number": "473155122191701",
+        "monitoring_location_name": "24N/04E-51K02",
+        "site_type_code": "GW",
+        "altitude": 15.51,
+        "hydrologic_unit_code": "171100130305"
+      },
+      "id": "USGS-473155122191701",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-122.3214111111111, 47.53191944444444]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_number": "473155122192101",
+        "monitoring_location_name": "24N/04E-51K01",
+        "site_type_code": "GW",
+        "altitude": 15.0,
+        "hydrologic_unit_code": "171100130305"
+      },
+      "id": "USGS-473155122192101",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-122.32253055555555, 47.53191111111111]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_number": "473157122193801",
+        "monitoring_location_name": "24N/04E-51F02",
+        "site_type_code": "GW",
+        "altitude": 11.7,
+        "hydrologic_unit_code": "171100130305"
+      },
+      "id": "USGS-473157122193801",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-122.32721944444444, 47.53261111111111]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_number": "473158122175301",
+        "monitoring_location_name": "24N/04E-28Q01",
+        "site_type_code": "GW",
+        "altitude": 18.42,
+        "hydrologic_unit_code": null
+      },
+      "id": "USGS-473158122175301",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-122.29814999999999, 47.532780555555554]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_number": "473158122195401",
+        "monitoring_location_name": "24N/04E-29N01",
+        "site_type_code": "GW",
+        "altitude": 19.0,
+        "hydrologic_unit_code": "171100130305"
+      },
+      "id": "USGS-473158122195401",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-122.33153055555555, 47.53278888888889]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_number": "473201122201101",
+        "monitoring_location_name": "24N/04E-30R01",
+        "site_type_code": "GW",
+        "altitude": 18.0,
+        "hydrologic_unit_code": null
+      },
+      "id": "USGS-473201122201101",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-122.33636944444444, 47.53361944444444]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_number": "473202122193101",
+        "monitoring_location_name": "24N/04E-51F04",
+        "site_type_code": "GW",
+        "altitude": 12.0,
+        "hydrologic_unit_code": "171100130305"
+      },
+      "id": "USGS-473202122193101",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-122.32535555555555, 47.53402777777777]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_number": "473203122193101",
+        "monitoring_location_name": "24N/04E-51F05",
+        "site_type_code": "GW",
+        "altitude": 12.0,
+        "hydrologic_unit_code": "171100130305"
+      },
+      "id": "USGS-473203122193101",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-122.32522222222222, 47.53409166666666]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_number": "473205122193101",
+        "monitoring_location_name": "24N/04E-51F01",
+        "site_type_code": "GW",
+        "altitude": 11.43,
+        "hydrologic_unit_code": "171100130305"
+      },
+      "id": "USGS-473205122193101",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-122.32531944444445, 47.53465]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_number": "473205122194701",
+        "monitoring_location_name": "24N/04E-51F03",
+        "site_type_code": "GW",
+        "altitude": 11.26,
+        "hydrologic_unit_code": null
+      },
+      "id": "USGS-473205122194701",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-122.32968055555556, 47.53478055555556]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_number": "473208122194401",
+        "monitoring_location_name": "24N/04E-29M01",
+        "site_type_code": "GW",
+        "altitude": 12.0,
+        "hydrologic_unit_code": "171100130305"
+      },
+      "id": "USGS-473208122194401",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-122.32878055555555, 47.53545]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_number": "473212122165301",
+        "monitoring_location_name": "24N/04E-27L01",
+        "site_type_code": "GW",
+        "altitude": 127.0,
+        "hydrologic_unit_code": "171100120400"
+      },
+      "id": "USGS-473212122165301",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-122.28126944444445, 47.536788888888886]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_number": "473215122192001",
+        "monitoring_location_name": "24N/04E-29L01",
+        "site_type_code": "GW",
+        "altitude": 16.56,
+        "hydrologic_unit_code": "171100130305"
+      },
+      "id": "USGS-473215122192001",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-122.32226944444444, 47.53758055555555]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_number": "473217122181201",
+        "monitoring_location_name": "24N/04E-28L01",
+        "site_type_code": "GW",
+        "altitude": 20.18,
+        "hydrologic_unit_code": null
+      },
+      "id": "USGS-473217122181201",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-122.30333055555555, 47.53808055555555]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_number": "473224122201201",
+        "monitoring_location_name": "24N/04E-30H03",
+        "site_type_code": "GW",
+        "altitude": 18.39,
+        "hydrologic_unit_code": "171100130305"
+      },
+      "id": "USGS-473224122201201",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-122.33656944444444, 47.54003055555555]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_number": "473225122200901",
+        "monitoring_location_name": "24N/04E-30H04",
+        "site_type_code": "GW",
+        "altitude": 16.56,
+        "hydrologic_unit_code": "171100130305"
+      },
+      "id": "USGS-473225122200901",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-122.3360111111111, 47.54035]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_number": "473225122201001",
+        "monitoring_location_name": "24N/04E-30H01",
+        "site_type_code": "GW",
+        "altitude": 16.57,
+        "hydrologic_unit_code": "171100130305"
+      },
+      "id": "USGS-473225122201001",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-122.33603888888888, 47.54036111111111]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_number": "473226122201101",
+        "monitoring_location_name": "24N/04E-30H02",
+        "site_type_code": "GW",
+        "altitude": 17.6,
+        "hydrologic_unit_code": "171100130305"
+      },
+      "id": "USGS-473226122201101",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-122.33648888888888, 47.540588888888884]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_number": "473226122202401",
+        "monitoring_location_name": "24N/04E-30G01",
+        "site_type_code": "GW",
+        "altitude": 17.0,
+        "hydrologic_unit_code": "171100130305"
+      },
+      "id": "USGS-473226122202401",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-122.33988888888888, 47.5406]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_number": "473233122185901",
+        "monitoring_location_name": "24N/04E-29B03",
+        "site_type_code": "GW",
+        "altitude": 17.11,
+        "hydrologic_unit_code": "171100130305"
+      },
+      "id": "USGS-473233122185901",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-122.31626944444444, 47.54251111111111]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_number": "473235122185701",
+        "monitoring_location_name": "24N/04E-29B02",
+        "site_type_code": "GW",
+        "altitude": 19.46,
+        "hydrologic_unit_code": "171100130305"
+      },
+      "id": "USGS-473235122185701",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-122.31586944444444, 47.54306944444444]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_number": "473237122194301",
+        "monitoring_location_name": "24N/04E-29C02",
+        "site_type_code": "GW",
+        "altitude": 15.0,
+        "hydrologic_unit_code": "171100130305"
+      },
+      "id": "USGS-473237122194301",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-122.3286, 47.543661111111106]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_number": "473238122195201",
+        "monitoring_location_name": "24N/04E-29D01",
+        "site_type_code": "GW",
+        "altitude": 12.27,
+        "hydrologic_unit_code": null
+      },
+      "id": "USGS-473238122195201",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-122.33101944444444, 47.54396944444444]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_number": "473239122194301",
+        "monitoring_location_name": "24N/04E-29C01",
+        "site_type_code": "GW",
+        "altitude": 12.79,
+        "hydrologic_unit_code": "171100130305"
+      },
+      "id": "USGS-473239122194301",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-122.32849999999999, 47.544130555555554]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_number": "473244122184901",
+        "monitoring_location_name": "24N/04E-29A01",
+        "site_type_code": "GW",
+        "altitude": 21.46,
+        "hydrologic_unit_code": "171100130305"
+      },
+      "id": "USGS-473244122184901",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-122.31358888888889, 47.54566944444444]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_number": "473247122171201",
+        "monitoring_location_name": "24N/04E-22R01",
+        "site_type_code": "GW",
+        "altitude": 130.0,
+        "hydrologic_unit_code": "171100120400"
+      },
+      "id": "USGS-473247122171201",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-122.28656944444444, 47.546299999999995]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_number": "473252122193701",
+        "monitoring_location_name": "24N/04E-20P01",
+        "site_type_code": "GW",
+        "altitude": 16.69,
+        "hydrologic_unit_code": "171100130305"
+      },
+      "id": "USGS-473252122193701",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-122.32708055555555, 47.54778888888889]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_number": "473252122204001",
+        "monitoring_location_name": "24N/04E-19P02  2D",
+        "site_type_code": "GW",
+        "altitude": 18.53,
+        "hydrologic_unit_code": "171100130305"
+      },
+      "id": "USGS-473252122204001",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-122.34434999999999, 47.5479]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_number": "473253122203201",
+        "monitoring_location_name": "24N/04E-19Q03",
+        "site_type_code": "GW",
+        "altitude": 18.56,
+        "hydrologic_unit_code": "171100130305"
+      },
+      "id": "USGS-473253122203201",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-122.34233055555555, 47.54818888888889]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_number": "473254122203201",
+        "monitoring_location_name": "24N/04E-19Q02",
+        "site_type_code": "GW",
+        "altitude": 16.76,
+        "hydrologic_unit_code": "171100130305"
+      },
+      "id": "USGS-473254122203201",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-122.34231944444444, 47.54823888888889]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_number": "473254122203401",
+        "monitoring_location_name": "24N/04E-19Q01  45S",
+        "site_type_code": "GW",
+        "altitude": 16.56,
+        "hydrologic_unit_code": "171100130305"
+      },
+      "id": "USGS-473254122203401",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-122.34277777777777, 47.54855555555555]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_number": "473254122203601",
+        "monitoring_location_name": "24N/04E-19P02  3S",
+        "site_type_code": "GW",
+        "altitude": 17.22,
+        "hydrologic_unit_code": "171100130305"
+      },
+      "id": "USGS-473254122203601",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-122.34322222222222, 47.548361111111106]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_number": "473255122203301",
+        "monitoring_location_name": "24N/04E-10Q02  45D",
+        "site_type_code": "GW",
+        "altitude": 16.63,
+        "hydrologic_unit_code": "171100130305"
+      },
+      "id": "USGS-473255122203301",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-122.34275, 47.54855555555555]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_number": "473255122203401",
+        "monitoring_location_name": "24N/04E-19P01  14D",
+        "site_type_code": "GW",
+        "altitude": 16.77,
+        "hydrologic_unit_code": "171100130305"
+      },
+      "id": "USGS-473255122203401",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-122.3430361111111, 47.548716666666664]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_number": "473255122203501",
+        "monitoring_location_name": "24N/04E-19L01  14S",
+        "site_type_code": "GW",
+        "altitude": 16.72,
+        "hydrologic_unit_code": "171100130305"
+      },
+      "id": "USGS-473255122203501",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-122.34303888888888, 47.54872777777778]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_number": "473255122203701",
+        "monitoring_location_name": "24N/04E-19P03  19S",
+        "site_type_code": "GW",
+        "altitude": 17.25,
+        "hydrologic_unit_code": "171100130305"
+      },
+      "id": "USGS-473255122203701",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-122.34358333333333, 47.54858333333333]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_number": "473256122202901",
+        "monitoring_location_name": "24N/04E-19Q02  Duwamish River near Seattle, WA",
+        "site_type_code": "ST-TS",
+        "altitude": 0.0,
+        "hydrologic_unit_code": "171100130305"
+      },
+      "id": "USGS-473256122202901",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-122.34163888888888, 47.54902777777777]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_number": "473256122203601",
+        "monitoring_location_name": "24N/04E-19P04  43S",
+        "site_type_code": "GW",
+        "altitude": 16.98,
+        "hydrologic_unit_code": "171100130305"
+      },
+      "id": "USGS-473256122203601",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-122.34344444444444, 47.548833333333334]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_number": "473303122194701",
+        "monitoring_location_name": "24N/04E-20M01",
+        "site_type_code": "GW",
+        "altitude": 17.0,
+        "hydrologic_unit_code": "171100130305"
+      },
+      "id": "USGS-473303122194701",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-122.32991944444444, 47.55101944444444]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_number": "473313122194301",
+        "monitoring_location_name": "24N/04E-20F01",
+        "site_type_code": "GW",
+        "altitude": 18.23,
+        "hydrologic_unit_code": "171100130305"
+      },
+      "id": "USGS-473313122194301",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-122.32854999999999, 47.553511111111106]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_number": "473313122194401",
+        "monitoring_location_name": "24N/04E-20F02",
+        "site_type_code": "GW",
+        "altitude": 17.28,
+        "hydrologic_unit_code": "171100130305"
+      },
+      "id": "USGS-473313122194401",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-122.32876944444445, 47.55373055555555]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_number": "473319122200501",
+        "monitoring_location_name": "24N/04E-19H01",
+        "site_type_code": "GW",
+        "altitude": 15.0,
+        "hydrologic_unit_code": "171100130305"
+      },
+      "id": "USGS-473319122200501",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-122.335959201092, 47.5550986084116]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_number": "473322122200301",
+        "monitoring_location_name": "24N/04E-20E01",
+        "site_type_code": "GW",
+        "altitude": 17.74,
+        "hydrologic_unit_code": null
+      },
+      "id": "USGS-473322122200301",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-122.33404999999999, 47.55601111111111]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_number": "473324122170501",
+        "monitoring_location_name": "24N/04E-22D01",
+        "site_type_code": "GW",
+        "altitude": 115.32,
+        "hydrologic_unit_code": "171100120400"
+      },
+      "id": "USGS-473324122170501",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-122.28481111111111, 47.556780555555555]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_number": "473333122203301",
+        "monitoring_location_name": "24N/04E-19B05",
+        "site_type_code": "GW",
+        "altitude": 15.51,
+        "hydrologic_unit_code": "171100130305"
+      },
+      "id": "USGS-473333122203301",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-122.34256111111111, 47.559238888888885]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_number": "473333122203601",
+        "monitoring_location_name": "24N/04E-19B02",
+        "site_type_code": "GW",
+        "altitude": 14.0,
+        "hydrologic_unit_code": "171100130305"
+      },
+      "id": "USGS-473333122203601",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-122.34336944444443, 47.559130555555555]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_number": "473333122203701",
+        "monitoring_location_name": "24N/04E-19C01",
+        "site_type_code": "GW",
+        "altitude": 12.58,
+        "hydrologic_unit_code": "171100130305"
+      },
+      "id": "USGS-473333122203701",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-122.34361944444444, 47.559149999999995]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_number": "473334122181401",
+        "monitoring_location_name": "24N/04E-21D01",
+        "site_type_code": "GW",
+        "altitude": 297.0,
+        "hydrologic_unit_code": "171100120400"
+      },
+      "id": "USGS-473334122181401",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-122.30391944444445, 47.55956944444444]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_number": "473334122202901",
+        "monitoring_location_name": "24N/04E-19B03",
+        "site_type_code": "GW",
+        "altitude": 15.81,
+        "hydrologic_unit_code": "171100130305"
+      },
+      "id": "USGS-473334122202901",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-122.34141944444444, 47.559380555555556]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_number": "473335122192601",
+        "monitoring_location_name": "24N/04E-20G01",
+        "site_type_code": "GW",
+        "altitude": 17.26,
+        "hydrologic_unit_code": "171100130305"
+      },
+      "id": "USGS-473335122192601",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-122.32378888888888, 47.559711111111106]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_number": "473336122202901",
+        "monitoring_location_name": "24N/04E-19B01",
+        "site_type_code": "GW",
+        "altitude": 15.82,
+        "hydrologic_unit_code": "171100130305"
+      },
+      "id": "USGS-473336122202901",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-122.3414111111111, 47.55993055555555]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_number": "473337122203701",
+        "monitoring_location_name": "24N/04E-19B04",
+        "site_type_code": "GW",
+        "altitude": 13.59,
+        "hydrologic_unit_code": "171100130305"
+      },
+      "id": "USGS-473337122203701",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-122.34349999999999, 47.560180555555554]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_number": "473339122202801",
+        "monitoring_location_name": "24N/04E-18Q01",
+        "site_type_code": "GW",
+        "altitude": 15.51,
+        "hydrologic_unit_code": "171100130305"
+      },
+      "id": "USGS-473339122202801",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-122.34121944444443, 47.5608]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_number": "473339122203801",
+        "monitoring_location_name": "24N/04E-18P01",
+        "site_type_code": "GW",
+        "altitude": 15.74,
+        "hydrologic_unit_code": "171100130305"
+      },
+      "id": "USGS-473339122203801",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-122.34381111111111, 47.5608]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_number": "473344122203901",
+        "monitoring_location_name": "24N/04E-18P02",
+        "site_type_code": "GW",
+        "altitude": 19.03,
+        "hydrologic_unit_code": "171100130305"
+      },
+      "id": "USGS-473344122203901",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-122.34403888888889, 47.56211944444444]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_number": "473345122202601",
+        "monitoring_location_name": "24N/04E-18Q02",
+        "site_type_code": "GW",
+        "altitude": 17.3,
+        "hydrologic_unit_code": "171100130305"
+      },
+      "id": "USGS-473345122202601",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-122.3406111111111, 47.56248055555555]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_number": "473350122171301",
+        "monitoring_location_name": "24N/04E-15N01",
+        "site_type_code": "GW",
+        "altitude": 46.0,
+        "hydrologic_unit_code": "171100120400"
+      },
+      "id": "USGS-473350122171301",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-122.28701944444444, 47.56371111111111]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_number": "473402122195901",
+        "monitoring_location_name": "24N/04E-17M01",
+        "site_type_code": "GW",
+        "altitude": 17.9,
+        "hydrologic_unit_code": "171100130305"
+      },
+      "id": "USGS-473402122195901",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-122.33306944444445, 47.567261111111115]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_number": "473403122195901",
+        "monitoring_location_name": "24N/04E-17F02",
+        "site_type_code": "GW",
+        "altitude": 18.03,
+        "hydrologic_unit_code": "171100130305"
+      },
+      "id": "USGS-473403122195901",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-122.33291944444444, 47.567369444444445]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_number": "473403122201401",
+        "monitoring_location_name": "24N/04E-18H01",
+        "site_type_code": "GW",
+        "altitude": 20.23,
+        "hydrologic_unit_code": "171100130305"
+      },
+      "id": "USGS-473403122201401",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-122.33715, 47.56743055555556]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_number": "473405122193301",
+        "monitoring_location_name": "24N/04E-17F03",
+        "site_type_code": "GW",
+        "altitude": 18.45,
+        "hydrologic_unit_code": "171100130305"
+      },
+      "id": "USGS-473405122193301",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-122.3257611111111, 47.56818055555556]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_number": "473415122192301",
+        "monitoring_location_name": "24N/04E-17F01",
+        "site_type_code": "GW",
+        "altitude": 21.29,
+        "hydrologic_unit_code": "171100130305"
+      },
+      "id": "USGS-473415122192301",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-122.32313888888889, 47.57088055555556]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_number": "473419122193501",
+        "monitoring_location_name": "24N/04E-17C02",
+        "site_type_code": "GW",
+        "altitude": 20.7,
+        "hydrologic_unit_code": "171100190203"
+      },
+      "id": "USGS-473419122193501",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-122.32641111111111, 47.57181111111112]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_number": "473423122202501",
+        "monitoring_location_name": "24N/04E-18B01",
+        "site_type_code": "GW",
+        "altitude": 10.0,
+        "hydrologic_unit_code": "17110013"
+      },
+      "id": "USGS-473423122202501",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-122.341515169777, 47.5728762650376]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_number": "473427122194401",
+        "monitoring_location_name": "24N/04E-17C01",
+        "site_type_code": "GW",
+        "altitude": 15.0,
+        "hydrologic_unit_code": "17110013"
+      },
+      "id": "USGS-473427122194401",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-122.330125931194, 47.5739874401981]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_number": "473438122174701",
+        "monitoring_location_name": "24N/04E-09Q01",
+        "site_type_code": "GW",
+        "altitude": 54.0,
+        "hydrologic_unit_code": "171100120400"
+      },
+      "id": "USGS-473438122174701",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-122.29631944444444, 47.57726944444445]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_number": "473439122174701",
+        "monitoring_location_name": "24N/04E-09R01",
+        "site_type_code": "GW",
+        "altitude": 56.0,
+        "hydrologic_unit_code": "171100120400"
+      },
+      "id": "USGS-473439122174701",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-122.29631111111111, 47.57753055555556]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_number": "473441122200401",
+        "monitoring_location_name": "24N/04E-07M01",
+        "site_type_code": "GW",
+        "altitude": 17.16,
+        "hydrologic_unit_code": "171100190203"
+      },
+      "id": "USGS-473441122200401",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-122.3345611111111, 47.57795]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_number": "473441122200701",
+        "monitoring_location_name": "24N/04E-07N01",
+        "site_type_code": "GW",
+        "altitude": 16.11,
+        "hydrologic_unit_code": "171100190203"
+      },
+      "id": "USGS-473441122200701",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-122.3352, 47.57806111111111]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_number": "473443122174501",
+        "monitoring_location_name": "24N/04E-44J01",
+        "site_type_code": "GW",
+        "altitude": 64.0,
+        "hydrologic_unit_code": "171100120400"
+      },
+      "id": "USGS-473443122174501",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-122.29573888888889, 47.578611111111115]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_number": "473445122185301",
+        "monitoring_location_name": "24N/04E-44E01",
+        "site_type_code": "GW",
+        "altitude": 268.29,
+        "hydrologic_unit_code": "171100190203"
+      },
+      "id": "USGS-473445122185301",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-122.31476111111111, 47.57918055555556]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_number": "473446122185201",
+        "monitoring_location_name": "24N/04E-44E02",
+        "site_type_code": "GW",
+        "altitude": 268.91,
+        "hydrologic_unit_code": "171100190203"
+      },
+      "id": "USGS-473446122185201",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-122.31453888888889, 47.579369444444445]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_number": "473446122191501",
+        "monitoring_location_name": "24N/04E-08K01",
+        "site_type_code": "GW",
+        "altitude": 19.64,
+        "hydrologic_unit_code": "171100190203"
+      },
+      "id": "USGS-473446122191501",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-122.32086111111111, 47.57943055555556]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_number": "473449122201201",
+        "monitoring_location_name": "24N/04E-07H01",
+        "site_type_code": "GW",
+        "altitude": 15.74,
+        "hydrologic_unit_code": "171100190203"
+      },
+      "id": "USGS-473449122201201",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-122.3367, 47.58018888888889]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_number": "473454122193301",
+        "monitoring_location_name": "24N/04E-08L01",
+        "site_type_code": "GW",
+        "altitude": 19.45,
+        "hydrologic_unit_code": "171100190203"
+      },
+      "id": "USGS-473454122193301",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-122.32588888888888, 47.58173888888889]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_number": "473455122193301",
+        "monitoring_location_name": "24N/04E-08F01",
+        "site_type_code": "GW",
+        "altitude": 19.7,
+        "hydrologic_unit_code": "171100190203"
+      },
+      "id": "USGS-473455122193301",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-122.32586944444444, 47.58168055555556]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_number": "473512122202001",
+        "monitoring_location_name": "24N/04E-07E07",
+        "site_type_code": "GW",
+        "altitude": 10.0,
+        "hydrologic_unit_code": "171100190203"
+      },
+      "id": "USGS-473512122202001",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-122.340126417374, 47.5864873182837]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_number": "473515122194401",
+        "monitoring_location_name": "24N/04E-08C01",
+        "site_type_code": "GW",
+        "altitude": 21.0,
+        "hydrologic_unit_code": "171100190203"
+      },
+      "id": "USGS-473515122194401",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-122.32883888888888, 47.58736944444445]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_number": "473517122182101",
+        "monitoring_location_name": "24N/04E-09C01",
+        "site_type_code": "GW",
+        "altitude": 71.24,
+        "hydrologic_unit_code": "171100120400"
+      },
+      "id": "USGS-473517122182101",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-122.30573055555556, 47.58801944444445]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_number": "473520122184701",
+        "monitoring_location_name": "24N/04E-08A01",
+        "site_type_code": "GW",
+        "altitude": 100.0,
+        "hydrologic_unit_code": "171100120400"
+      },
+      "id": "USGS-473520122184701",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-122.314292282251, 47.5887096843007]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_number": "473530122192301",
+        "monitoring_location_name": "24N/04E-08D01",
+        "site_type_code": "GW",
+        "altitude": 10.0,
+        "hydrologic_unit_code": "17110013"
+      },
+      "id": "USGS-473530122192301",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-122.324292640448, 47.5914873883457]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_number": "473531122173401",
+        "monitoring_location_name": "24N/04E-04J01",
+        "site_type_code": "GW",
+        "altitude": 273.0,
+        "hydrologic_unit_code": "171100120400"
+      },
+      "id": "USGS-473531122173401",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-122.29273888888889, 47.592080555555555]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_number": "473544122193801",
+        "monitoring_location_name": "24N/04E-05L01",
+        "site_type_code": "GW",
+        "altitude": 43.25,
+        "hydrologic_unit_code": "171100190203"
+      },
+      "id": "USGS-473544122193801",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-122.32716944444444, 47.59546944444445]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_number": "473545122184701",
+        "monitoring_location_name": "24N/04E-43G01",
+        "site_type_code": "GW",
+        "altitude": 102.0,
+        "hydrologic_unit_code": "171100120400"
+      },
+      "id": "USGS-473545122184701",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-122.31296944444445, 47.59578055555556]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_number": "473554122200701",
+        "monitoring_location_name": "24N/04E-06H01",
+        "site_type_code": "GW",
+        "altitude": 16.0,
+        "hydrologic_unit_code": "171100190203"
+      },
+      "id": "USGS-473554122200701",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-122.3354, 47.598339]
+      }
+    }
+  ],
+  "numberReturned": 117,
+  "links": [
+    {
+      "type": "application/geo+json",
+      "rel": "self",
+      "title": "This document as GeoJSON",
+      "href": "https://api.waterdata.usgs.gov/ogcapi/v1/collections/monitoring-locations/items?f=json&bbox=-122.35,47.5,-122.25,47.6&properties=monitoring_location_number,monitoring_location_name,site_type_code,altitude,hydrologic_unit_code&limit=50000"
+    },
+    {
+      "rel": "alternate",
+      "type": "application/ld+json",
+      "title": "This document as RDF (JSON-LD)",
+      "href": "https://api.waterdata.usgs.gov/ogcapi/v1/collections/monitoring-locations/items?f=jsonld&bbox=-122.35,47.5,-122.25,47.6&properties=monitoring_location_number,monitoring_location_name,site_type_code,altitude,hydrologic_unit_code&limit=50000"
+    },
+    {
+      "type": "text/html",
+      "rel": "alternate",
+      "title": "This document as HTML",
+      "href": "https://api.waterdata.usgs.gov/ogcapi/v1/collections/monitoring-locations/items?f=html&bbox=-122.35,47.5,-122.25,47.6&properties=monitoring_location_number,monitoring_location_name,site_type_code,altitude,hydrologic_unit_code&limit=50000"
+    },
+    {
+      "type": "text/csv; charset=utf-8",
+      "rel": "alternate",
+      "title": "This document as CSV",
+      "href": "https://api.waterdata.usgs.gov/ogcapi/v1/collections/monitoring-locations/items?f=csv&bbox=-122.35,47.5,-122.25,47.6&properties=monitoring_location_number,monitoring_location_name,site_type_code,altitude,hydrologic_unit_code&limit=50000"
+    },
+    {
+      "type": "application/json",
+      "title": "Monitoring locations",
+      "rel": "collection",
+      "href": "https://api.waterdata.usgs.gov/ogcapi/v1/collections/monitoring-locations"
+    }
+  ],
+  "timeStamp": "2026-11-11T10:10:40.482674Z"
+}

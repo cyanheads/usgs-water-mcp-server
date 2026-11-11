@@ -1,0 +1,62 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-117.41637056, 48.7809561]
+      },
+      "properties": {
+        "monitoring_location_id": "USGS-12396500",
+        "monitoring_location_name": "PEND OREILLE RIVER BELOW BOX CANYON NEAR IONE, WA",
+        "site_type": "Stream",
+        "site_type_code": "ST",
+        "country_code": "US",
+        "state_code": "53",
+        "county_code": "051",
+        "data": [
+          {
+            "parameter_code": "00065",
+            "unit_of_measure": "ft",
+            "parent_time_series_id": "81f6f58adb784d90bca74a02877600b8",
+            "parent_statistic_id": "00003",
+            "parent_statistic_name": "Mean",
+            "values": [
+              {
+                "time_of_year": "11-10",
+                "time_of_year_type": "day_of_year",
+                "values": ["17.95", "19.08", "84.28", "86.49", "87.99", "90.04", "90.705"],
+                "percentiles": ["5", "10", "25", "50", "75", "90", "95"],
+                "sample_count": 29,
+                "approval_status": "approved",
+                "computation_id": "312f4335-a04b-4098-9bea-becd1bbbccbf",
+                "computation": "percentile"
+              }
+            ]
+          },
+          {
+            "parameter_code": "00065",
+            "unit_of_measure": "ft",
+            "parent_time_series_id": "f3f93cac0e144cd8b3b7ee826f0fc2b7",
+            "parent_statistic_id": "00003",
+            "parent_statistic_name": "Mean",
+            "values": [
+              {
+                "time_of_year": "11-10",
+                "time_of_year_type": "day_of_year",
+                "values": ["19.33", "19.86", "21.63", "87.75", "88.9", "91.31", "91.94"],
+                "percentiles": ["5", "10", "25", "50", "75", "90", "95"],
+                "sample_count": 39,
+                "approval_status": "approved",
+                "computation_id": "b3d413d4-86bc-42bc-bddd-ed75551e877d",
+                "computation": "percentile"
+              }
+            ]
+          }
+        ]
+      }
+    }
+  ],
+  "next": null
+}

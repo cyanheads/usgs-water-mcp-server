@@ -20,7 +20,8 @@
         "MCP_TRANSPORT_TYPE": "stdio",
         "MCP_AUTH_MODE": "none",
         "CANVAS_PROVIDER_TYPE": "none",
-        "NODE_ENV": "production"
+        "NODE_ENV": "production",
+        "USGS_API_KEY": "${user_config.USGS_API_KEY}"
       }
     }
   },
@@ -29,5 +30,14 @@
   },
   "tools_generated": true,
   "prompts_generated": true,
-  "user_config": {}
+  "user_config": {
+    "USGS_API_KEY": {
+      "type": "string",
+      "title": "USGS API key",
+      "description": "Optional api.data.gov key for the USGS Water Data APIs. Without one, requests share the anonymous per-IP hourly limit.",
+      "sensitive": true,
+      "required": false,
+      "default": ""
+    }
+  }
 }

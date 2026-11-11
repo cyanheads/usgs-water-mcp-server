@@ -1,0 +1,43 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-81.77869791, 26.27314173]
+      },
+      "properties": {
+        "monitoring_location_id": "USGS-261620081464402",
+        "monitoring_location_name": "C  -1004R",
+        "site_type": "Well",
+        "site_type_code": "GW",
+        "country_code": "US",
+        "state_code": "12",
+        "county_code": "021",
+        "data": [
+          {
+            "parameter_code": "62610",
+            "unit_of_measure": "ft",
+            "parent_time_series_id": "a79cba5271c648adbfa2ec29c6fb32e9",
+            "parent_statistic_id": "00001",
+            "parent_statistic_name": "Max",
+            "values": [
+              {
+                "time_of_year": "11-10",
+                "time_of_year_type": "day_of_year",
+                "values": ["0.16", "1.125", "2.275", "3.2", "4.25", "5.63", "5.917"],
+                "percentiles": ["5", "10", "25", "50", "75", "90", "95"],
+                "sample_count": 24,
+                "approval_status": "approved",
+                "computation_id": "ed2a85e5-f7f0-4096-877a-17838719f7ac",
+                "computation": "percentile"
+              }
+            ]
+          }
+        ]
+      }
+    }
+  ],
+  "next": null
+}

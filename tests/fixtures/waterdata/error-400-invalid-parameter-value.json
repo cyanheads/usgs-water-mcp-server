@@ -1,0 +1,5 @@
+{
+  "code": "InvalidParameterValue",
+  "type": "InvalidParameterValue",
+  "description": "bbox should be either 4 values (minx,miny,maxx,maxy) or 6 values (minx,miny,minz,maxx,maxy,maxz)"
+}

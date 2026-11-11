@@ -1,0 +1,279 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "1c9d1f64a6cd4093913ab88ec7c41991",
+        "monitoring_location_id": "USGS-12396500",
+        "parameter_code": "00065",
+        "statistic_id": "00011",
+        "time": "2026-11-11T00:15:00+00:00",
+        "value": "88.33",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "9a12b473-38f0-40e6-bbc5-cca8b52f3f65",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "1c9d1f64a6cd4093913ab88ec7c41991",
+        "monitoring_location_id": "USGS-12396500",
+        "parameter_code": "00065",
+        "statistic_id": "00011",
+        "time": "2026-11-11T00:30:00+00:00",
+        "value": "88.25",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "03615df8-c51d-4e73-a756-bb1169c0484a",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "1c9d1f64a6cd4093913ab88ec7c41991",
+        "monitoring_location_id": "USGS-12396500",
+        "parameter_code": "00065",
+        "statistic_id": "00011",
+        "time": "2026-11-11T00:45:00+00:00",
+        "value": "88.21",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "8e4273d0-d647-4715-be43-b6888f587376",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "1c9d1f64a6cd4093913ab88ec7c41991",
+        "monitoring_location_id": "USGS-12396500",
+        "parameter_code": "00065",
+        "statistic_id": "00011",
+        "time": "2026-11-11T01:00:00+00:00",
+        "value": "88.14",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "17f9c40f-7c3a-4ecf-8df0-f973ffeef220",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "1c9d1f64a6cd4093913ab88ec7c41991",
+        "monitoring_location_id": "USGS-12396500",
+        "parameter_code": "00065",
+        "statistic_id": "00011",
+        "time": "2026-11-11T01:15:00+00:00",
+        "value": "88.10",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "b2e5df23-1908-4668-9dff-1edab78d5fdd",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "1c9d1f64a6cd4093913ab88ec7c41991",
+        "monitoring_location_id": "USGS-12396500",
+        "parameter_code": "00065",
+        "statistic_id": "00011",
+        "time": "2026-11-11T01:30:00+00:00",
+        "value": "88.02",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "929014b3-91ac-4825-b95e-b30c3cb144f2",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "1c9d1f64a6cd4093913ab88ec7c41991",
+        "monitoring_location_id": "USGS-12396500",
+        "parameter_code": "00065",
+        "statistic_id": "00011",
+        "time": "2026-11-11T01:45:00+00:00",
+        "value": "87.94",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "5eec20ae-8328-4ae9-a78f-00f288f05614",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "1c9d1f64a6cd4093913ab88ec7c41991",
+        "monitoring_location_id": "USGS-12396500",
+        "parameter_code": "00065",
+        "statistic_id": "00011",
+        "time": "2026-11-11T02:00:00+00:00",
+        "value": "87.88",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "053823e0-d79c-44e9-93ee-afdb5199b4a6",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "dea67e89fcc54472ae9db8e097a637fb",
+        "monitoring_location_id": "USGS-12396500",
+        "parameter_code": "00065",
+        "statistic_id": "00011",
+        "time": "2026-11-11T00:15:00+00:00",
+        "value": "89.42",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "064a27b2-f41a-43ca-bb95-ff7dde8874e1",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "dea67e89fcc54472ae9db8e097a637fb",
+        "monitoring_location_id": "USGS-12396500",
+        "parameter_code": "00065",
+        "statistic_id": "00011",
+        "time": "2026-11-11T00:30:00+00:00",
+        "value": "89.38",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "b8aef55f-d89b-4f71-844d-251c85b50921",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "dea67e89fcc54472ae9db8e097a637fb",
+        "monitoring_location_id": "USGS-12396500",
+        "parameter_code": "00065",
+        "statistic_id": "00011",
+        "time": "2026-11-11T00:45:00+00:00",
+        "value": "89.34",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "f62d6ffd-48f3-434e-86b2-3627da8b11ab",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "dea67e89fcc54472ae9db8e097a637fb",
+        "monitoring_location_id": "USGS-12396500",
+        "parameter_code": "00065",
+        "statistic_id": "00011",
+        "time": "2026-11-11T01:00:00+00:00",
+        "value": "89.30",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "24fe41dc-48a8-4c3e-9701-dc60faf9a431",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "dea67e89fcc54472ae9db8e097a637fb",
+        "monitoring_location_id": "USGS-12396500",
+        "parameter_code": "00065",
+        "statistic_id": "00011",
+        "time": "2026-11-11T01:15:00+00:00",
+        "value": "89.25",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "10c0296f-db80-4439-8684-e649394508ac",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "dea67e89fcc54472ae9db8e097a637fb",
+        "monitoring_location_id": "USGS-12396500",
+        "parameter_code": "00065",
+        "statistic_id": "00011",
+        "time": "2026-11-11T01:30:00+00:00",
+        "value": "89.20",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "53719e68-1150-403a-8ef6-9f8b5d53742f",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "dea67e89fcc54472ae9db8e097a637fb",
+        "monitoring_location_id": "USGS-12396500",
+        "parameter_code": "00065",
+        "statistic_id": "00011",
+        "time": "2026-11-11T01:45:00+00:00",
+        "value": "89.16",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "e980e08f-e24c-4127-b43b-cd497313e7c3",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "time_series_id": "dea67e89fcc54472ae9db8e097a637fb",
+        "monitoring_location_id": "USGS-12396500",
+        "parameter_code": "00065",
+        "statistic_id": "00011",
+        "time": "2026-11-11T02:00:00+00:00",
+        "value": "89.12",
+        "approval_status": "Provisional",
+        "qualifier": null
+      },
+      "id": "f9276d64-964f-4ed4-8080-aa38260eb88e",
+      "geometry": null
+    }
+  ],
+  "numberReturned": 16,
+  "links": [
+    {
+      "type": "application/geo+json",
+      "rel": "self",
+      "title": "This document as GeoJSON",
+      "href": "https://api.waterdata.usgs.gov/ogcapi/v1/collections/continuous/items?f=json&filter-lang=cql2-text&filter=monitoring_location_id%20IN%20%28%27USGS-12396500%27%29%20AND%20parameter_code%20IN%20%28%2700065%27%29&time=P1D&skipGeometry=true&properties=time_series_id,monitoring_location_id,parameter_code,statistic_id,time,value,approval_status,qualifier&limit=50000"
+    },
+    {
+      "rel": "alternate",
+      "type": "application/ld+json",
+      "title": "This document as RDF (JSON-LD)",
+      "href": "https://api.waterdata.usgs.gov/ogcapi/v1/collections/continuous/items?f=jsonld&filter-lang=cql2-text&filter=monitoring_location_id%20IN%20%28%27USGS-12396500%27%29%20AND%20parameter_code%20IN%20%28%2700065%27%29&time=P1D&skipGeometry=true&properties=time_series_id,monitoring_location_id,parameter_code,statistic_id,time,value,approval_status,qualifier&limit=50000"
+    },
+    {
+      "type": "text/html",
+      "rel": "alternate",
+      "title": "This document as HTML",
+      "href": "https://api.waterdata.usgs.gov/ogcapi/v1/collections/continuous/items?f=html&filter-lang=cql2-text&filter=monitoring_location_id%20IN%20%28%27USGS-12396500%27%29%20AND%20parameter_code%20IN%20%28%2700065%27%29&time=P1D&skipGeometry=true&properties=time_series_id,monitoring_location_id,parameter_code,statistic_id,time,value,approval_status,qualifier&limit=50000"
+    },
+    {
+      "type": "text/csv; charset=utf-8",
+      "rel": "alternate",
+      "title": "This document as CSV",
+      "href": "https://api.waterdata.usgs.gov/ogcapi/v1/collections/continuous/items?f=csv&filter-lang=cql2-text&filter=monitoring_location_id%20IN%20%28%27USGS-12396500%27%29%20AND%20parameter_code%20IN%20%28%2700065%27%29&time=P1D&skipGeometry=true&properties=time_series_id,monitoring_location_id,parameter_code,statistic_id,time,value,approval_status,qualifier&limit=50000"
+    },
+    {
+      "type": "application/json",
+      "title": "Continuous values",
+      "rel": "collection",
+      "href": "https://api.waterdata.usgs.gov/ogcapi/v1/collections/continuous"
+    }
+  ],
+  "timeStamp": "2026-11-11T10:33:31.975957Z"
+}

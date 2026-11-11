@@ -1,0 +1,39 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_number": "364643089212301",
+        "monitoring_location_name": "East Prairie",
+        "agency_code": "MO005",
+        "time_zone_abbreviation": "CST",
+        "uses_daylight_savings": "Y"
+      },
+      "id": "MO005-364643089212301",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_number": "01646500",
+        "monitoring_location_name": "POTOMAC RIVER NEAR WASH, DC LITTLE FALLS PUMP STA",
+        "agency_code": "USGS",
+        "time_zone_abbreviation": "EST",
+        "uses_daylight_savings": "Y"
+      },
+      "id": "USGS-01646500",
+      "geometry": null
+    }
+  ],
+  "numberReturned": 2,
+  "links": [
+    {
+      "type": "application/geo+json",
+      "rel": "self",
+      "title": "This document as GeoJSON",
+      "href": "https://api.waterdata.usgs.gov/ogcapi/v1/collections/monitoring-locations/items?f=json&skipGeometry=true&monitoring_location_number=01646500,364643089212301&properties=monitoring_location_number,monitoring_location_name,agency_code,time_zone_abbreviation,uses_daylight_savings"
+    }
+  ],
+  "timeStamp": "2026-11-11T09:13:45.562718Z"
+}

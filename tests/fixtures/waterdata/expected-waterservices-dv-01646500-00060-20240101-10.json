@@ -1,0 +1,62 @@
+[
+  {
+    "siteNumber": "01646500",
+    "parameterCd": "00060",
+    "unitCode": "ft3/s",
+    "statCd": "00003",
+    "statName": "Mean",
+    "methodDescription": null,
+    "values": [
+      {
+        "dateTime": "2024-01-01T00:00:00.000",
+        "value": "8930",
+        "qualifiers": ["A"]
+      },
+      {
+        "dateTime": "2024-01-02T00:00:00.000",
+        "value": "7760",
+        "qualifiers": ["A"]
+      },
+      {
+        "dateTime": "2024-01-03T00:00:00.000",
+        "value": "6860",
+        "qualifiers": ["A"]
+      },
+      {
+        "dateTime": "2024-01-04T00:00:00.000",
+        "value": "6050",
+        "qualifiers": ["A"]
+      },
+      {
+        "dateTime": "2024-01-05T00:00:00.000",
+        "value": "5430",
+        "qualifiers": ["A"]
+      },
+      {
+        "dateTime": "2024-01-06T00:00:00.000",
+        "value": "5480",
+        "qualifiers": ["A"]
+      },
+      {
+        "dateTime": "2024-01-07T00:00:00.000",
+        "value": "7410",
+        "qualifiers": ["A"]
+      },
+      {
+        "dateTime": "2024-01-08T00:00:00.000",
+        "value": "6380",
+        "qualifiers": ["A"]
+      },
+      {
+        "dateTime": "2024-01-09T00:00:00.000",
+        "value": "9460",
+        "qualifiers": ["A"]
+      },
+      {
+        "dateTime": "2024-01-10T00:00:00.000",
+        "value": "39000",
+        "qualifiers": ["A"]
+      }
+    ]
+  }
+]

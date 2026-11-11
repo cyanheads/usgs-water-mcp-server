@@ -1,0 +1,43 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-74.08888889, 41.74155556]
+      },
+      "properties": {
+        "monitoring_location_id": "USGS-414429074052001",
+        "monitoring_location_name": "Local number, U-1620, SUNY New Paltz NY",
+        "site_type": "Well",
+        "site_type_code": "GW",
+        "country_code": "US",
+        "state_code": "36",
+        "county_code": "111",
+        "data": [
+          {
+            "parameter_code": "72019",
+            "unit_of_measure": "ft",
+            "parent_time_series_id": "346545fa961f42db899790de432fcbee",
+            "parent_statistic_id": "00003",
+            "parent_statistic_name": "Mean",
+            "values": [
+              {
+                "time_of_year": "11-11",
+                "time_of_year_type": "day_of_year",
+                "values": ["28.844", "28.114", "27.595", "26.19", "25.065", "23.914", "23.022"],
+                "percentiles": ["5", "10", "25", "50", "75", "90", "95"],
+                "sample_count": 21,
+                "approval_status": "approved",
+                "computation_id": "e0503e85-41f1-4645-95a4-be010cf4afd0",
+                "computation": "percentile"
+              }
+            ]
+          }
+        ]
+      }
+    }
+  ],
+  "next": null
+}

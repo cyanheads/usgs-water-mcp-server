@@ -1,6 +1,8 @@
 /**
- * @fileoverview Tests for water_find_sites tool — NWIS site discovery.
- * Mocks the nwis-service module to avoid live API calls.
+ * @fileoverview Tests for the water_find_sites tool's own logic — the major-filter rule, paging,
+ * canvas staging, notices, and rendering — with the site-discovery service mocked. The service's
+ * translation onto the OGC collections, and the tool's error wiring through it, run at the fetch
+ * seam in tests/services/site-discovery.test.ts.
  * @module tests/tools/water-find-sites.tool.test
  */
 
@@ -13,18 +15,19 @@ import {
   validationError,
 } from '@cyanheads/mcp-ts-core/errors';
 import { createMockContext, getEnrichment, runToolContract } from '@cyanheads/mcp-ts-core/testing';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { waterFindSites } from '@/mcp-server/tools/definitions/water-find-sites.tool.js';
-import type { NwisSite } from '@/services/nwis/types.js';
+import type { DiscoveredSite } from '@/services/waterdata/site-discovery.js';
 import { textContent } from '../helpers/content-block.js';
 import { captureError, contractError, declaredRecovery } from '../helpers/error-contract.js';
+import { createWaterDataFake, type WaterDataFake } from '../helpers/water-data-fake.js';
 
 const recovery = (reason: string) => declaredRecovery(waterFindSites.errors, reason);
 
-// Stub the network calls; keep the real classifyNwisFailure — it is pure, and it is the mapping
-// under test here.
-vi.mock('@/services/nwis/nwis-service.js', async (importOriginal) => ({
-  ...(await importOriginal<typeof import('@/services/nwis/nwis-service.js')>()),
+// Stub the network calls; the tool's classifier (water-data-errors) stays real — it is pure, and
+// it is the mapping the error tests below exercise.
+vi.mock('@/services/waterdata/site-discovery.js', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('@/services/waterdata/site-discovery.js')>()),
   findSites: vi.fn(),
 }));
 
@@ -34,11 +37,23 @@ vi.mock('@/services/canvas/canvas-accessor.js', () => ({
   getCanvas: () => mockCanvasInstance,
 }));
 
-import { findSites } from '@/services/nwis/nwis-service.js';
+import { findSites } from '@/services/waterdata/site-discovery.js';
 
 const mockFindSites = vi.mocked(findSites);
 
-const MOCK_SITES: NwisSite[] = [
+// A request that leaks past the findSites mock fails the test instead of reaching the network.
+let water: WaterDataFake;
+
+beforeEach(() => {
+  water = createWaterDataFake();
+  water.install();
+});
+
+afterEach(() => {
+  water.restore();
+});
+
+const MOCK_SITES: DiscoveredSite[] = [
   {
     siteNumber: '01646500',
     siteName: 'POTOMAC RIVER AT LITTLE FALLS PUMP STA NEAR WASHINGTON, DC',
@@ -47,20 +62,21 @@ const MOCK_SITES: NwisSite[] = [
     longitude: -77.1273,
     stateCd: '24',
     countyCd: '031',
-    // 12 digits, as NWIS actually returns for this site. Paired with the 8-digit hucCd in
-    // makeSites() below, the fixtures carry both HUC levels site records come back at.
+    // 12 digits, as USGS records this site. Paired with the 8-digit hucCd in makeSites() below,
+    // the fixtures carry both HUC levels site records come back at.
     hucCd: '020700081005',
     drainageArea: 11560,
     altitude: 35.12,
     contributingArea: 11550,
+    lastObservedAt: '2026-11-11T07:50:00.000Z',
   },
 ];
 
 /**
  * Build N minimal mock sites (basic mode — no expanded fields). Pass includeHuc=false to model
- * sites NWIS assigned no HUC to (hucCd omitted, as mapSiteRow now does for a blank huc_cd).
+ * sites USGS assigned no HUC to (hucCd omitted, as the service does for a null HUC).
  */
-function makeSites(count: number, includeHuc = true): NwisSite[] {
+function makeSites(count: number, includeHuc = true): DiscoveredSite[] {
   return Array.from({ length: count }, (_, i) => ({
     siteNumber: String(10000000 + i).padStart(8, '0'),
     siteName: `MOCK SITE ${i}`,
@@ -68,6 +84,7 @@ function makeSites(count: number, includeHuc = true): NwisSite[] {
     latitude: 38.0 + i * 0.01,
     longitude: -98.0,
     ...(includeHuc ? { hucCd: '10270206' } : {}),
+    lastObservedAt: i % 2 === 0 ? '2026-10-01T00:00:00.000Z' : null,
   }));
 }
 
@@ -147,7 +164,19 @@ describe('waterFindSites', () => {
     });
   });
 
-  it('stages huc_cd as null for sites NWIS assigned no HUC (regression: #22)', async () => {
+  it('stages last_observed_at for every site, null where the site has no matching series (#52)', async () => {
+    mockFindSites.mockResolvedValue(makeSites(600));
+    const { registerTable } = stageCanvas();
+    const ctx = createMockContext({ errors: waterFindSites.errors });
+    await waterFindSites.handler(waterFindSites.input.parse({ stateCd: 'KS' }), ctx);
+
+    const [, rowsArg] = registerTable.mock.calls[0]!;
+    expect(rowsArg).toHaveLength(600);
+    expect(rowsArg[0]).toHaveProperty('last_observed_at', '2026-10-01T00:00:00.000Z');
+    expect(rowsArg[1]).toHaveProperty('last_observed_at', null);
+  });
+
+  it('stages huc_cd as null for sites USGS assigned no HUC (regression: #22)', async () => {
     // Every staged site lacks hucCd. The canvas row must carry huc_cd: null, not undefined — the
     // first row seeds DuckDB column types, so a bare undefined would leave the column untyped.
     mockFindSites.mockResolvedValue(makeSites(600, false));
@@ -207,31 +236,32 @@ describe('waterFindSites', () => {
     mockFindSites.mockResolvedValue([]);
     const result = await runToolContract(waterFindSites, { bbox: '-160.0,5.0,-159.9,5.1' });
     const hint =
-      'Broaden the bounding box, remove parameterCd or siteType filters, or try a different state/HUC.';
+      'Broaden the bounding box, widen or drop observedWithin, remove parameterCd, hasDataTypeCd, or siteType filters, or try a different state/HUC.';
     expect(result.structuredContent).toMatchObject({ error: { data: { recovery: { hint } } } });
     expect(textContent(result.content[0])).toContain(hint);
   });
 
-  it('maps an NWIS rejection to invalid_request, surfacing the field NWIS named', async () => {
-    // A two-letter state code that isn't a real state passes the edge schema and still reaches the
-    // service; the reason must not pretend to know which filter was at fault when only NWIS's
-    // message does. Rejection text is NWIS's own, verbatim.
+  it('maps a refused filter value to invalid_request, keeping the service message', async () => {
+    // A two-letter state code that isn't a real state passes the edge schema and is refused by the
+    // service's translation, which names the value; the reason names no field of its own.
     mockFindSites.mockRejectedValue(
-      validationError(
-        'NWIS rejected the request: HTTP Status 400 - stateCd not found, server=[caas01]',
-        { httpStatus: 400 },
-      ),
+      validationError('stateCd "ZZ" is not a US state or territory postal code.', {
+        reason: 'invalid_request',
+      }),
     );
     await expect(contractError(waterFindSites, { stateCd: 'ZZ' })).resolves.toMatchObject({
       code: JsonRpcErrorCode.ValidationError,
       data: { reason: 'invalid_request', recovery: recovery('invalid_request') },
-      message: expect.stringContaining('stateCd not found'),
+      message: expect.stringContaining('stateCd "ZZ"'),
     });
   });
 
-  it('maps 5xx/timeout to upstream_error', async () => {
+  it('maps an upstream failure to upstream_error', async () => {
     mockFindSites.mockRejectedValue(
-      serviceUnavailable('NWIS returned HTTP 503: Service Unavailable', { status: 503 }),
+      serviceUnavailable('USGS Water Data OGC API answered HTTP 503.', {
+        reason: 'upstream_error',
+        upstreamStatus: 503,
+      }),
     );
     await expect(contractError(waterFindSites, { stateCd: 'VA' })).resolves.toMatchObject({
       code: JsonRpcErrorCode.ServiceUnavailable,
@@ -257,7 +287,8 @@ describe('waterFindSites', () => {
   });
 
   it('formats sites without state/county when absent (basic mode)', () => {
-    const basicSite: NwisSite = {
+    const basicSite: DiscoveredSite = {
+      lastObservedAt: null,
       siteNumber: '01646500',
       siteName: 'POTOMAC RIVER AT LITTLE FALLS PUMP STA NEAR WASHINGTON, DC',
       siteType: 'ST',
@@ -281,7 +312,8 @@ describe('waterFindSites', () => {
     // altitude silently dropped it from content[] while structuredContent kept it. format-parity
     // can't catch this — it always synthesizes both siblings populated together, never the real
     // "drainageArea absent, altitude present" combination basic mode produces.
-    const basicSiteWithAltitude: NwisSite = {
+    const basicSiteWithAltitude: DiscoveredSite = {
+      lastObservedAt: null,
       siteNumber: '363319076253301',
       siteName: 'GROUNDWATER WELL NEAR SUFFOLK, VA',
       siteType: 'GW',
@@ -304,7 +336,8 @@ describe('waterFindSites', () => {
   it('omits the HUC line entirely when NWIS assigned no HUC (regression: #22)', () => {
     // A groundwater site NWIS gave no HUC: mapSiteRow now omits hucCd (like every sparse sibling)
     // instead of backfilling '', so format() must skip the label rather than print a bare "HUC:".
-    const noHucSite: NwisSite = {
+    const noHucSite: DiscoveredSite = {
+      lastObservedAt: null,
       siteNumber: '363835076202001',
       siteName: '60B 27',
       siteType: 'GW',
@@ -326,7 +359,8 @@ describe('waterFindSites', () => {
   it('renders State/County even when HUC is absent (decoupled location parts)', () => {
     // HUC and state/county are independent — an absent HUC must not suppress the state/county that
     // expanded mode does carry.
-    const site: NwisSite = {
+    const site: DiscoveredSite = {
+      lastObservedAt: null,
       siteNumber: '01646500',
       siteName: 'POTOMAC RIVER',
       siteType: 'ST',
@@ -717,7 +751,7 @@ describe('waterFindSites', () => {
 
       const notice = (result.structuredContent as { notice?: string }).notice ?? '';
       expect(notice).toBe(
-        'Result capped at 500 of 3231 matching sites. Add bbox, countyCd, huc, siteType, parameterCd, or hasDataTypeCd filters to narrow the query.',
+        'Result capped at 500 of 3231 matching sites. Add bbox, countyCd, huc, siteType, parameterCd, hasDataTypeCd, or observedWithin filters to narrow the query.',
       );
 
       // content[] carries the same notice as a quoted trailer line, not a code span.
@@ -771,6 +805,17 @@ describe('waterFindSites', () => {
       ]) {
         expect(await stagedNameFor({ stateCd: 'KS', siteType: 'GW', ...extra })).not.toBe(base);
       }
+    });
+
+    it('moves with observedWithin and with its window, which change the staged rows (#52)', async () => {
+      const base = await stagedNameFor({ stateCd: 'KS', siteType: 'GW' });
+      const week = await stagedNameFor({ stateCd: 'KS', siteType: 'GW', observedWithin: 'P7D' });
+      const month = await stagedNameFor({ stateCd: 'KS', siteType: 'GW', observedWithin: 'P30D' });
+      expect(week).toMatch(/^water_sites_KS_GW_[0-9a-f]{8}$/);
+      expect(new Set([base, week, month]).size).toBe(3);
+      expect(await stagedNameFor({ stateCd: 'KS', siteType: 'GW', observedWithin: 'P7D' })).toBe(
+        week,
+      );
     });
 
     it('is unchanged by limit and offset — staging always holds the full match set', async () => {
@@ -965,6 +1010,132 @@ describe('waterFindSites', () => {
       const ctx = createMockContext({ errors: waterFindSites.errors });
       await waterFindSites.handler(waterFindSites.input.parse({ stateCd: 'RI' }), ctx);
       expect(getEnrichment(ctx)).not.toHaveProperty('notice');
+    });
+  });
+
+  describe('last observation and recency (#52)', () => {
+    const rendered = (result: Awaited<ReturnType<typeof runToolContract>>) =>
+      result.content.map((b) => ('text' in b ? b.text : '')).join('\n');
+
+    it('renders each site’s lastObservedAt on both surfaces, a null one as none recorded', async () => {
+      mockFindSites.mockResolvedValue([
+        MOCK_SITES[0]!,
+        { ...makeSites(2)[1]!, siteNumber: '12122500', siteName: 'CEDAR RIVER AT RENTON, WA' },
+      ]);
+      const result = await runToolContract(waterFindSites, { bbox: '-122.5,47.4,-122.0,47.8' });
+
+      const { sites } = result.structuredContent as { sites: DiscoveredSite[] };
+      expect(sites.map((s) => [s.siteNumber, s.lastObservedAt])).toEqual([
+        ['01646500', '2026-11-11T07:50:00.000Z'],
+        ['12122500', null],
+      ]);
+      const blocks = rendered(result).split('### ').slice(1);
+      expect(blocks[0]).toContain('(01646500)');
+      expect(blocks[0]).toContain('**Last observed:** 2026-11-11T07:50:00.000Z');
+      expect(blocks[1]).toContain('(12122500)');
+      expect(blocks[1]).toContain('**Last observed:** none recorded');
+      expect(rendered(result)).not.toContain('no matching series');
+    });
+
+    it('describes a null lastObservedAt as either no matching series or none with a recorded time', () => {
+      const description =
+        waterFindSites.output.shape.sites.element.shape.lastObservedAt.description ?? '';
+      expect(description).toContain(
+        'Null when the site has no matching series, or none with a recorded time.',
+      );
+    });
+
+    it('passes observedWithin to the service and echoes it in the enrichment and the trailer', async () => {
+      mockFindSites.mockResolvedValue(MOCK_SITES);
+      const result = await runToolContract(waterFindSites, {
+        stateCd: 'MD',
+        observedWithin: 'P7D',
+      });
+
+      expect(mockFindSites).toHaveBeenCalledWith(
+        expect.objectContaining({ stateCd: 'MD', observedWithin: 'P7D' }),
+        expect.anything(),
+      );
+      expect(result.structuredContent).toMatchObject({
+        filters: { stateCd: 'MD', observedWithin: 'P7D', siteOutput: 'basic' },
+      });
+      expect(rendered(result)).toContain(
+        '**Filters applied:** state=MD, observedWithin=P7D, siteOutput=basic',
+      );
+    });
+
+    it('sends and renders no observedWithin when it is omitted', async () => {
+      mockFindSites.mockResolvedValue(MOCK_SITES);
+      const result = await runToolContract(waterFindSites, { stateCd: 'MD' });
+
+      expect(mockFindSites.mock.calls[0]![0]).not.toHaveProperty('observedWithin');
+      expect(rendered(result)).toContain('**Filters applied:** state=MD, siteOutput=basic');
+      expect(rendered(result)).not.toContain('observedWithin');
+    });
+
+    it('names observedWithin in the no_sites_found recovery when a window empties the match set', async () => {
+      mockFindSites.mockResolvedValue([]);
+      const result = await runToolContract(waterFindSites, {
+        stateCd: 'MD',
+        observedWithin: 'PT1H',
+      });
+
+      expect(result.structuredContent).toMatchObject({
+        error: {
+          code: JsonRpcErrorCode.NotFound,
+          data: {
+            reason: 'no_sites_found',
+            recovery: { hint: expect.stringContaining('widen or drop observedWithin') },
+          },
+        },
+      });
+      expect(rendered(result)).toContain('widen or drop observedWithin');
+    });
+
+    it('accepts ISO 8601 durations for observedWithin', () => {
+      for (const observedWithin of ['P7D', 'PT6H', 'P1Y', 'PT30M', 'P1DT12H', 'P2W', 'PT1.5S']) {
+        expect(
+          waterFindSites.input.safeParse({ stateCd: 'MD', observedWithin }).success,
+          observedWithin,
+        ).toBe(true);
+      }
+    });
+
+    it('rejects observedWithin that is no ISO 8601 duration, or a negative one, before any request', async () => {
+      for (const observedWithin of ['7 days', 'P-T2H', '-P7D', '7D', 'P', 'PT', 'P1H']) {
+        expect(
+          waterFindSites.input.safeParse({ stateCd: 'MD', observedWithin }).success,
+          observedWithin,
+        ).toBe(false);
+      }
+      const result = await runToolContract(waterFindSites, {
+        stateCd: 'MD',
+        observedWithin: '7 days',
+      });
+      expect(result.isError).toBe(true);
+      expect(rendered(result)).toContain('Must be an ISO 8601 duration');
+      expect(mockFindSites).not.toHaveBeenCalled();
+    });
+
+    it('says parameterCd and hasDataTypeCd match sites that ever reported, pointing at observedWithin and lastObservedAt', () => {
+      const parameterCd = waterFindSites.input.shape.parameterCd.description ?? '';
+      const hasDataTypeCd = waterFindSites.input.shape.hasDataTypeCd.description ?? '';
+      expect(parameterCd).toContain('each returned site has ever reported');
+      expect(hasDataTypeCd).toContain('Require sites that have ever reported');
+      for (const description of [parameterCd, hasDataTypeCd, waterFindSites.description]) {
+        expect(description).toContain('observedWithin');
+        expect(description).toContain('lastObservedAt');
+      }
+      expect(waterFindSites.description).toContain('match sites that have ever reported');
+      // "iv" is the continuous record, which a discontinued gage still has; never "real-time".
+      expect(hasDataTypeCd).not.toMatch(/real-time/i);
+    });
+
+    it('says which series parameterCd searches, and that discrete water-quality samples are not among them', () => {
+      const parameterCd = waterFindSites.input.shape.parameterCd.description ?? '';
+      expect(parameterCd).toContain(
+        'Matched against the series hasDataTypeCd selects (continuous, daily, and field-measurement series when it is omitted), never discrete water-quality samples',
+      );
     });
   });
 

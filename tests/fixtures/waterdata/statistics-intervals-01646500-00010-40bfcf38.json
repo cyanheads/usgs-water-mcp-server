@@ -1,0 +1,103 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-77.12763889, 38.94977778]
+      },
+      "properties": {
+        "monitoring_location_id": "USGS-01646500",
+        "monitoring_location_name": "POTOMAC RIVER NEAR WASH, DC LITTLE FALLS PUMP STA",
+        "site_type": "Stream",
+        "site_type_code": "ST",
+        "country_code": "US",
+        "state_code": "24",
+        "county_code": "031",
+        "data": [
+          {
+            "parameter_code": "00010",
+            "unit_of_measure": "degC",
+            "parent_time_series_id": "40bfcf380ef240e18699ee4875350640",
+            "parent_statistic_id": "00003",
+            "parent_statistic_name": "Mean",
+            "values": [
+              {
+                "start_date": "2019-11-01",
+                "end_date": "2019-11-30",
+                "interval_type": "month",
+                "value": "8.72",
+                "sample_count": 30,
+                "approval_status": "approved",
+                "computation_id": "afb75993-ea88-4b7c-b412-d1352b4fbc72",
+                "computation": "arithmetic_mean"
+              },
+              {
+                "start_date": "2020-11-03",
+                "end_date": "2020-11-30",
+                "interval_type": "month",
+                "value": "10.7",
+                "sample_count": 24,
+                "approval_status": "approved",
+                "computation_id": "f20fbe94-7f97-4bdb-98b6-c1a9ac04d255",
+                "computation": "arithmetic_mean"
+              },
+              {
+                "start_date": "2021-11-01",
+                "end_date": "2021-11-30",
+                "interval_type": "month",
+                "value": "9.621",
+                "sample_count": 29,
+                "approval_status": "approved",
+                "computation_id": "5b3a9e87-b980-4dff-bb36-4ba43dcffd45",
+                "computation": "arithmetic_mean"
+              },
+              {
+                "start_date": "2022-11-01",
+                "end_date": "2022-11-30",
+                "interval_type": "month",
+                "value": "10.957",
+                "sample_count": 30,
+                "approval_status": "approved",
+                "computation_id": "4f3fab3a-7b3b-4d34-b1c9-5173ad5a5051",
+                "computation": "arithmetic_mean"
+              },
+              {
+                "start_date": "2023-11-01",
+                "end_date": "2023-11-30",
+                "interval_type": "month",
+                "value": "10.47",
+                "sample_count": 30,
+                "approval_status": "approved",
+                "computation_id": "e70a30d3-2cb7-48de-998f-1f8f019c4923",
+                "computation": "arithmetic_mean"
+              },
+              {
+                "start_date": "2024-11-01",
+                "end_date": "2024-11-30",
+                "interval_type": "month",
+                "value": "12.49",
+                "sample_count": 30,
+                "approval_status": "approved",
+                "computation_id": "02d0f8f8-5d6a-4a9b-b524-e6f4de66b4f9",
+                "computation": "arithmetic_mean"
+              },
+              {
+                "start_date": "2025-11-01",
+                "end_date": "2025-11-30",
+                "interval_type": "month",
+                "value": "9.867",
+                "sample_count": 30,
+                "approval_status": "approved",
+                "computation_id": "44300c40-3c0f-4cc9-8fa8-06042222d05e",
+                "computation": "arithmetic_mean"
+              }
+            ]
+          }
+        ]
+      }
+    }
+  ],
+  "next": null
+}

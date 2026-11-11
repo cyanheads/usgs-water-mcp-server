@@ -1,0 +1,993 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_id": "MO005-364643089212301",
+        "parameter_code": "72019",
+        "statistic_id": "00011",
+        "begin": "2000-05-05T13:30:00+00:00",
+        "end": "2026-11-11T04:00:00+00:00",
+        "sublocation_identifier": null,
+        "web_description": null,
+        "computation_period_identifier": "Points",
+        "computation_identifier": "Instantaneous",
+        "unit_of_measure": "ft",
+        "parameter_name": "Water level, depth LSD"
+      },
+      "id": "00a6f5d8390e47f984c6c2f77a08af59",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_id": "USGS-11176400",
+        "parameter_code": "00065",
+        "statistic_id": "00011",
+        "begin": "2007-10-01T08:00:00+00:00",
+        "end": "2026-11-11T06:45:00+00:00",
+        "sublocation_identifier": null,
+        "web_description": null,
+        "computation_period_identifier": "Points",
+        "computation_identifier": "Instantaneous",
+        "unit_of_measure": "ft",
+        "parameter_name": "Gage height"
+      },
+      "id": "07a0fd1cd6d745588726442645970244",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_id": "USGS-01646500",
+        "parameter_code": "00010",
+        "statistic_id": "00011",
+        "begin": "2013-11-23T05:00:00+00:00",
+        "end": "2019-05-27T19:00:00+00:00",
+        "sublocation_identifier": "From multiparameter sonde",
+        "web_description": "Discontinued",
+        "computation_period_identifier": "Points",
+        "computation_identifier": "Instantaneous",
+        "unit_of_measure": "degC",
+        "parameter_name": "Temperature, water"
+      },
+      "id": "089a50eca92a4e268b8816a1bc22c000",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_id": "USGS-09497830",
+        "parameter_code": "72203",
+        "statistic_id": "00011",
+        "begin": "2026-07-13T00:00:00+00:00",
+        "end": "2026-11-11T00:00:00+00:00",
+        "sublocation_identifier": null,
+        "web_description": "Bubbler Purge Pressure",
+        "computation_period_identifier": "Points",
+        "computation_identifier": "Instantaneous",
+        "unit_of_measure": "psi",
+        "parameter_name": "Absolute pressure"
+      },
+      "id": "08df7daae80b4586bb4324550ebca65e",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_id": "USGS-01646500",
+        "parameter_code": "00095",
+        "statistic_id": "00011",
+        "begin": "2013-11-23T05:00:00+00:00",
+        "end": "2019-05-27T20:00:00+00:00",
+        "sublocation_identifier": "From multiparameter sonde",
+        "web_description": "Discontinued",
+        "computation_period_identifier": "Points",
+        "computation_identifier": "Instantaneous",
+        "unit_of_measure": "uS/cm",
+        "parameter_name": "Specific cond at 25C"
+      },
+      "id": "0db1ff42570e4521b8dc8958558f7250",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_id": "USGS-09497830",
+        "parameter_code": "00300",
+        "statistic_id": "00011",
+        "begin": "2026-07-13T00:00:00+00:00",
+        "end": "2026-11-11T08:45:00+00:00",
+        "sublocation_identifier": null,
+        "web_description": null,
+        "computation_period_identifier": "Points",
+        "computation_identifier": "Instantaneous",
+        "unit_of_measure": "mg/l",
+        "parameter_name": "Dissolved oxygen"
+      },
+      "id": "20165bad775a4fe6a463a83c3b2a3001",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_id": "USGS-01115170",
+        "parameter_code": "00095",
+        "statistic_id": "00011",
+        "begin": "2009-10-01T05:00:00+00:00",
+        "end": "2026-11-11T07:20:00+00:00",
+        "sublocation_identifier": null,
+        "web_description": null,
+        "computation_period_identifier": "Points",
+        "computation_identifier": "Instantaneous",
+        "unit_of_measure": "uS/cm",
+        "parameter_name": "Specific cond at 25C"
+      },
+      "id": "27d863c67c0940f7b19d252067713202",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_id": "USGS-08131400",
+        "parameter_code": "00060",
+        "statistic_id": "00011",
+        "begin": "2001-07-20T05:00:00+00:00",
+        "end": "2026-11-11T09:20:00+00:00",
+        "sublocation_identifier": null,
+        "web_description": "15-Minute Updates",
+        "computation_period_identifier": "Points",
+        "computation_identifier": "Instantaneous",
+        "unit_of_measure": "ft^3/s",
+        "parameter_name": "Discharge"
+      },
+      "id": "31004e8228ad4429b1ca54f146bb9e93",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_id": "USGS-01646500",
+        "parameter_code": "00300",
+        "statistic_id": "00011",
+        "begin": "2013-11-23T05:00:00+00:00",
+        "end": "2019-05-27T20:00:00+00:00",
+        "sublocation_identifier": "From multiparameter sonde",
+        "web_description": "Discontinued",
+        "computation_period_identifier": "Points",
+        "computation_identifier": "Instantaneous",
+        "unit_of_measure": "mg/l",
+        "parameter_name": "Dissolved oxygen"
+      },
+      "id": "3249b53540a44dc0877e6ff17b3325af",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_id": "USGS-01646500",
+        "parameter_code": "63680",
+        "statistic_id": "00011",
+        "begin": "2013-11-23T05:00:00+00:00",
+        "end": "2019-05-27T20:00:00+00:00",
+        "sublocation_identifier": "From multiparameter sonde",
+        "web_description": "Discontinued",
+        "computation_period_identifier": "Points",
+        "computation_identifier": "Instantaneous",
+        "unit_of_measure": "_FNU",
+        "parameter_name": "Turbidity, FNU"
+      },
+      "id": "333ff6133c21492195c89858c23b302d",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_id": "USGS-11176400",
+        "parameter_code": "63160",
+        "statistic_id": "00011",
+        "begin": "2023-11-13T00:00:00+00:00",
+        "end": "2026-11-11T06:45:00+00:00",
+        "sublocation_identifier": null,
+        "web_description": null,
+        "computation_period_identifier": "Points",
+        "computation_identifier": "Instantaneous",
+        "unit_of_measure": "ft",
+        "parameter_name": "Stream level, NAVD88"
+      },
+      "id": "34deab69dbd2488790a7aa535a5c51d0",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_id": "USGS-06819550",
+        "parameter_code": "63680",
+        "statistic_id": "00011",
+        "begin": "2022-03-16T19:30:00+00:00",
+        "end": "2026-11-11T08:15:00+00:00",
+        "sublocation_identifier": null,
+        "web_description": null,
+        "computation_period_identifier": "Points",
+        "computation_identifier": "Instantaneous",
+        "unit_of_measure": "_FNU",
+        "parameter_name": "Turbidity, FNU"
+      },
+      "id": "3916414b86be4ca78072bd0e49a3d534",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_id": "USGS-09497830",
+        "parameter_code": "00400",
+        "statistic_id": "00011",
+        "begin": "2026-07-14T09:15:00+00:00",
+        "end": "2026-11-11T08:45:00+00:00",
+        "sublocation_identifier": null,
+        "web_description": null,
+        "computation_period_identifier": "Points",
+        "computation_identifier": "Instantaneous",
+        "unit_of_measure": "pH Units",
+        "parameter_name": "pH"
+      },
+      "id": "3b8a6d72bd5648959a684855b6ebf438",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_id": "USGS-01646500",
+        "parameter_code": "63160",
+        "statistic_id": "00011",
+        "begin": "2007-10-01T05:00:00+00:00",
+        "end": "2026-11-11T06:50:00+00:00",
+        "sublocation_identifier": null,
+        "web_description": null,
+        "computation_period_identifier": "Points",
+        "computation_identifier": "Instantaneous",
+        "unit_of_measure": "ft",
+        "parameter_name": "Stream level, NAVD88"
+      },
+      "id": "400b3b19db09443da982418ceda360a6",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_id": "USGS-06819550",
+        "parameter_code": "00060",
+        "statistic_id": "00011",
+        "begin": "2021-11-24T15:30:00+00:00",
+        "end": "2026-11-11T08:15:00+00:00",
+        "sublocation_identifier": null,
+        "web_description": null,
+        "computation_period_identifier": "Points",
+        "computation_identifier": "Instantaneous",
+        "unit_of_measure": "ft^3/s",
+        "parameter_name": "Discharge"
+      },
+      "id": "421c40b60f8d4beeae4ca123bb2141e1",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_id": "USGS-09497830",
+        "parameter_code": "00095",
+        "statistic_id": "00011",
+        "begin": "2026-07-13T00:00:00+00:00",
+        "end": "2026-11-11T08:45:00+00:00",
+        "sublocation_identifier": null,
+        "web_description": null,
+        "computation_period_identifier": "Points",
+        "computation_identifier": "Instantaneous",
+        "unit_of_measure": "uS/cm",
+        "parameter_name": "Specific cond at 25C"
+      },
+      "id": "430f875d2cc146ef80cceb240bd66525",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_id": "USGS-01646500",
+        "parameter_code": "00010",
+        "statistic_id": "00011",
+        "begin": "2007-10-01T05:00:00+00:00",
+        "end": "2019-10-01T16:15:00+00:00",
+        "sublocation_identifier": "4.1 ft from riverbed (middle)",
+        "web_description": "Discontinued",
+        "computation_period_identifier": "Points",
+        "computation_identifier": "Instantaneous",
+        "unit_of_measure": "degC",
+        "parameter_name": "Temperature, water"
+      },
+      "id": "52b33353ad684b76a8afd49cf017a42c",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_id": "USGS-01115170",
+        "parameter_code": "00065",
+        "statistic_id": "00011",
+        "begin": "2009-02-25T17:50:00+00:00",
+        "end": "2026-11-11T05:20:00+00:00",
+        "sublocation_identifier": null,
+        "web_description": null,
+        "computation_period_identifier": "Points",
+        "computation_identifier": "Instantaneous",
+        "unit_of_measure": "ft",
+        "parameter_name": "Gage height"
+      },
+      "id": "59ce480a22e844d48211078f584f03ad",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_id": "USGS-11176400",
+        "parameter_code": "00060",
+        "statistic_id": "00011",
+        "begin": "1987-10-29T08:00:00+00:00",
+        "end": "2026-11-11T06:45:00+00:00",
+        "sublocation_identifier": null,
+        "web_description": null,
+        "computation_period_identifier": "Points",
+        "computation_identifier": "Instantaneous",
+        "unit_of_measure": "ft^3/s",
+        "parameter_name": "Discharge"
+      },
+      "id": "5ab5fea74fe947e3b05ad1c35083ae20",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_id": "USGS-01646500",
+        "parameter_code": "00400",
+        "statistic_id": "00011",
+        "begin": "2019-07-24T18:00:00+00:00",
+        "end": "2026-11-11T08:50:00+00:00",
+        "sublocation_identifier": "From multiparameter sonde",
+        "web_description": null,
+        "computation_period_identifier": "Points",
+        "computation_identifier": "Instantaneous",
+        "unit_of_measure": "pH Units",
+        "parameter_name": "pH"
+      },
+      "id": "62603b70cb4a4ab29c0304e6bbb87e16",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_id": "USGS-01646500",
+        "parameter_code": "00060",
+        "statistic_id": "00011",
+        "begin": "1972-06-09T05:00:00+00:00",
+        "end": "2026-11-11T07:50:00+00:00",
+        "sublocation_identifier": null,
+        "web_description": null,
+        "computation_period_identifier": "Points",
+        "computation_identifier": "Instantaneous",
+        "unit_of_measure": "ft^3/s",
+        "parameter_name": "Discharge"
+      },
+      "id": "66a4e3fb8abe42fcb0942b5c0fe98f68",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_id": "USGS-01646500",
+        "parameter_code": "63680",
+        "statistic_id": "00011",
+        "begin": "2019-07-24T18:00:00+00:00",
+        "end": "2026-11-11T06:50:00+00:00",
+        "sublocation_identifier": "From multiparameter sonde",
+        "web_description": null,
+        "computation_period_identifier": "Points",
+        "computation_identifier": "Instantaneous",
+        "unit_of_measure": "_FNU",
+        "parameter_name": "Turbidity, FNU"
+      },
+      "id": "6c904cf82efd42a6b7f94c982cea89f7",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_id": "USGS-01115170",
+        "parameter_code": "00045",
+        "statistic_id": "00011",
+        "begin": "2014-11-25T21:30:00+00:00",
+        "end": "2026-11-11T08:20:00+00:00",
+        "sublocation_identifier": "Met station",
+        "web_description": null,
+        "computation_period_identifier": "Points",
+        "computation_identifier": "Instantaneous",
+        "unit_of_measure": "in",
+        "parameter_name": "Precipitation"
+      },
+      "id": "6c931fe011624ecfaf16206309fc6518",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_id": "USGS-06819550",
+        "parameter_code": "99133",
+        "statistic_id": "00011",
+        "begin": "2022-03-16T18:30:00+00:00",
+        "end": "2026-11-11T08:15:00+00:00",
+        "sublocation_identifier": null,
+        "web_description": null,
+        "computation_period_identifier": "Points",
+        "computation_identifier": "Instantaneous",
+        "unit_of_measure": "mg/l",
+        "parameter_name": "NO3+NO2,water,insitu as N"
+      },
+      "id": "771c4253181a4dbea7f75f14580084b9",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_id": "USGS-09497830",
+        "parameter_code": "63675",
+        "statistic_id": "00011",
+        "begin": "2026-07-13T00:00:00+00:00",
+        "end": "2026-11-11T08:45:00+00:00",
+        "sublocation_identifier": null,
+        "web_description": null,
+        "computation_period_identifier": "Points",
+        "computation_identifier": "Instantaneous",
+        "unit_of_measure": "_NTU",
+        "parameter_name": "Turbidity, NTU"
+      },
+      "id": "7c76e8c070114a19b7c54f513947a69c",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_id": "USGS-09497830",
+        "parameter_code": "70969",
+        "statistic_id": "00011",
+        "begin": "2026-07-13T00:00:00+00:00",
+        "end": "2026-11-11T08:00:00+00:00",
+        "sublocation_identifier": null,
+        "web_description": null,
+        "computation_period_identifier": "Points",
+        "computation_identifier": "Instantaneous",
+        "unit_of_measure": "V",
+        "parameter_name": "DCP battery voltage"
+      },
+      "id": "810699d67e364fb6b83e86974c890d9e",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_id": "USGS-01115170",
+        "parameter_code": "72198",
+        "statistic_id": "00011",
+        "begin": "2024-01-10T04:00:00+00:00",
+        "end": "2026-11-11T08:20:00+00:00",
+        "sublocation_identifier": "Met station",
+        "web_description": null,
+        "computation_period_identifier": "Points",
+        "computation_identifier": "Instantaneous",
+        "unit_of_measure": "ft",
+        "parameter_name": "Snow depth"
+      },
+      "id": "85266124f72e4020a7f7e8f79a315367",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_id": "USGS-01115170",
+        "parameter_code": "00020",
+        "statistic_id": "00011",
+        "begin": "2014-12-03T05:00:00+00:00",
+        "end": "2026-11-11T08:20:00+00:00",
+        "sublocation_identifier": "Met station",
+        "web_description": null,
+        "computation_period_identifier": "Points",
+        "computation_identifier": "Instantaneous",
+        "unit_of_measure": "degC",
+        "parameter_name": "Temperature, air"
+      },
+      "id": "87eb814753e247bda8ff2642ca9632d5",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_id": "USGS-01646500",
+        "parameter_code": "00065",
+        "statistic_id": "00011",
+        "begin": "2007-10-01T05:00:00+00:00",
+        "end": "2026-11-11T08:50:00+00:00",
+        "sublocation_identifier": null,
+        "web_description": null,
+        "computation_period_identifier": "Points",
+        "computation_identifier": "Instantaneous",
+        "unit_of_measure": "ft",
+        "parameter_name": "Gage height"
+      },
+      "id": "8a83eb3a3cbc4087b0c201cf07c0c76d",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_id": "USGS-09497830",
+        "parameter_code": "00065",
+        "statistic_id": "00011",
+        "begin": "2026-07-13T00:00:00+00:00",
+        "end": "2026-11-11T08:45:00+00:00",
+        "sublocation_identifier": null,
+        "web_description": "From WQ-Probe (Backup)",
+        "computation_period_identifier": "Points",
+        "computation_identifier": "Instantaneous",
+        "unit_of_measure": "ft",
+        "parameter_name": "Gage height"
+      },
+      "id": "948d8ed67c17408f9a91c30663ceae06",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_id": "USGS-09497830",
+        "parameter_code": "00065",
+        "statistic_id": "00011",
+        "begin": "2026-07-13T00:00:00+00:00",
+        "end": "2026-11-11T08:45:00+00:00",
+        "sublocation_identifier": null,
+        "web_description": null,
+        "computation_period_identifier": "Points",
+        "computation_identifier": "Instantaneous",
+        "unit_of_measure": "ft",
+        "parameter_name": "Gage height"
+      },
+      "id": "95a4b586933b4e4eb769fa2df55bda42",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_id": "USGS-14233500",
+        "parameter_code": "00060",
+        "statistic_id": "00011",
+        "begin": "2026-07-13T00:00:00+00:00",
+        "end": "2026-11-11T07:30:00+00:00",
+        "sublocation_identifier": null,
+        "web_description": null,
+        "computation_period_identifier": "Points",
+        "computation_identifier": "Instantaneous",
+        "unit_of_measure": "ft^3/s",
+        "parameter_name": "Discharge"
+      },
+      "id": "98fb5314c4bf4399a452fc3cbebe374a",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_id": "MO005-364643089212301",
+        "parameter_code": "62611",
+        "statistic_id": "00011",
+        "begin": "2023-11-13T00:00:00+00:00",
+        "end": "2026-11-11T08:00:00+00:00",
+        "sublocation_identifier": null,
+        "web_description": null,
+        "computation_period_identifier": "Points",
+        "computation_identifier": "Instantaneous",
+        "unit_of_measure": "ft",
+        "parameter_name": "Elevation, GW, NAVD88"
+      },
+      "id": "9bae8b2496bb40b4aaeb731e1495aabf",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_id": "USGS-08131400",
+        "parameter_code": "00065",
+        "statistic_id": "00011",
+        "begin": "2007-10-01T06:30:00+00:00",
+        "end": "2026-11-11T09:20:00+00:00",
+        "sublocation_identifier": null,
+        "web_description": "15-Minute Updates",
+        "computation_period_identifier": "Points",
+        "computation_identifier": "Instantaneous",
+        "unit_of_measure": "ft",
+        "parameter_name": "Gage height"
+      },
+      "id": "a55ca7c2536247d281c96054bbc94ff4",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_id": "USGS-01115170",
+        "parameter_code": "74207",
+        "statistic_id": "00011",
+        "begin": "2018-04-08T05:00:00+00:00",
+        "end": "2020-03-17T18:15:00+00:00",
+        "sublocation_identifier": "Met station",
+        "web_description": "4 in below ground surface A",
+        "computation_period_identifier": "Points",
+        "computation_identifier": "Instantaneous",
+        "unit_of_measure": "%",
+        "parameter_name": "Soil moisture"
+      },
+      "id": "acd010f697744e1fbb289888a48293f6",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_id": "USGS-06819550",
+        "parameter_code": "00095",
+        "statistic_id": "00011",
+        "begin": "2022-03-16T20:15:00+00:00",
+        "end": "2026-11-11T08:15:00+00:00",
+        "sublocation_identifier": null,
+        "web_description": null,
+        "computation_period_identifier": "Points",
+        "computation_identifier": "Instantaneous",
+        "unit_of_measure": "uS/cm",
+        "parameter_name": "Specific cond at 25C"
+      },
+      "id": "aed9f775e59a48ba89bac21d21bffaff",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_id": "USGS-01646500",
+        "parameter_code": "00095",
+        "statistic_id": "00011",
+        "begin": "2007-10-01T05:00:00+00:00",
+        "end": "2019-10-01T16:30:00+00:00",
+        "sublocation_identifier": "7.1 ft from riverbed (top)",
+        "web_description": "Discontinued",
+        "computation_period_identifier": "Points",
+        "computation_identifier": "Instantaneous",
+        "unit_of_measure": "uS/cm",
+        "parameter_name": "Specific cond at 25C"
+      },
+      "id": "b0989ee576fc45f2a239439db908e019",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_id": "USGS-06819550",
+        "parameter_code": "00300",
+        "statistic_id": "00011",
+        "begin": "2022-03-16T19:30:00+00:00",
+        "end": "2026-11-11T08:15:00+00:00",
+        "sublocation_identifier": null,
+        "web_description": null,
+        "computation_period_identifier": "Points",
+        "computation_identifier": "Instantaneous",
+        "unit_of_measure": "mg/l",
+        "parameter_name": "Dissolved oxygen"
+      },
+      "id": "b1ce67c4db1e4e69b6c1b47e525eeca6",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_id": "USGS-01646500",
+        "parameter_code": "00095",
+        "statistic_id": "00011",
+        "begin": "2019-07-24T17:15:00+00:00",
+        "end": "2026-11-11T08:50:00+00:00",
+        "sublocation_identifier": "From multiparameter sonde",
+        "web_description": null,
+        "computation_period_identifier": "Points",
+        "computation_identifier": "Instantaneous",
+        "unit_of_measure": "uS/cm",
+        "parameter_name": "Specific cond at 25C"
+      },
+      "id": "b6c218a885b64b40aab7780d616ca13d",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_id": "USGS-01646500",
+        "parameter_code": "00300",
+        "statistic_id": "00011",
+        "begin": "2019-07-24T18:15:00+00:00",
+        "end": "2026-11-11T08:50:00+00:00",
+        "sublocation_identifier": "From multiparameter sonde",
+        "web_description": null,
+        "computation_period_identifier": "Points",
+        "computation_identifier": "Instantaneous",
+        "unit_of_measure": "mg/l",
+        "parameter_name": "Dissolved oxygen"
+      },
+      "id": "bb18f3558934465194f8da1d5f1c3df3",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_id": "USGS-09497830",
+        "parameter_code": "00010",
+        "statistic_id": "00011",
+        "begin": "2026-07-13T00:00:00+00:00",
+        "end": "2026-11-11T08:45:00+00:00",
+        "sublocation_identifier": null,
+        "web_description": null,
+        "computation_period_identifier": "Points",
+        "computation_identifier": "Instantaneous",
+        "unit_of_measure": "degC",
+        "parameter_name": "Temperature, water"
+      },
+      "id": "c12602dd41b7405193f4f2ae7778b091",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_id": "USGS-01646500",
+        "parameter_code": "99133",
+        "statistic_id": "00011",
+        "begin": "2019-07-24T17:00:00+00:00",
+        "end": "2026-11-11T08:30:00+00:00",
+        "sublocation_identifier": "SUNA",
+        "web_description": null,
+        "computation_period_identifier": "Points",
+        "computation_identifier": "Instantaneous",
+        "unit_of_measure": "mg/l",
+        "parameter_name": "NO3+NO2,water,insitu as N"
+      },
+      "id": "c42a4b0d3f3f4cd8b667a7e2e49a8cdf",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_id": "USGS-01646500",
+        "parameter_code": "00010",
+        "statistic_id": "00011",
+        "begin": "2007-10-01T05:00:00+00:00",
+        "end": "2019-10-01T16:30:00+00:00",
+        "sublocation_identifier": "7.1 ft from riverbed (top)",
+        "web_description": "Discontinued",
+        "computation_period_identifier": "Points",
+        "computation_identifier": "Instantaneous",
+        "unit_of_measure": "degC",
+        "parameter_name": "Temperature, water"
+      },
+      "id": "c8e767f6cdfc4ff484a99f77962dc46c",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_id": "USGS-01115170",
+        "parameter_code": "00060",
+        "statistic_id": "00011",
+        "begin": "2009-02-26T05:00:00+00:00",
+        "end": "2026-11-11T05:20:00+00:00",
+        "sublocation_identifier": null,
+        "web_description": null,
+        "computation_period_identifier": "Points",
+        "computation_identifier": "Instantaneous",
+        "unit_of_measure": "ft^3/s",
+        "parameter_name": "Discharge"
+      },
+      "id": "cbe581c0108145b9a1ad143f80a75d97",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_id": "USGS-01115170",
+        "parameter_code": "00010",
+        "statistic_id": "00011",
+        "begin": "2009-02-26T05:00:00+00:00",
+        "end": "2026-11-11T05:20:00+00:00",
+        "sublocation_identifier": null,
+        "web_description": null,
+        "computation_period_identifier": "Points",
+        "computation_identifier": "Instantaneous",
+        "unit_of_measure": "degC",
+        "parameter_name": "Temperature, water"
+      },
+      "id": "ce22a77ed6dd4f2f9b5fa2caea5736ef",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_id": "USGS-01646500",
+        "parameter_code": "99133",
+        "statistic_id": "00011",
+        "begin": "2011-12-03T05:00:00+00:00",
+        "end": "2019-06-11T15:00:00+00:00",
+        "sublocation_identifier": "SUNA",
+        "web_description": "Discontinued",
+        "computation_period_identifier": "Points",
+        "computation_identifier": "Instantaneous",
+        "unit_of_measure": "mg/l",
+        "parameter_name": "NO3+NO2,water,insitu as N"
+      },
+      "id": "ceea3bb9b349410ba4ad72128cb63392",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_id": "USGS-06819550",
+        "parameter_code": "00065",
+        "statistic_id": "00011",
+        "begin": "2021-11-24T15:30:00+00:00",
+        "end": "2026-11-11T08:15:00+00:00",
+        "sublocation_identifier": null,
+        "web_description": "Radar",
+        "computation_period_identifier": "Points",
+        "computation_identifier": "Instantaneous",
+        "unit_of_measure": "ft",
+        "parameter_name": "Gage height"
+      },
+      "id": "d13fe7368c7e42b4a66db66c1f98db9c",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_id": "USGS-01646500",
+        "parameter_code": "00010",
+        "statistic_id": "00011",
+        "begin": "2019-07-24T18:00:00+00:00",
+        "end": "2026-11-11T08:50:00+00:00",
+        "sublocation_identifier": "From multiparameter sonde",
+        "web_description": null,
+        "computation_period_identifier": "Points",
+        "computation_identifier": "Instantaneous",
+        "unit_of_measure": "degC",
+        "parameter_name": "Temperature, water"
+      },
+      "id": "d1875d1d73e447d2a1203105ba654e7d",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_id": "USGS-01646500",
+        "parameter_code": "00400",
+        "statistic_id": "00011",
+        "begin": "2013-11-23T05:00:00+00:00",
+        "end": "2019-05-27T20:00:00+00:00",
+        "sublocation_identifier": "From multiparameter sonde",
+        "web_description": "Discontinued",
+        "computation_period_identifier": "Points",
+        "computation_identifier": "Instantaneous",
+        "unit_of_measure": "pH Units",
+        "parameter_name": "pH"
+      },
+      "id": "d48f329cbda241b9923547b1dc2f90e0",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_id": "USGS-14233500",
+        "parameter_code": "00060",
+        "statistic_id": "00011",
+        "begin": "1993-10-21T07:00:00+00:00",
+        "end": "2009-10-01T06:45:00+00:00",
+        "sublocation_identifier": null,
+        "web_description": null,
+        "computation_period_identifier": "Points",
+        "computation_identifier": "Instantaneous",
+        "unit_of_measure": "ft^3/s",
+        "parameter_name": "Discharge"
+      },
+      "id": "dcc1a8a32dc84a149b49c29bc18bd45a",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_id": "USGS-06819550",
+        "parameter_code": "00010",
+        "statistic_id": "00011",
+        "begin": "2022-03-16T19:30:00+00:00",
+        "end": "2025-05-13T16:15:00+00:00",
+        "sublocation_identifier": null,
+        "web_description": null,
+        "computation_period_identifier": "Points",
+        "computation_identifier": "Instantaneous",
+        "unit_of_measure": "degC",
+        "parameter_name": "Temperature, water"
+      },
+      "id": "e14baef2e14446498c9084bf937a5d7f",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_id": "USGS-08131400",
+        "parameter_code": "00045",
+        "statistic_id": null,
+        "begin": "2026-07-13T00:00:00+00:00",
+        "end": "2026-11-11T08:35:00+00:00",
+        "sublocation_identifier": null,
+        "web_description": null,
+        "computation_period_identifier": "Points",
+        "computation_identifier": "Decumulated",
+        "unit_of_measure": "in",
+        "parameter_name": "Precipitation"
+      },
+      "id": "e43ee26d303d47cfb56614899dfc5392",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_id": "USGS-01646500",
+        "parameter_code": "00010",
+        "statistic_id": "00011",
+        "begin": "2007-10-01T05:00:00+00:00",
+        "end": "2019-10-01T16:15:00+00:00",
+        "sublocation_identifier": "1.0 ft from riverbed (bottom)",
+        "web_description": "Discontinued",
+        "computation_period_identifier": "Points",
+        "computation_identifier": "Instantaneous",
+        "unit_of_measure": "degC",
+        "parameter_name": "Temperature, water"
+      },
+      "id": "f60be489a22b4dfd9fd0fb97f3acc285",
+      "geometry": null
+    }
+  ],
+  "numberReturned": 53,
+  "links": [
+    {
+      "type": "application/geo+json",
+      "rel": "self",
+      "title": "This document as GeoJSON",
+      "href": "https://api.waterdata.usgs.gov/ogcapi/v1/collections/time-series-metadata/items?f=json&skipGeometry=true&computation_period_identifier=Points&limit=10000&properties=monitoring_location_id,parameter_code,statistic_id,begin,end,sublocation_identifier,web_description,computation_period_identifier,computation_identifier,unit_of_measure,parameter_name&filter-lang=cql2-text&filter=monitoring_location_id%20IN%20%28%27USGS-01646500%27,%27MO005-364643089212301%27,%27USGS-14233500%27,%27USGS-09497830%27,%27USGS-06819550%27,%27USGS-08131400%27,%27USGS-01115170%27,%27USGS-11176400%27%29"
+    },
+    {
+      "rel": "alternate",
+      "type": "application/ld+json",
+      "title": "This document as RDF (JSON-LD)",
+      "href": "https://api.waterdata.usgs.gov/ogcapi/v1/collections/time-series-metadata/items?f=jsonld&skipGeometry=true&computation_period_identifier=Points&limit=10000&properties=monitoring_location_id,parameter_code,statistic_id,begin,end,sublocation_identifier,web_description,computation_period_identifier,computation_identifier,unit_of_measure,parameter_name&filter-lang=cql2-text&filter=monitoring_location_id%20IN%20%28%27USGS-01646500%27,%27MO005-364643089212301%27,%27USGS-14233500%27,%27USGS-09497830%27,%27USGS-06819550%27,%27USGS-08131400%27,%27USGS-01115170%27,%27USGS-11176400%27%29"
+    },
+    {
+      "type": "text/html",
+      "rel": "alternate",
+      "title": "This document as HTML",
+      "href": "https://api.waterdata.usgs.gov/ogcapi/v1/collections/time-series-metadata/items?f=html&skipGeometry=true&computation_period_identifier=Points&limit=10000&properties=monitoring_location_id,parameter_code,statistic_id,begin,end,sublocation_identifier,web_description,computation_period_identifier,computation_identifier,unit_of_measure,parameter_name&filter-lang=cql2-text&filter=monitoring_location_id%20IN%20%28%27USGS-01646500%27,%27MO005-364643089212301%27,%27USGS-14233500%27,%27USGS-09497830%27,%27USGS-06819550%27,%27USGS-08131400%27,%27USGS-01115170%27,%27USGS-11176400%27%29"
+    },
+    {
+      "type": "text/csv; charset=utf-8",
+      "rel": "alternate",
+      "title": "This document as CSV",
+      "href": "https://api.waterdata.usgs.gov/ogcapi/v1/collections/time-series-metadata/items?f=csv&skipGeometry=true&computation_period_identifier=Points&limit=10000&properties=monitoring_location_id,parameter_code,statistic_id,begin,end,sublocation_identifier,web_description,computation_period_identifier,computation_identifier,unit_of_measure,parameter_name&filter-lang=cql2-text&filter=monitoring_location_id%20IN%20%28%27USGS-01646500%27,%27MO005-364643089212301%27,%27USGS-14233500%27,%27USGS-09497830%27,%27USGS-06819550%27,%27USGS-08131400%27,%27USGS-01115170%27,%27USGS-11176400%27%29"
+    },
+    {
+      "type": "application/json",
+      "title": "Time series metadata",
+      "rel": "collection",
+      "href": "https://api.waterdata.usgs.gov/ogcapi/v1/collections/time-series-metadata"
+    }
+  ],
+  "timeStamp": "2026-11-11T10:06:33.047017Z"
+}

@@ -1,0 +1,491 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "id": "ACST",
+      "geometry": null,
+      "properties": {
+        "time_zone_utc_offset": "+09:30",
+        "time_zone_daylight_savings_utc_offset": "+10:30"
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "AEST",
+      "geometry": null,
+      "properties": {
+        "time_zone_utc_offset": "+10:00",
+        "time_zone_daylight_savings_utc_offset": "+11:00"
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "AFT",
+      "geometry": null,
+      "properties": {
+        "time_zone_utc_offset": "+04:30",
+        "time_zone_daylight_savings_utc_offset": null
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "AKST",
+      "geometry": null,
+      "properties": {
+        "time_zone_utc_offset": "-09:00",
+        "time_zone_daylight_savings_utc_offset": "-08:00"
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "AST",
+      "geometry": null,
+      "properties": {
+        "time_zone_utc_offset": "-04:00",
+        "time_zone_daylight_savings_utc_offset": "-03:00"
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "AWST",
+      "geometry": null,
+      "properties": {
+        "time_zone_utc_offset": "+08:00",
+        "time_zone_daylight_savings_utc_offset": "+09:00"
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "BT",
+      "geometry": null,
+      "properties": {
+        "time_zone_utc_offset": "+03:00",
+        "time_zone_daylight_savings_utc_offset": null
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "CAST",
+      "geometry": null,
+      "properties": {
+        "time_zone_utc_offset": "+09:30",
+        "time_zone_daylight_savings_utc_offset": "+10:30"
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "CCT",
+      "geometry": null,
+      "properties": {
+        "time_zone_utc_offset": "+08:00",
+        "time_zone_daylight_savings_utc_offset": null
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "CET",
+      "geometry": null,
+      "properties": {
+        "time_zone_utc_offset": "+01:00",
+        "time_zone_daylight_savings_utc_offset": "+02:00"
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "CST",
+      "geometry": null,
+      "properties": {
+        "time_zone_utc_offset": "-06:00",
+        "time_zone_daylight_savings_utc_offset": "-05:00"
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "DNT",
+      "geometry": null,
+      "properties": {
+        "time_zone_utc_offset": "+01:00",
+        "time_zone_daylight_savings_utc_offset": null
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "DST",
+      "geometry": null,
+      "properties": {
+        "time_zone_utc_offset": "+01:00",
+        "time_zone_daylight_savings_utc_offset": null
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "EAST",
+      "geometry": null,
+      "properties": {
+        "time_zone_utc_offset": "+10:00",
+        "time_zone_daylight_savings_utc_offset": "+11:00"
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "EET",
+      "geometry": null,
+      "properties": {
+        "time_zone_utc_offset": "+02:00",
+        "time_zone_daylight_savings_utc_offset": "+03:00"
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "EST",
+      "geometry": null,
+      "properties": {
+        "time_zone_utc_offset": "-05:00",
+        "time_zone_daylight_savings_utc_offset": "-04:00"
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "FST",
+      "geometry": null,
+      "properties": {
+        "time_zone_utc_offset": "+01:00",
+        "time_zone_daylight_savings_utc_offset": "+02:00"
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "GST",
+      "geometry": null,
+      "properties": {
+        "time_zone_utc_offset": "+10:00",
+        "time_zone_daylight_savings_utc_offset": null
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "HST",
+      "geometry": null,
+      "properties": {
+        "time_zone_utc_offset": "-10:00",
+        "time_zone_daylight_savings_utc_offset": "-09:00"
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "IDLE",
+      "geometry": null,
+      "properties": {
+        "time_zone_utc_offset": "+12:00",
+        "time_zone_daylight_savings_utc_offset": null
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "IDLW",
+      "geometry": null,
+      "properties": {
+        "time_zone_utc_offset": "-12:00",
+        "time_zone_daylight_savings_utc_offset": null
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "IST",
+      "geometry": null,
+      "properties": {
+        "time_zone_utc_offset": "+02:00",
+        "time_zone_daylight_savings_utc_offset": null
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "IT",
+      "geometry": null,
+      "properties": {
+        "time_zone_utc_offset": "+03:30",
+        "time_zone_daylight_savings_utc_offset": null
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "JST",
+      "geometry": null,
+      "properties": {
+        "time_zone_utc_offset": "+09:00",
+        "time_zone_daylight_savings_utc_offset": null
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "JT",
+      "geometry": null,
+      "properties": {
+        "time_zone_utc_offset": "+07:30",
+        "time_zone_daylight_savings_utc_offset": null
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "KST",
+      "geometry": null,
+      "properties": {
+        "time_zone_utc_offset": "+09:00",
+        "time_zone_daylight_savings_utc_offset": null
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "LIGT",
+      "geometry": null,
+      "properties": {
+        "time_zone_utc_offset": "+10:00",
+        "time_zone_daylight_savings_utc_offset": null
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "MET",
+      "geometry": null,
+      "properties": {
+        "time_zone_utc_offset": "+01:00",
+        "time_zone_daylight_savings_utc_offset": "+02:00"
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "MEWT",
+      "geometry": null,
+      "properties": {
+        "time_zone_utc_offset": "+01:00",
+        "time_zone_daylight_savings_utc_offset": "+02:00"
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "MEZ",
+      "geometry": null,
+      "properties": {
+        "time_zone_utc_offset": "+01:00",
+        "time_zone_daylight_savings_utc_offset": null
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "MST",
+      "geometry": null,
+      "properties": {
+        "time_zone_utc_offset": "-07:00",
+        "time_zone_daylight_savings_utc_offset": "-06:00"
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "MT",
+      "geometry": null,
+      "properties": {
+        "time_zone_utc_offset": "+08:30",
+        "time_zone_daylight_savings_utc_offset": null
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "NFT",
+      "geometry": null,
+      "properties": {
+        "time_zone_utc_offset": "-03:30",
+        "time_zone_daylight_savings_utc_offset": "-02:30"
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "NOR",
+      "geometry": null,
+      "properties": {
+        "time_zone_utc_offset": "+01:00",
+        "time_zone_daylight_savings_utc_offset": null
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "NST",
+      "geometry": null,
+      "properties": {
+        "time_zone_utc_offset": "-03:30",
+        "time_zone_daylight_savings_utc_offset": "-02:30"
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "NZST",
+      "geometry": null,
+      "properties": {
+        "time_zone_utc_offset": "+12:00",
+        "time_zone_daylight_savings_utc_offset": "+13:00"
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "NZT",
+      "geometry": null,
+      "properties": {
+        "time_zone_utc_offset": "+12:00",
+        "time_zone_daylight_savings_utc_offset": "+13:00"
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "PST",
+      "geometry": null,
+      "properties": {
+        "time_zone_utc_offset": "-08:00",
+        "time_zone_daylight_savings_utc_offset": "-07:00"
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "SAT",
+      "geometry": null,
+      "properties": {
+        "time_zone_utc_offset": "+09:30",
+        "time_zone_daylight_savings_utc_offset": "+10:30"
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "SET",
+      "geometry": null,
+      "properties": {
+        "time_zone_utc_offset": "+01:00",
+        "time_zone_daylight_savings_utc_offset": null
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "SWT",
+      "geometry": null,
+      "properties": {
+        "time_zone_utc_offset": "+01:00",
+        "time_zone_daylight_savings_utc_offset": "+02:00"
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "UTC",
+      "geometry": null,
+      "properties": {
+        "time_zone_utc_offset": "+00:00",
+        "time_zone_daylight_savings_utc_offset": null
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "WAST",
+      "geometry": null,
+      "properties": {
+        "time_zone_utc_offset": "+07:00",
+        "time_zone_daylight_savings_utc_offset": "+08:00"
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "WAT",
+      "geometry": null,
+      "properties": {
+        "time_zone_utc_offset": "-01:00",
+        "time_zone_daylight_savings_utc_offset": null
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "WET",
+      "geometry": null,
+      "properties": {
+        "time_zone_utc_offset": "+00:00",
+        "time_zone_daylight_savings_utc_offset": "+01:00"
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "WST",
+      "geometry": null,
+      "properties": {
+        "time_zone_utc_offset": "+08:00",
+        "time_zone_daylight_savings_utc_offset": "+09:00"
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "ZP-11",
+      "geometry": null,
+      "properties": {
+        "time_zone_utc_offset": "-11:00",
+        "time_zone_daylight_savings_utc_offset": null
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "ZP-2",
+      "geometry": null,
+      "properties": {
+        "time_zone_utc_offset": "-02:00",
+        "time_zone_daylight_savings_utc_offset": null
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "ZP-3",
+      "geometry": null,
+      "properties": {
+        "time_zone_utc_offset": "-03:00",
+        "time_zone_daylight_savings_utc_offset": null
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "ZP11",
+      "geometry": null,
+      "properties": {
+        "time_zone_utc_offset": "+11:00",
+        "time_zone_daylight_savings_utc_offset": null
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "ZP4",
+      "geometry": null,
+      "properties": {
+        "time_zone_utc_offset": "+04:00",
+        "time_zone_daylight_savings_utc_offset": null
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "ZP5",
+      "geometry": null,
+      "properties": {
+        "time_zone_utc_offset": "+05:00",
+        "time_zone_daylight_savings_utc_offset": null
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "ZP6",
+      "geometry": null,
+      "properties": {
+        "time_zone_utc_offset": "+06:00",
+        "time_zone_daylight_savings_utc_offset": null
+      }
+    }
+  ],
+  "numberReturned": 53,
+  "links": [
+    {
+      "type": "application/geo+json",
+      "rel": "self",
+      "title": "This document as GeoJSON",
+      "href": "https://api.waterdata.usgs.gov/ogcapi/v1/collections/time-zone-codes/items?f=json&skipGeometry=true&limit=500"
+    }
+  ]
+}

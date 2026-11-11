@@ -1,0 +1,160 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "statistic_name": "MAXIMUM"
+      },
+      "id": "00001",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "statistic_name": "MINIMUM"
+      },
+      "id": "00002",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "statistic_name": "MEAN"
+      },
+      "id": "00003",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "statistic_name": "AM"
+      },
+      "id": "00004",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "statistic_name": "PM"
+      },
+      "id": "00005",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "statistic_name": "SUM"
+      },
+      "id": "00006",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "statistic_name": "MODE"
+      },
+      "id": "00007",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "statistic_name": "MEDIAN"
+      },
+      "id": "00008",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "statistic_name": "STD"
+      },
+      "id": "00009",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "statistic_name": "VARIANCE"
+      },
+      "id": "00010",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "statistic_name": "INSTANTANEOUS"
+      },
+      "id": "00011",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "statistic_name": "TIDAL HIGH-HIGH"
+      },
+      "id": "00021",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "statistic_name": "TIDAL LOW-HIGH"
+      },
+      "id": "00022",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "statistic_name": "TIDAL HIGH-LOW"
+      },
+      "id": "00023",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "statistic_name": "TIDAL LOW-LOW"
+      },
+      "id": "00024",
+      "geometry": null
+    }
+  ],
+  "numberReturned": 15,
+  "numberMatched": 15,
+  "links": [
+    {
+      "type": "application/geo+json",
+      "rel": "self",
+      "title": "This document as GeoJSON",
+      "href": "https://api.waterdata.usgs.gov/ogcapi/v1/collections/statistic-codes/items?f=json&limit=5000&properties=statistic_name"
+    },
+    {
+      "rel": "alternate",
+      "type": "application/ld+json",
+      "title": "This document as RDF (JSON-LD)",
+      "href": "https://api.waterdata.usgs.gov/ogcapi/v1/collections/statistic-codes/items?f=jsonld&limit=5000&properties=statistic_name"
+    },
+    {
+      "type": "text/html",
+      "rel": "alternate",
+      "title": "This document as HTML",
+      "href": "https://api.waterdata.usgs.gov/ogcapi/v1/collections/statistic-codes/items?f=html&limit=5000&properties=statistic_name"
+    },
+    {
+      "type": "text/csv; charset=utf-8",
+      "rel": "alternate",
+      "title": "This document as CSV",
+      "href": "https://api.waterdata.usgs.gov/ogcapi/v1/collections/statistic-codes/items?f=csv&limit=5000&properties=statistic_name"
+    },
+    {
+      "type": "application/json",
+      "title": "Statistic codes",
+      "rel": "collection",
+      "href": "https://api.waterdata.usgs.gov/ogcapi/v1/collections/statistic-codes"
+    }
+  ],
+  "timeStamp": "2026-11-11T10:07:32.538547Z"
+}

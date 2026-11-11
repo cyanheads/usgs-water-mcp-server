@@ -1,0 +1,820 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "US-00",
+        "country_code": "US",
+        "state_fips_code": "00",
+        "state_name": "Unspecified",
+        "state_postal_code": null
+      },
+      "id": "US-00",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "US-01",
+        "country_code": "US",
+        "state_fips_code": "01",
+        "state_name": "Alabama",
+        "state_postal_code": "AL"
+      },
+      "id": "US-01",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "US-02",
+        "country_code": "US",
+        "state_fips_code": "02",
+        "state_name": "Alaska",
+        "state_postal_code": "AK"
+      },
+      "id": "US-02",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "US-04",
+        "country_code": "US",
+        "state_fips_code": "04",
+        "state_name": "Arizona",
+        "state_postal_code": "AZ"
+      },
+      "id": "US-04",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "US-05",
+        "country_code": "US",
+        "state_fips_code": "05",
+        "state_name": "Arkansas",
+        "state_postal_code": "AR"
+      },
+      "id": "US-05",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "US-06",
+        "country_code": "US",
+        "state_fips_code": "06",
+        "state_name": "California",
+        "state_postal_code": "CA"
+      },
+      "id": "US-06",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "US-08",
+        "country_code": "US",
+        "state_fips_code": "08",
+        "state_name": "Colorado",
+        "state_postal_code": "CO"
+      },
+      "id": "US-08",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "US-09",
+        "country_code": "US",
+        "state_fips_code": "09",
+        "state_name": "Connecticut",
+        "state_postal_code": "CT"
+      },
+      "id": "US-09",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "US-10",
+        "country_code": "US",
+        "state_fips_code": "10",
+        "state_name": "Delaware",
+        "state_postal_code": "DE"
+      },
+      "id": "US-10",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "US-11",
+        "country_code": "US",
+        "state_fips_code": "11",
+        "state_name": "District of Columbia",
+        "state_postal_code": "DC"
+      },
+      "id": "US-11",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "US-12",
+        "country_code": "US",
+        "state_fips_code": "12",
+        "state_name": "Florida",
+        "state_postal_code": "FL"
+      },
+      "id": "US-12",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "US-13",
+        "country_code": "US",
+        "state_fips_code": "13",
+        "state_name": "Georgia",
+        "state_postal_code": "GA"
+      },
+      "id": "US-13",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "US-15",
+        "country_code": "US",
+        "state_fips_code": "15",
+        "state_name": "Hawaii",
+        "state_postal_code": "HI"
+      },
+      "id": "US-15",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "US-16",
+        "country_code": "US",
+        "state_fips_code": "16",
+        "state_name": "Idaho",
+        "state_postal_code": "ID"
+      },
+      "id": "US-16",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "US-17",
+        "country_code": "US",
+        "state_fips_code": "17",
+        "state_name": "Illinois",
+        "state_postal_code": "IL"
+      },
+      "id": "US-17",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "US-18",
+        "country_code": "US",
+        "state_fips_code": "18",
+        "state_name": "Indiana",
+        "state_postal_code": "IN"
+      },
+      "id": "US-18",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "US-19",
+        "country_code": "US",
+        "state_fips_code": "19",
+        "state_name": "Iowa",
+        "state_postal_code": "IA"
+      },
+      "id": "US-19",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "US-20",
+        "country_code": "US",
+        "state_fips_code": "20",
+        "state_name": "Kansas",
+        "state_postal_code": "KS"
+      },
+      "id": "US-20",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "US-21",
+        "country_code": "US",
+        "state_fips_code": "21",
+        "state_name": "Kentucky",
+        "state_postal_code": "KY"
+      },
+      "id": "US-21",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "US-22",
+        "country_code": "US",
+        "state_fips_code": "22",
+        "state_name": "Louisiana",
+        "state_postal_code": "LA"
+      },
+      "id": "US-22",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "US-23",
+        "country_code": "US",
+        "state_fips_code": "23",
+        "state_name": "Maine",
+        "state_postal_code": "ME"
+      },
+      "id": "US-23",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "US-24",
+        "country_code": "US",
+        "state_fips_code": "24",
+        "state_name": "Maryland",
+        "state_postal_code": "MD"
+      },
+      "id": "US-24",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "US-25",
+        "country_code": "US",
+        "state_fips_code": "25",
+        "state_name": "Massachusetts",
+        "state_postal_code": "MA"
+      },
+      "id": "US-25",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "US-26",
+        "country_code": "US",
+        "state_fips_code": "26",
+        "state_name": "Michigan",
+        "state_postal_code": "MI"
+      },
+      "id": "US-26",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "US-27",
+        "country_code": "US",
+        "state_fips_code": "27",
+        "state_name": "Minnesota",
+        "state_postal_code": "MN"
+      },
+      "id": "US-27",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "US-28",
+        "country_code": "US",
+        "state_fips_code": "28",
+        "state_name": "Mississippi",
+        "state_postal_code": "MS"
+      },
+      "id": "US-28",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "US-29",
+        "country_code": "US",
+        "state_fips_code": "29",
+        "state_name": "Missouri",
+        "state_postal_code": "MO"
+      },
+      "id": "US-29",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "US-30",
+        "country_code": "US",
+        "state_fips_code": "30",
+        "state_name": "Montana",
+        "state_postal_code": "MT"
+      },
+      "id": "US-30",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "US-31",
+        "country_code": "US",
+        "state_fips_code": "31",
+        "state_name": "Nebraska",
+        "state_postal_code": "NE"
+      },
+      "id": "US-31",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "US-32",
+        "country_code": "US",
+        "state_fips_code": "32",
+        "state_name": "Nevada",
+        "state_postal_code": "NV"
+      },
+      "id": "US-32",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "US-33",
+        "country_code": "US",
+        "state_fips_code": "33",
+        "state_name": "New Hampshire",
+        "state_postal_code": "NH"
+      },
+      "id": "US-33",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "US-34",
+        "country_code": "US",
+        "state_fips_code": "34",
+        "state_name": "New Jersey",
+        "state_postal_code": "NJ"
+      },
+      "id": "US-34",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "US-35",
+        "country_code": "US",
+        "state_fips_code": "35",
+        "state_name": "New Mexico",
+        "state_postal_code": "NM"
+      },
+      "id": "US-35",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "US-36",
+        "country_code": "US",
+        "state_fips_code": "36",
+        "state_name": "New York",
+        "state_postal_code": "NY"
+      },
+      "id": "US-36",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "US-37",
+        "country_code": "US",
+        "state_fips_code": "37",
+        "state_name": "North Carolina",
+        "state_postal_code": "NC"
+      },
+      "id": "US-37",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "US-38",
+        "country_code": "US",
+        "state_fips_code": "38",
+        "state_name": "North Dakota",
+        "state_postal_code": "ND"
+      },
+      "id": "US-38",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "US-39",
+        "country_code": "US",
+        "state_fips_code": "39",
+        "state_name": "Ohio",
+        "state_postal_code": "OH"
+      },
+      "id": "US-39",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "US-40",
+        "country_code": "US",
+        "state_fips_code": "40",
+        "state_name": "Oklahoma",
+        "state_postal_code": "OK"
+      },
+      "id": "US-40",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "US-41",
+        "country_code": "US",
+        "state_fips_code": "41",
+        "state_name": "Oregon",
+        "state_postal_code": "OR"
+      },
+      "id": "US-41",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "US-42",
+        "country_code": "US",
+        "state_fips_code": "42",
+        "state_name": "Pennsylvania",
+        "state_postal_code": "PA"
+      },
+      "id": "US-42",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "US-44",
+        "country_code": "US",
+        "state_fips_code": "44",
+        "state_name": "Rhode Island",
+        "state_postal_code": "RI"
+      },
+      "id": "US-44",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "US-45",
+        "country_code": "US",
+        "state_fips_code": "45",
+        "state_name": "South Carolina",
+        "state_postal_code": "SC"
+      },
+      "id": "US-45",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "US-46",
+        "country_code": "US",
+        "state_fips_code": "46",
+        "state_name": "South Dakota",
+        "state_postal_code": "SD"
+      },
+      "id": "US-46",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "US-47",
+        "country_code": "US",
+        "state_fips_code": "47",
+        "state_name": "Tennessee",
+        "state_postal_code": "TN"
+      },
+      "id": "US-47",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "US-48",
+        "country_code": "US",
+        "state_fips_code": "48",
+        "state_name": "Texas",
+        "state_postal_code": "TX"
+      },
+      "id": "US-48",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "US-49",
+        "country_code": "US",
+        "state_fips_code": "49",
+        "state_name": "Utah",
+        "state_postal_code": "UT"
+      },
+      "id": "US-49",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "US-50",
+        "country_code": "US",
+        "state_fips_code": "50",
+        "state_name": "Vermont",
+        "state_postal_code": "VT"
+      },
+      "id": "US-50",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "US-51",
+        "country_code": "US",
+        "state_fips_code": "51",
+        "state_name": "Virginia",
+        "state_postal_code": "VA"
+      },
+      "id": "US-51",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "US-53",
+        "country_code": "US",
+        "state_fips_code": "53",
+        "state_name": "Washington",
+        "state_postal_code": "WA"
+      },
+      "id": "US-53",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "US-54",
+        "country_code": "US",
+        "state_fips_code": "54",
+        "state_name": "West Virginia",
+        "state_postal_code": "WV"
+      },
+      "id": "US-54",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "US-55",
+        "country_code": "US",
+        "state_fips_code": "55",
+        "state_name": "Wisconsin",
+        "state_postal_code": "WI"
+      },
+      "id": "US-55",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "US-56",
+        "country_code": "US",
+        "state_fips_code": "56",
+        "state_name": "Wyoming",
+        "state_postal_code": "WY"
+      },
+      "id": "US-56",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "US-60",
+        "country_code": "US",
+        "state_fips_code": "60",
+        "state_name": "American Samoa",
+        "state_postal_code": "AS"
+      },
+      "id": "US-60",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "US-65",
+        "country_code": "US",
+        "state_fips_code": "65",
+        "state_name": "Palmyra Atoll",
+        "state_postal_code": "UM"
+      },
+      "id": "US-65",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "US-66",
+        "country_code": "US",
+        "state_fips_code": "66",
+        "state_name": "Guam",
+        "state_postal_code": "GU"
+      },
+      "id": "US-66",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "US-67",
+        "country_code": "US",
+        "state_fips_code": "67",
+        "state_name": "Johnston Atoll",
+        "state_postal_code": "JQ"
+      },
+      "id": "US-67",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "US-69",
+        "country_code": "US",
+        "state_fips_code": "69",
+        "state_name": "Northern Mariana Islands",
+        "state_postal_code": "MP"
+      },
+      "id": "US-69",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "US-71",
+        "country_code": "US",
+        "state_fips_code": "71",
+        "state_name": "Midway Islands",
+        "state_postal_code": "MQ"
+      },
+      "id": "US-71",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "US-72",
+        "country_code": "US",
+        "state_fips_code": "72",
+        "state_name": "Puerto Rico",
+        "state_postal_code": "PR"
+      },
+      "id": "US-72",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "US-73",
+        "country_code": "US",
+        "state_fips_code": "73",
+        "state_name": "Ryukyu Islands, Southern",
+        "state_postal_code": "YQ"
+      },
+      "id": "US-73",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "US-74",
+        "country_code": "US",
+        "state_fips_code": "74",
+        "state_name": "Swan Islands",
+        "state_postal_code": "SQ"
+      },
+      "id": "US-74",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "US-76",
+        "country_code": "US",
+        "state_fips_code": "76",
+        "state_name": "Navassa Island",
+        "state_postal_code": "NI"
+      },
+      "id": "US-76",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "US-77",
+        "country_code": "US",
+        "state_fips_code": "77",
+        "state_name": "U.S. Misc Pacific Islands",
+        "state_postal_code": "IQ"
+      },
+      "id": "US-77",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "US-78",
+        "country_code": "US",
+        "state_fips_code": "78",
+        "state_name": "Virgin Islands",
+        "state_postal_code": "VI"
+      },
+      "id": "US-78",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "US-79",
+        "country_code": "US",
+        "state_fips_code": "79",
+        "state_name": "Wake Island",
+        "state_postal_code": "WQ"
+      },
+      "id": "US-79",
+      "geometry": null
+    }
+  ],
+  "numberReturned": 65,
+  "numberMatched": 65,
+  "links": [
+    {
+      "type": "application/geo+json",
+      "rel": "self",
+      "title": "This document as GeoJSON",
+      "href": "https://api.waterdata.usgs.gov/ogcapi/v1/collections/states/items?f=json&skipGeometry=true&country_code=US&limit=500"
+    },
+    {
+      "rel": "alternate",
+      "type": "application/ld+json",
+      "title": "This document as RDF (JSON-LD)",
+      "href": "https://api.waterdata.usgs.gov/ogcapi/v1/collections/states/items?f=jsonld&skipGeometry=true&country_code=US&limit=500"
+    },
+    {
+      "type": "text/html",
+      "rel": "alternate",
+      "title": "This document as HTML",
+      "href": "https://api.waterdata.usgs.gov/ogcapi/v1/collections/states/items?f=html&skipGeometry=true&country_code=US&limit=500"
+    },
+    {
+      "type": "text/csv; charset=utf-8",
+      "rel": "alternate",
+      "title": "This document as CSV",
+      "href": "https://api.waterdata.usgs.gov/ogcapi/v1/collections/states/items?f=csv&skipGeometry=true&country_code=US&limit=500"
+    },
+    {
+      "type": "application/json",
+      "title": "State identifiers",
+      "rel": "collection",
+      "href": "https://api.waterdata.usgs.gov/ogcapi/v1/collections/states"
+    }
+  ],
+  "timeStamp": "2026-11-11T09:30:15.186707Z"
+}

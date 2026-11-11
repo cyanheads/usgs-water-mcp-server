@@ -1,0 +1,81 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-106.53027778, 32.38972222]
+      },
+      "properties": {
+        "monitoring_location_id": "USGS-322323106314701",
+        "monitoring_location_name": "22S.04E.15.331 BLM CRN WELL",
+        "site_type": "Well",
+        "site_type_code": "GW",
+        "country_code": "US",
+        "state_code": "35",
+        "county_code": "013",
+        "data": [
+          {
+            "parameter_code": "72019",
+            "unit_of_measure": "ft",
+            "parent_time_series_id": "80e85401baf9469b84f73e15b04410c2",
+            "parent_statistic_id": "00001",
+            "parent_statistic_name": "Max",
+            "values": [
+              {
+                "time_of_year": "11-11",
+                "time_of_year_type": "day_of_year",
+                "values": ["74.833", "73.653", "71.178", "69.485", "67.653", "62.471", "58.596"],
+                "percentiles": ["5", "10", "25", "50", "75", "90", "95"],
+                "sample_count": 26,
+                "approval_status": "approved",
+                "computation_id": "9870af7d-1219-4f8a-9c7e-4189db3292ee",
+                "computation": "percentile"
+              }
+            ]
+          },
+          {
+            "parameter_code": "72019",
+            "unit_of_measure": "ft",
+            "parent_time_series_id": "0d91e794e4a24e99abb3b363a75599ad",
+            "parent_statistic_id": "00003",
+            "parent_statistic_name": "Mean",
+            "values": [
+              {
+                "time_of_year": "11-11",
+                "time_of_year_type": "day_of_year",
+                "values": ["74.813", "73.626", "71.137", "69.435", "67.602", "62.425", "58.543"],
+                "percentiles": ["5", "10", "25", "50", "75", "90", "95"],
+                "sample_count": 26,
+                "approval_status": "approved",
+                "computation_id": "ff39d724-44ec-4dea-a942-5b0bdb7b9b66",
+                "computation": "percentile"
+              }
+            ]
+          },
+          {
+            "parameter_code": "72019",
+            "unit_of_measure": "ft",
+            "parent_time_series_id": "d7b012eaf3654e059e9971288e999976",
+            "parent_statistic_id": "00002",
+            "parent_statistic_name": "Min",
+            "values": [
+              {
+                "time_of_year": "11-11",
+                "time_of_year_type": "day_of_year",
+                "values": ["74.79", "73.596", "71.12", "69.41", "67.575", "62.383", "58.499"],
+                "percentiles": ["5", "10", "25", "50", "75", "90", "95"],
+                "sample_count": 26,
+                "approval_status": "approved",
+                "computation_id": "c8a65337-8fca-4973-bfbc-22ac5c66f59c",
+                "computation": "percentile"
+              }
+            ]
+          }
+        ]
+      }
+    }
+  ],
+  "next": null
+}

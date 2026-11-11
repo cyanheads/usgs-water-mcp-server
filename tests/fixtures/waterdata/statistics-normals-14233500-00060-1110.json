@@ -1,0 +1,43 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-122.10898559, 46.46622171]
+      },
+      "properties": {
+        "monitoring_location_id": "USGS-14233500",
+        "monitoring_location_name": "COWLITZ RIVER NEAR KOSMOS, WA",
+        "site_type": "Stream",
+        "site_type_code": "ST",
+        "country_code": "US",
+        "state_code": "53",
+        "county_code": "041",
+        "data": [
+          {
+            "parameter_code": "00060",
+            "unit_of_measure": "ft^3/s",
+            "parent_time_series_id": "06f3af03b3e24af6982de1c3ac16f299",
+            "parent_statistic_id": "00003",
+            "parent_statistic_name": "Mean",
+            "values": [
+              {
+                "time_of_year": "11-10",
+                "time_of_year_type": "day_of_year",
+                "values": ["681.2", "1318.0", "1750.0", "3230.0", "4647.5", "10350.0", "13475.0"],
+                "percentiles": ["5", "10", "25", "50", "75", "90", "95"],
+                "sample_count": 78,
+                "approval_status": "approved",
+                "computation_id": "9e5cd867-3316-4e7c-b2a4-47fa74bf7288",
+                "computation": "percentile"
+              }
+            ]
+          }
+        ]
+      }
+    }
+  ],
+  "next": null
+}

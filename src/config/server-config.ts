@@ -13,13 +13,19 @@ const ServerConfigSchema = z.object({
       'usgs-water-mcp-server/0.5.0 (contact: https://github.com/cyanheads/usgs-water-mcp-server)',
     )
     .describe(
-      'User-Agent header sent to USGS NWIS and OGC discovery endpoints. USGS requests a descriptive User-Agent.',
+      'User-Agent header sent to the USGS Water Data APIs. USGS requests a descriptive User-Agent.',
     ),
   requestTimeoutMs: z.coerce
     .number()
     .default(30_000)
     .describe(
-      'HTTP request timeout in milliseconds for USGS NWIS and OGC calls. Site-series discovery also has a shared 45-second deadline.',
+      'HTTP request timeout in milliseconds for each USGS Water Data API request. Every tool call also has a shared 45-second deadline across its requests and retries.',
+    ),
+  apiKey: z
+    .string()
+    .optional()
+    .describe(
+      'api.data.gov key for the USGS Water Data APIs, sent as the X-Api-Key header. Optional: without one, requests share the anonymous per-IP hourly limit.',
     ),
   dataframeDropEnabled: z
     .stringbool()
@@ -44,6 +50,7 @@ export function getServerConfig() {
   _config ??= parseEnvConfig(ServerConfigSchema, {
     userAgent: 'USGS_USER_AGENT',
     requestTimeoutMs: 'USGS_REQUEST_TIMEOUT_MS',
+    apiKey: 'USGS_API_KEY',
     dataframeDropEnabled: 'WATER_DATAFRAME_DROP_ENABLED',
   });
   return _config;

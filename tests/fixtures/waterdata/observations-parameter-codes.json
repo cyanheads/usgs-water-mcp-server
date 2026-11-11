@@ -1,0 +1,220 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "parameter_name": "Temperature, water",
+        "unit_of_measure": "deg C",
+        "parameter_description": "Temperature, water, degrees Celsius"
+      },
+      "id": "00010",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "parameter_name": "Temperature, air",
+        "unit_of_measure": "deg C",
+        "parameter_description": "Temperature, air, degrees Celsius"
+      },
+      "id": "00020",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "parameter_name": "Precipitation",
+        "unit_of_measure": "in",
+        "parameter_description": "Precipitation, total, inches"
+      },
+      "id": "00045",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "parameter_name": "Discharge",
+        "unit_of_measure": "ft3/s",
+        "parameter_description": "Discharge, cubic feet per second"
+      },
+      "id": "00060",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "parameter_name": "Gage height",
+        "unit_of_measure": "ft",
+        "parameter_description": "Gage height, feet"
+      },
+      "id": "00065",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "parameter_name": "Specific cond at 25C",
+        "unit_of_measure": "uS/cm @25C",
+        "parameter_description": "Specific conductance, water, unfiltered, microsiemens per centimeter at 25 degrees Celsius"
+      },
+      "id": "00095",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "parameter_name": "Dissolved oxygen",
+        "unit_of_measure": "mg/l",
+        "parameter_description": "Dissolved oxygen, water, unfiltered, milligrams per liter"
+      },
+      "id": "00300",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "parameter_name": "pH",
+        "unit_of_measure": "std units",
+        "parameter_description": "pH, water, unfiltered, field, standard units"
+      },
+      "id": "00400",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "parameter_name": "Elevation, GW, NAVD88",
+        "unit_of_measure": "ft",
+        "parameter_description": "Groundwater level above NAVD 1988, feet"
+      },
+      "id": "62611",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "parameter_name": "Stream level, NAVD88",
+        "unit_of_measure": "ft",
+        "parameter_description": "Stream water level elevation above NAVD 1988, in feet"
+      },
+      "id": "63160",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "parameter_name": "Turbidity, Nephelom",
+        "unit_of_measure": "NTU",
+        "parameter_description": "Turbidity, water, unfiltered, broad band light source (400-680 nm), detection angle 90 +-30 degrees to incident light, nephelometric turbidity units (NTU)"
+      },
+      "id": "63675",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "parameter_name": "Turbidity, Form Neph",
+        "unit_of_measure": "FNU",
+        "parameter_description": "Turbidity, water, unfiltered, monochrome near infra-red LED light, 780-900 nm, detection angle 90 +-2.5 degrees, formazin nephelometric units (FNU)"
+      },
+      "id": "63680",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "parameter_name": "DCP battery voltage",
+        "unit_of_measure": "volts",
+        "parameter_description": "DCP battery voltage, volts"
+      },
+      "id": "70969",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "parameter_name": "Water level, depth LSD",
+        "unit_of_measure": "ft",
+        "parameter_description": "Depth to water level, feet below land surface"
+      },
+      "id": "72019",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "parameter_name": "Snow depth",
+        "unit_of_measure": "ft",
+        "parameter_description": "Snow depth, feet"
+      },
+      "id": "72198",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "parameter_name": "Absolute pressure",
+        "unit_of_measure": "psi",
+        "parameter_description": "Absolute pressure from unvented pressure transducer, pounds per square inch"
+      },
+      "id": "72203",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "parameter_name": "Soil moisture",
+        "unit_of_measure": "%",
+        "parameter_description": "Moisture content, soil, volumetric, percent of total volume"
+      },
+      "id": "74207",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "parameter_name": "NO3+NO2,water,insitu",
+        "unit_of_measure": "mg/l as N",
+        "parameter_description": "Nitrate plus nitrite, water, in situ, milligrams per liter as nitrogen"
+      },
+      "id": "99133",
+      "geometry": null
+    }
+  ],
+  "numberReturned": 18,
+  "numberMatched": 18,
+  "links": [
+    {
+      "type": "application/geo+json",
+      "rel": "self",
+      "title": "This document as GeoJSON",
+      "href": "https://api.waterdata.usgs.gov/ogcapi/v1/collections/parameter-codes/items?f=json&limit=50000&properties=parameter_name,unit_of_measure,parameter_description&filter-lang=cql2-text&filter=id%20IN%20%28%2700010%27,%2700020%27,%2700045%27,%2700060%27,%2700065%27,%2700095%27,%2700300%27,%2700400%27,%2762611%27,%2763160%27,%2763675%27,%2763680%27,%2770969%27,%2772019%27,%2772198%27,%2772203%27,%2774207%27,%2799133%27%29"
+    },
+    {
+      "rel": "alternate",
+      "type": "application/ld+json",
+      "title": "This document as RDF (JSON-LD)",
+      "href": "https://api.waterdata.usgs.gov/ogcapi/v1/collections/parameter-codes/items?f=jsonld&limit=50000&properties=parameter_name,unit_of_measure,parameter_description&filter-lang=cql2-text&filter=id%20IN%20%28%2700010%27,%2700020%27,%2700045%27,%2700060%27,%2700065%27,%2700095%27,%2700300%27,%2700400%27,%2762611%27,%2763160%27,%2763675%27,%2763680%27,%2770969%27,%2772019%27,%2772198%27,%2772203%27,%2774207%27,%2799133%27%29"
+    },
+    {
+      "type": "text/html",
+      "rel": "alternate",
+      "title": "This document as HTML",
+      "href": "https://api.waterdata.usgs.gov/ogcapi/v1/collections/parameter-codes/items?f=html&limit=50000&properties=parameter_name,unit_of_measure,parameter_description&filter-lang=cql2-text&filter=id%20IN%20%28%2700010%27,%2700020%27,%2700045%27,%2700060%27,%2700065%27,%2700095%27,%2700300%27,%2700400%27,%2762611%27,%2763160%27,%2763675%27,%2763680%27,%2770969%27,%2772019%27,%2772198%27,%2772203%27,%2774207%27,%2799133%27%29"
+    },
+    {
+      "type": "text/csv; charset=utf-8",
+      "rel": "alternate",
+      "title": "This document as CSV",
+      "href": "https://api.waterdata.usgs.gov/ogcapi/v1/collections/parameter-codes/items?f=csv&limit=50000&properties=parameter_name,unit_of_measure,parameter_description&filter-lang=cql2-text&filter=id%20IN%20%28%2700010%27,%2700020%27,%2700045%27,%2700060%27,%2700065%27,%2700095%27,%2700300%27,%2700400%27,%2762611%27,%2763160%27,%2763675%27,%2763680%27,%2770969%27,%2772019%27,%2772198%27,%2772203%27,%2774207%27,%2799133%27%29"
+    },
+    {
+      "type": "application/json",
+      "title": "Parameter codes",
+      "rel": "collection",
+      "href": "https://api.waterdata.usgs.gov/ogcapi/v1/collections/parameter-codes"
+    }
+  ],
+  "timeStamp": "2026-11-11T10:07:31.596562Z"
+}

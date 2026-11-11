@@ -4,18 +4,19 @@
  */
 
 import { JsonRpcErrorCode } from '@cyanheads/mcp-ts-core/errors';
-import {
-  createFetchMock,
-  createMockContext,
-  type FetchMockHarness,
-  runToolContract,
-} from '@cyanheads/mcp-ts-core/testing';
+import { createMockContext, runToolContract } from '@cyanheads/mcp-ts-core/testing';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { waterListParameters } from '@/mcp-server/tools/definitions/water-list-parameters.tool.js';
-import { textContent } from '../helpers/content-block.js';
+import { allText, textContent } from '../helpers/content-block.js';
 import { declaredRecovery } from '../helpers/error-contract.js';
-import { allText } from '../helpers/nwis-fixtures.js';
-import { catalogRoutes, failingCatalogRoute } from '../helpers/waterdata-fixtures.js';
+import {
+  catalogRoutes,
+  createWaterDataFake,
+  failingCatalogRoute,
+  ogcRoute,
+  rateLimitResponse,
+  type WaterDataFake,
+} from '../helpers/water-data-fake.js';
 
 describe('waterListParameters', () => {
   it('returns the full catalog when group is "all"', async () => {
@@ -138,22 +139,43 @@ describe('waterListParameters — full-catalog query (#31)', () => {
   };
   type Listing = { note?: string; parameters: Entry[]; total: number; truncated: boolean };
 
-  let http: FetchMockHarness;
-  /** The tool from a freshly loaded module graph, so every test starts with an empty catalog cache. */
+  let water: WaterDataFake;
+  /**
+   * The tool from a freshly loaded module graph, so every test starts with an empty catalog cache
+   * and an open rate-limit gate.
+   */
   let tool: typeof waterListParameters;
 
   beforeEach(async () => {
     vi.resetModules();
+    vi.stubEnv('USGS_API_KEY', undefined);
     ({ waterListParameters: tool } = await import(
       '@/mcp-server/tools/definitions/water-list-parameters.tool.js'
     ));
-    http = createFetchMock();
-    http.install();
+    water = createWaterDataFake();
+    water.install();
   });
 
   afterEach(() => {
-    http.restore();
+    vi.useRealTimers();
+    vi.unstubAllEnvs();
+    water.restore();
   });
+
+  /** Four failing first-page answers — one per attempt the request core makes — then nothing. */
+  function failEveryAttempt(status: number, body: string) {
+    return Array.from({ length: 4 }, () => ({ ...failingCatalogRoute(status, body), once: true }));
+  }
+
+  /** Run a call whose retries wait on a fake clock through their backoffs. */
+  async function listThroughRetries(input: Record<string, unknown>) {
+    vi.useFakeTimers({ toFake: ['Date', 'setTimeout', 'clearTimeout'] });
+    const pending = list(input);
+    await vi.advanceTimersByTimeAsync(10_000);
+    const outcome = await pending;
+    vi.useRealTimers();
+    return outcome;
+  }
 
   async function list(input: Record<string, unknown>) {
     const result = await runToolContract(tool, input as never);
@@ -169,19 +191,19 @@ describe('waterListParameters — full-catalog query (#31)', () => {
     async (input) => {
       const { result, structured } = await list(input);
       expect(result.isError).toBeFalsy();
-      expect(http.calls).toHaveLength(0);
+      expect(water.requests).toHaveLength(0);
       expect(structured.truncated).toBe(false);
       expect(structured.parameters.every((p) => p.source === 'curated')).toBe(true);
     },
   );
 
   it('returns catalog entries with descriptions, counting every match', async () => {
-    http.route(...catalogRoutes());
+    water.route(...catalogRoutes());
     const { result, structured, text } = await list({ query: 'turbidity' });
 
     expect(result.isError).toBeFalsy();
     // Both captured pages were read: the first page's next link was followed.
-    expect(http.calls).toHaveLength(2);
+    expect(water.requests).toHaveLength(2);
     expect(structured.total).toBe(38);
     expect(structured.parameters).toHaveLength(25);
     expect(structured.truncated).toBe(true);
@@ -206,7 +228,7 @@ describe('waterListParameters — full-catalog query (#31)', () => {
   });
 
   it('lists a matching curated code once, first, as its curated entry', async () => {
-    http.route(...catalogRoutes());
+    water.route(...catalogRoutes());
     const { structured, text } = await list({ query: 'discharge' });
 
     expect(structured.total).toBe(29);
@@ -222,13 +244,13 @@ describe('waterListParameters — full-catalog query (#31)', () => {
   });
 
   it('puts pH first for a query of "pH"', async () => {
-    http.route(...catalogRoutes());
+    water.route(...catalogRoutes());
     const { structured } = await list({ query: 'pH' });
     expect(structured.parameters[0]).toMatchObject({ code: '00400', source: 'curated' });
   });
 
   it('ranks name matches ahead of description-only matches, each by code', async () => {
-    http.route(...catalogRoutes());
+    water.route(...catalogRoutes());
     const { structured } = await list({ query: 'dissolved oxygen' });
 
     const catalog = structured.parameters.filter((p) => p.source === 'usgs-catalog');
@@ -244,14 +266,14 @@ describe('waterListParameters — full-catalog query (#31)', () => {
   });
 
   it('matches a token only at the start of a word', async () => {
-    http.route(...catalogRoutes());
+    water.route(...catalogRoutes());
     // "itrate" sits inside "nitrate" but starts no word.
     const { structured } = await list({ query: 'itrate' });
     expect(structured.total).toBe(0);
   });
 
   it('returns the catalog record for a bare 5-digit code', async () => {
-    http.route(...catalogRoutes());
+    water.route(...catalogRoutes());
     const { structured } = await list({ query: '63680' });
     expect(structured.total).toBe(1);
     expect(structured.parameters).toEqual([
@@ -261,7 +283,7 @@ describe('waterListParameters — full-catalog query (#31)', () => {
   });
 
   it('returns the curated entry for a bare curated code', async () => {
-    http.route(...catalogRoutes());
+    water.route(...catalogRoutes());
     const { structured } = await list({ query: '00300' });
     expect(structured.parameters).toEqual([
       expect.objectContaining({ code: '00300', source: 'curated', group: 'water-quality' }),
@@ -269,7 +291,7 @@ describe('waterListParameters — full-catalog query (#31)', () => {
   });
 
   it('caps at 25 and reports the full total when a query matches more', async () => {
-    http.route(...catalogRoutes());
+    water.route(...catalogRoutes());
     const { structured, text } = await list({ query: 'suspended sediment' });
 
     expect(structured.parameters).toHaveLength(25);
@@ -280,7 +302,7 @@ describe('waterListParameters — full-catalog query (#31)', () => {
   });
 
   it('returns exactly the matches, untruncated, when they fit the cap', async () => {
-    http.route(...catalogRoutes());
+    water.route(...catalogRoutes());
     const { structured } = await list({ query: 'groundwater level' });
     expect(structured).toMatchObject({ total: 2, truncated: false });
     expect(structured.parameters.map((p) => [p.code, p.source])).toEqual([
@@ -291,7 +313,7 @@ describe('waterListParameters — full-catalog query (#31)', () => {
   });
 
   it('returns an empty list with guidance when nothing matches', async () => {
-    http.route(...catalogRoutes());
+    water.route(...catalogRoutes());
     const { result, structured, text } = await list({ query: 'zzyzx' });
 
     expect(result.isError).toBeFalsy();
@@ -305,7 +327,7 @@ describe('waterListParameters — full-catalog query (#31)', () => {
     const { result, text } = await list({ query: 'nitrate', group: 'streamflow' });
 
     expect(result.isError).toBe(true);
-    expect(http.calls).toHaveLength(0);
+    expect(water.requests).toHaveLength(0);
     expect(result.structuredContent).toMatchObject({
       error: {
         code: JsonRpcErrorCode.ValidationError,
@@ -321,25 +343,26 @@ describe('waterListParameters — full-catalog query (#31)', () => {
   });
 
   it('fetches the catalog once for repeated queries in one process', async () => {
-    http.route(...catalogRoutes());
+    water.route(...catalogRoutes());
     await list({ query: 'nitrate' });
     await list({ query: 'turbidity' });
-    expect(http.calls).toHaveLength(2);
+    expect(water.requests).toHaveLength(2);
   });
 
   it('shares one fetch between concurrent first queries', async () => {
-    http.route(...catalogRoutes());
+    water.route(...catalogRoutes());
     const [a, b] = await Promise.all([list({ query: 'nitrate' }), list({ query: 'discharge' })]);
     expect(a.result.isError).toBeFalsy();
     expect(b.result.isError).toBeFalsy();
-    expect(http.calls).toHaveLength(2);
+    expect(water.requests).toHaveLength(2);
   });
 
   it('throws a retryable upstream_error on a failed fetch, and fetches again on the next call', async () => {
-    http.route({ ...failingCatalogRoute(503, 'Service Unavailable'), once: true });
-    const failed = await list({ query: 'nitrate' });
+    water.route(...failEveryAttempt(503, 'Service Unavailable'));
+    const failed = await listThroughRetries({ query: 'nitrate' });
 
     expect(failed.result.isError).toBe(true);
+    expect(water.requests).toHaveLength(4);
     expect(failed.result.structuredContent).toMatchObject({
       error: {
         code: JsonRpcErrorCode.ServiceUnavailable,
@@ -351,21 +374,38 @@ describe('waterListParameters — full-catalog query (#31)', () => {
     });
     expect(tool.errors?.find((e) => e.reason === 'upstream_error')?.retryable).toBe(true);
 
-    http.route(...catalogRoutes());
+    water.route(...catalogRoutes());
     const retried = await list({ query: 'nitrate' });
     expect(retried.result.isError).toBeFalsy();
     expect(retried.structured.total).toBeGreaterThan(0);
   });
 
   it('never answers a query from the curated table alone when the fetch fails', async () => {
-    http.route(failingCatalogRoute(500, 'boom'));
+    water.route(...failEveryAttempt(500, 'boom'));
     // "discharge" matches curated 00060, which must not be served on its own.
-    const { result } = await list({ query: 'discharge' });
+    const { result } = await listThroughRetries({ query: 'discharge' });
     expect(result.isError).toBe(true);
     expect(result.structuredContent).toMatchObject({
       error: { data: { reason: 'upstream_error' } },
     });
     expect(JSON.stringify(result.structuredContent)).not.toContain('"source":"curated"');
+  });
+
+  it('reports a rate limit as RateLimited with its wait, not as upstream_error', async () => {
+    water.route(ogcRoute('parameter-codes', () => rateLimitResponse(1800)));
+    const { result, text } = await list({ query: 'nitrate' });
+
+    expect(result.isError).toBe(true);
+    expect(result.structuredContent).toMatchObject({
+      error: {
+        code: JsonRpcErrorCode.RateLimited,
+        data: { reason: 'rate_limited', retryAfter: 1800 },
+      },
+    });
+    expect(text).toContain('retry after 1800');
+    expect(text).toContain('USGS_API_KEY');
+    expect(JSON.stringify(result.structuredContent)).not.toContain('"source":"curated"');
+    expect(water.requests).toHaveLength(1);
   });
 
   it('accepts a query of up to 200 characters and rejects a longer one at the schema', () => {

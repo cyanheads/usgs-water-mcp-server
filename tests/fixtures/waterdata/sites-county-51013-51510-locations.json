@@ -1,0 +1,948 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_number": "01646580",
+        "monitoring_location_name": "POTOMAC RIVER AT CHAIN BRIDGE, AT WASHINGTON, DC",
+        "site_type_code": "ST",
+        "altitude": null,
+        "hydrologic_unit_code": "020700100103"
+      },
+      "id": "USGS-01646580",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-77.1169231550794, 38.9295555317606]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_number": "01646750",
+        "monitoring_location_name": "LITTLE PIMMIT RUN TRIBUTARY AT ARLINGTON, VA",
+        "site_type_code": "ST",
+        "altitude": null,
+        "hydrologic_unit_code": "020700100103"
+      },
+      "id": "USGS-01646750",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-77.1377570731163, 38.9051114772044]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_number": "01646755",
+        "monitoring_location_name": "LITTLE PIMMIT RUN TRIB AT ARLINGTON, VA",
+        "site_type_code": "ST",
+        "altitude": null,
+        "hydrologic_unit_code": "020700100103"
+      },
+      "id": "USGS-01646755",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-77.13859041718, 38.9070558870034]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_number": "01646850",
+        "monitoring_location_name": "PIMMIT RUN NEAR NORTH RANDOLPH ST AT ARLINGTON, VA",
+        "site_type_code": "ST",
+        "altitude": null,
+        "hydrologic_unit_code": "020700100103"
+      },
+      "id": "USGS-01646850",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-77.1241455343183, 38.9309443864369]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_number": "01647500",
+        "monitoring_location_name": "DONALDSON RUN AT MILITARY RD AT ARLINGTON, VA",
+        "site_type_code": "ST",
+        "altitude": null,
+        "hydrologic_unit_code": "020700100103"
+      },
+      "id": "USGS-01647500",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-77.1135898045247, 38.9112225198222]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_number": "01652370",
+        "monitoring_location_name": "FOURMILE RUN AT ARLINGTON, VA",
+        "site_type_code": "ST",
+        "altitude": 185.0,
+        "hydrologic_unit_code": "020700100301"
+      },
+      "id": "USGS-01652370",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-77.1274791991774, 38.8678899113309]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_number": "01652400",
+        "monitoring_location_name": "LONG BRANCH AT ARLINGTON, VA",
+        "site_type_code": "ST",
+        "altitude": 184.0,
+        "hydrologic_unit_code": "020700100301"
+      },
+      "id": "USGS-01652400",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-77.1266458805205, 38.858723403871]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_number": "01652430",
+        "monitoring_location_name": "DOCTORS RUN AT ARLINGTON, VA",
+        "site_type_code": "ST",
+        "altitude": 137.0,
+        "hydrologic_unit_code": "020700100301"
+      },
+      "id": "USGS-01652430",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-77.1022007637964, 38.8617789490187]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_number": "01652470",
+        "monitoring_location_name": "LUCKY RUN AT ARLINGTON, VA",
+        "site_type_code": "ST",
+        "altitude": null,
+        "hydrologic_unit_code": "020700100301"
+      },
+      "id": "USGS-01652470",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-77.1041453090135, 38.8426126108396]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_number": "01652500",
+        "monitoring_location_name": "FOURMILE RUN AT ALEXANDRIA, VA",
+        "site_type_code": "ST",
+        "altitude": 27.66,
+        "hydrologic_unit_code": "020700100301"
+      },
+      "id": "USGS-01652500",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-77.0858611111111, 38.8433333333333]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_number": "01652507",
+        "monitoring_location_name": "FOURMILE RUN AT EAST GLEBE ROAD AT ALEXANDRIA, VA",
+        "site_type_code": "ST",
+        "altitude": null,
+        "hydrologic_unit_code": "020700100301"
+      },
+      "id": "USGS-01652507",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-77.0772001018368, 38.8437237513797]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_number": "01652525",
+        "monitoring_location_name": "LONG BRANCH AT SOUTH GLEBE ROAD NR ALEXANDRIA, VA",
+        "site_type_code": "ST",
+        "altitude": null,
+        "hydrologic_unit_code": "020700100301"
+      },
+      "id": "USGS-01652525",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-77.0710888181072, 38.8445570812003]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_number": "01652545",
+        "monitoring_location_name": "FOURMILE RUN ABOVE HIGHWAY 1 AT ALEXANDRIA, VA",
+        "site_type_code": "ST-TS",
+        "altitude": 0.0,
+        "hydrologic_unit_code": "020700100301"
+      },
+      "id": "USGS-01652545",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-77.05330555555555, 38.84022222222222]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_number": "0165258890",
+        "monitoring_location_name": "POTOMAC RIVER AT CAMERON ST DOCK AT ALEXANDRIA, VA",
+        "site_type_code": "ST-TS",
+        "altitude": 0.0,
+        "hydrologic_unit_code": "020700100301"
+      },
+      "id": "USGS-0165258890",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-77.03833333333333, 38.805277777777775]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_number": "01652685",
+        "monitoring_location_name": "HOLMES RUN AT SHIRLEY HWY AT ALEXANDRIA, VA",
+        "site_type_code": "ST",
+        "altitude": null,
+        "hydrologic_unit_code": "020700100302"
+      },
+      "id": "USGS-01652685",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-77.1280349647868, 38.8203907277387]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_number": "01652688",
+        "monitoring_location_name": "HOLMES RUN ALONG HOLMES RUN PKWY AT ALEXANDRIA, VA",
+        "site_type_code": "ST",
+        "altitude": null,
+        "hydrologic_unit_code": "020700100302"
+      },
+      "id": "USGS-01652688",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-77.12, 38.8152777777778]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_number": "01652690",
+        "monitoring_location_name": "HOLMES RUN AT ALEXANDRIA, VA",
+        "site_type_code": "ST",
+        "altitude": 52.69,
+        "hydrologic_unit_code": "020700100302"
+      },
+      "id": "USGS-01652690",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-77.1138679020399, 38.8123353383621]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_number": "01652900",
+        "monitoring_location_name": "BACKLICK RUN AT VAN DORN STREET AT ALEXANDRIA, VA",
+        "site_type_code": "ST",
+        "altitude": null,
+        "hydrologic_unit_code": "020700100302"
+      },
+      "id": "USGS-01652900",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-77.1338888888889, 38.8033333333333]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_number": "01652910",
+        "monitoring_location_name": "BACKLICK RUN AT ALEXANDRIA, VA",
+        "site_type_code": "ST",
+        "altitude": 69.97,
+        "hydrologic_unit_code": "020700100302"
+      },
+      "id": "USGS-01652910",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-77.1277572492269, 38.803168802418]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_number": "01653000",
+        "monitoring_location_name": "CAMERON RUN AT ALEXANDRIA, VA",
+        "site_type_code": "ST",
+        "altitude": 22.5,
+        "hydrologic_unit_code": "020700100302"
+      },
+      "id": "USGS-01653000",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-77.1055898941043, 38.8044466021133]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_number": "01653002",
+        "monitoring_location_name": "CAMERON RUN AB SOUTH QUAKER LANE AT ALEXANDRIA, VA",
+        "site_type_code": "ST",
+        "altitude": null,
+        "hydrologic_unit_code": "020700100302"
+      },
+      "id": "USGS-01653002",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-77.0972007469937, 38.8042799549536]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_number": "01653004",
+        "monitoring_location_name": "CAMERON RUN AT SOUTH QUAKER LANE AT ALEXANDRIA, VA",
+        "site_type_code": "ST",
+        "altitude": null,
+        "hydrologic_unit_code": "020700100302"
+      },
+      "id": "USGS-01653004",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-77.0877560113453, 38.8042799736676]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_number": "384749077022500",
+        "monitoring_location_name": "POTOMAC RIVER AT FORDS LANDING AT ALEXANDRIA, VA",
+        "site_type_code": "ST-TS",
+        "altitude": null,
+        "hydrologic_unit_code": "020700100307"
+      },
+      "id": "USGS-384749077022500",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-77.0402777777778, 38.7969444444444]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_number": "384749077023001",
+        "monitoring_location_name": "54U 13",
+        "site_type_code": "GW",
+        "altitude": 10.0,
+        "hydrologic_unit_code": "020700100307"
+      },
+      "id": "USGS-384749077023001",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-77.0413656800946, 38.7970579704218]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_number": "384755077022600",
+        "monitoring_location_name": "POTOMAC RIVER NEAR MARINA PARK AT ALEXANDRIA, VA",
+        "site_type_code": "ST-TS",
+        "altitude": null,
+        "hydrologic_unit_code": "020700100307"
+      },
+      "id": "USGS-384755077022600",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-77.0405555555556, 38.7986111111111]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_number": "384758077023101",
+        "monitoring_location_name": "54U 46E VA AMER WATER CO",
+        "site_type_code": "GW",
+        "altitude": 10.0,
+        "hydrologic_unit_code": "020700100307"
+      },
+      "id": "USGS-384758077023101",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-77.0416434706912, 38.799557925884]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_number": "384802077022200",
+        "monitoring_location_name": "POTOMAC RIVER AT WOLFE STREET AT ALEXANDRIA, VA",
+        "site_type_code": "ST-TS",
+        "altitude": null,
+        "hydrologic_unit_code": "020700100307"
+      },
+      "id": "USGS-384802077022200",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-77.0394444444444, 38.8005555555556]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_number": "384805077031301",
+        "monitoring_location_name": "54U 27E",
+        "site_type_code": "GW",
+        "altitude": 30.0,
+        "hydrologic_unit_code": "020700100302"
+      },
+      "id": "USGS-384805077031301",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-77.0533105024454, 38.8015023128617]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_number": "384808077045501",
+        "monitoring_location_name": "54U 28E",
+        "site_type_code": "GW",
+        "altitude": 20.0,
+        "hydrologic_unit_code": "020700100302"
+      },
+      "id": "USGS-384808077045501",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-77.0816447137886, 38.802335575192]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_number": "384811077022100",
+        "monitoring_location_name": "POTOMAC RIVER AT PRINCE STREET AT ALEXANDRIA, VA",
+        "site_type_code": "ST-TS",
+        "altitude": null,
+        "hydrologic_unit_code": "020700100307"
+      },
+      "id": "USGS-384811077022100",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-77.0391666666667, 38.8030555555556]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_number": "384815077022200",
+        "monitoring_location_name": "POTOMAC RIVER AT 2 KING STREET AT ALEXANDRIA, VA",
+        "site_type_code": "ST-TS",
+        "altitude": null,
+        "hydrologic_unit_code": "020700100307"
+      },
+      "id": "USGS-384815077022200",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-77.0394444444444, 38.8041666666667]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_number": "384816077022500",
+        "monitoring_location_name": "POTOMAC RIVER AT 101 KING ST AT ALEXANDRIA, VA",
+        "site_type_code": "ST-TS",
+        "altitude": null,
+        "hydrologic_unit_code": "020700100307"
+      },
+      "id": "USGS-384816077022500",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-77.0402777777778, 38.8044444444444]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_number": "384823077022000",
+        "monitoring_location_name": "POTOMAC R AT FOUNDERS PARK DOCK AT ALEXANDRIA, VA",
+        "site_type_code": "ST-TS",
+        "altitude": null,
+        "hydrologic_unit_code": "020700100301"
+      },
+      "id": "USGS-384823077022000",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-77.0388888888889, 38.8063888888889]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_number": "384823077022300",
+        "monitoring_location_name": "POTOMAC RIVER AT FOUNDERS PARK AT ALEXANDRIA, VA",
+        "site_type_code": "ST-TS",
+        "altitude": null,
+        "hydrologic_unit_code": "020700100301"
+      },
+      "id": "USGS-384823077022300",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-77.0397222222222, 38.8063888888889]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_number": "384823077022301",
+        "monitoring_location_name": "54U 47F",
+        "site_type_code": "GW",
+        "altitude": 5.0,
+        "hydrologic_unit_code": "020700100301"
+      },
+      "id": "USGS-384823077022301",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-77.0394211917247, 38.8065022525476]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_number": "384827077040801",
+        "monitoring_location_name": "54U 43E",
+        "site_type_code": "GW",
+        "altitude": 140.0,
+        "hydrologic_unit_code": "020700100302"
+      },
+      "id": "USGS-384827077040801",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-77.0685887532119, 38.8076132867407]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_number": "384828077040601",
+        "monitoring_location_name": "54U 44E",
+        "site_type_code": "GW",
+        "altitude": 107.0,
+        "hydrologic_unit_code": "020700100302"
+      },
+      "id": "USGS-384828077040601",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-77.0680331806193, 38.8078910607572]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_number": "384828077040801",
+        "monitoring_location_name": "54U 42E",
+        "site_type_code": "GW",
+        "altitude": 144.0,
+        "hydrologic_unit_code": "020700100302"
+      },
+      "id": "USGS-384828077040801",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-77.0685887531708, 38.8078910596652]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_number": "384833077022601",
+        "monitoring_location_name": "54U 19F",
+        "site_type_code": "GW",
+        "altitude": 15.0,
+        "hydrologic_unit_code": "020700100301"
+      },
+      "id": "USGS-384833077022601",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-77.0402545554643, 38.8092799798004]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_number": "384844077021800",
+        "monitoring_location_name": "POTOMAC RIVER AT 100 MADISON ST AT ALEXANDRIA, VA",
+        "site_type_code": "ST-TS",
+        "altitude": null,
+        "hydrologic_unit_code": "020700100301"
+      },
+      "id": "USGS-384844077021800",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-77.0383333333333, 38.8122222222222]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_number": "384844077022200",
+        "monitoring_location_name": "POTOMAC RIVER AT 120 MADISON ST AT ALEXANDRIA, VA",
+        "site_type_code": "ST-TS",
+        "altitude": null,
+        "hydrologic_unit_code": "020700100301"
+      },
+      "id": "USGS-384844077022200",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-77.0394444444444, 38.8122222222222]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_number": "384844077030001",
+        "monitoring_location_name": "54U 30E",
+        "site_type_code": "GW",
+        "altitude": 45.0,
+        "hydrologic_unit_code": "020700100302"
+      },
+      "id": "USGS-384844077030001",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-77.0496992913594, 38.8123354632098]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_number": "384846077022401",
+        "monitoring_location_name": "54U 18F",
+        "site_type_code": "GW",
+        "altitude": 10.0,
+        "hydrologic_unit_code": "020700100301"
+      },
+      "id": "USGS-384846077022401",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-77.0396989893838, 38.8128910284444]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_number": "384856077030501",
+        "monitoring_location_name": "54U 15E",
+        "site_type_code": "GW",
+        "altitude": 39.34,
+        "hydrologic_unit_code": "020700100302"
+      },
+      "id": "USGS-384856077030501",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-77.0510882257214, 38.8156687353429]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_number": "384858077030501",
+        "monitoring_location_name": "54U 14E",
+        "site_type_code": "GW",
+        "altitude": 46.54,
+        "hydrologic_unit_code": "020700100302"
+      },
+      "id": "USGS-384858077030501",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-77.0510882262872, 38.8162242811488]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_number": "384902077030501",
+        "monitoring_location_name": "54U 17E",
+        "site_type_code": "GW",
+        "altitude": 45.0,
+        "hydrologic_unit_code": "020700100302"
+      },
+      "id": "USGS-384902077030501",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-77.0510882274188, 38.8173353727606]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_number": "384904077030401",
+        "monitoring_location_name": "54U  8E",
+        "site_type_code": "GW",
+        "altitude": 45.0,
+        "hydrologic_unit_code": "020700100302"
+      },
+      "id": "USGS-384904077030401",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-77.0508104418941, 38.8178909191001]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_number": "384906077030201",
+        "monitoring_location_name": "54U  7E",
+        "site_type_code": "GW",
+        "altitude": 45.0,
+        "hydrologic_unit_code": "020700100302"
+      },
+      "id": "USGS-384906077030201",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-77.0502548703097, 38.8184464659712]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_number": "384907077030201",
+        "monitoring_location_name": "54U  6E",
+        "site_type_code": "GW",
+        "altitude": 45.0,
+        "hydrologic_unit_code": "020700100302"
+      },
+      "id": "USGS-384907077030201",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-77.050254870608, 38.8187242388731]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_number": "384918077024501",
+        "monitoring_location_name": "54U  5E",
+        "site_type_code": "GW",
+        "altitude": 40.0,
+        "hydrologic_unit_code": "020700100301"
+      },
+      "id": "USGS-384918077024501",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-77.0455325115748, 38.8217797497839]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_number": "384918077024502",
+        "monitoring_location_name": "54U 33E",
+        "site_type_code": "GW",
+        "altitude": 40.0,
+        "hydrologic_unit_code": "020700100301"
+      },
+      "id": "USGS-384918077024502",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-77.0455325115748, 38.8217797497839]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_number": "384955077025501",
+        "monitoring_location_name": "54U 16E",
+        "site_type_code": "GW",
+        "altitude": 35.0,
+        "hydrologic_unit_code": "020700100301"
+      },
+      "id": "USGS-384955077025501",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-77.0483103841309, 38.8320573417781]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_number": "385003077033901",
+        "monitoring_location_name": "54U  3B",
+        "site_type_code": "GW",
+        "altitude": 60.0,
+        "hydrologic_unit_code": "020700100301"
+      },
+      "id": "USGS-385003077033901",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-77.0605329614356, 38.8342795023858]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_number": "385026077034001",
+        "monitoring_location_name": "54U  4B",
+        "site_type_code": "GW",
+        "altitude": 15.0,
+        "hydrologic_unit_code": "020700100301"
+      },
+      "id": "USGS-385026077034001",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-77.0608107495886, 38.8406682789163]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_number": "385202077044401",
+        "monitoring_location_name": "54U 36B",
+        "site_type_code": "GW",
+        "altitude": 185.0,
+        "hydrologic_unit_code": "020700100103"
+      },
+      "id": "USGS-385202077044401",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-77.0785890106576, 38.8673344485077]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_number": "385253077042301",
+        "monitoring_location_name": "54V  3",
+        "site_type_code": "GW",
+        "altitude": 207.69,
+        "hydrologic_unit_code": "020700100103"
+      },
+      "id": "USGS-385253077042301",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-77.072769, 38.881311]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_number": "385346077051901",
+        "monitoring_location_name": "54V  1G",
+        "site_type_code": "GW",
+        "altitude": 240.0,
+        "hydrologic_unit_code": "02070010"
+      },
+      "id": "USGS-385346077051901",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-77.0883114495144, 38.8962228186539]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_number": "385346077073701",
+        "monitoring_location_name": "53V  1",
+        "site_type_code": "GW",
+        "altitude": 410.0,
+        "hydrologic_unit_code": "020700100301"
+      },
+      "id": "USGS-385346077073701",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-77.1266457298242, 38.896222758362]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_number": "385350077055201",
+        "monitoring_location_name": "54V  2G",
+        "site_type_code": "GW",
+        "altitude": 225.0,
+        "hydrologic_unit_code": "020700100103"
+      },
+      "id": "USGS-385350077055201",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-77.0974783403274, 38.8973338960772]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_number": "95101300004",
+        "monitoring_location_name": "51013 DOMESTIC AGGREGATE USERS",
+        "site_type_code": "AW",
+        "altitude": null,
+        "hydrologic_unit_code": null
+      },
+      "id": "USGS-95101300004",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_number": "95151000003",
+        "monitoring_location_name": "51510 DOMESTIC AGGREGATE USERS",
+        "site_type_code": "AW",
+        "altitude": null,
+        "hydrologic_unit_code": null
+      },
+      "id": "USGS-95151000003",
+      "geometry": null
+    }
+  ],
+  "numberReturned": 61,
+  "links": [
+    {
+      "type": "application/geo+json",
+      "rel": "self",
+      "title": "This document as GeoJSON",
+      "href": "https://api.waterdata.usgs.gov/ogcapi/v1/collections/monitoring-locations/items?f=json&filter-lang=cql2-text&filter=%28%28state_code%3D%2751%27%20AND%20county_code%3D%27013%27%29%20OR%20%28state_code%3D%2751%27%20AND%20county_code%3D%27510%27%29%29&properties=monitoring_location_number,monitoring_location_name,site_type_code,altitude,hydrologic_unit_code&limit=50000"
+    },
+    {
+      "rel": "alternate",
+      "type": "application/ld+json",
+      "title": "This document as RDF (JSON-LD)",
+      "href": "https://api.waterdata.usgs.gov/ogcapi/v1/collections/monitoring-locations/items?f=jsonld&filter-lang=cql2-text&filter=%28%28state_code%3D%2751%27%20AND%20county_code%3D%27013%27%29%20OR%20%28state_code%3D%2751%27%20AND%20county_code%3D%27510%27%29%29&properties=monitoring_location_number,monitoring_location_name,site_type_code,altitude,hydrologic_unit_code&limit=50000"
+    },
+    {
+      "type": "text/html",
+      "rel": "alternate",
+      "title": "This document as HTML",
+      "href": "https://api.waterdata.usgs.gov/ogcapi/v1/collections/monitoring-locations/items?f=html&filter-lang=cql2-text&filter=%28%28state_code%3D%2751%27%20AND%20county_code%3D%27013%27%29%20OR%20%28state_code%3D%2751%27%20AND%20county_code%3D%27510%27%29%29&properties=monitoring_location_number,monitoring_location_name,site_type_code,altitude,hydrologic_unit_code&limit=50000"
+    },
+    {
+      "type": "text/csv; charset=utf-8",
+      "rel": "alternate",
+      "title": "This document as CSV",
+      "href": "https://api.waterdata.usgs.gov/ogcapi/v1/collections/monitoring-locations/items?f=csv&filter-lang=cql2-text&filter=%28%28state_code%3D%2751%27%20AND%20county_code%3D%27013%27%29%20OR%20%28state_code%3D%2751%27%20AND%20county_code%3D%27510%27%29%29&properties=monitoring_location_number,monitoring_location_name,site_type_code,altitude,hydrologic_unit_code&limit=50000"
+    },
+    {
+      "type": "application/json",
+      "title": "Monitoring locations",
+      "rel": "collection",
+      "href": "https://api.waterdata.usgs.gov/ogcapi/v1/collections/monitoring-locations"
+    }
+  ],
+  "timeStamp": "2026-11-11T10:07:17.608011Z"
+}

@@ -1,0 +1,293 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-106.53027778, 32.38972222]
+      },
+      "properties": {
+        "monitoring_location_id": "USGS-322323106314701",
+        "monitoring_location_name": "22S.04E.15.331 BLM CRN WELL",
+        "site_type": "Well",
+        "site_type_code": "GW",
+        "country_code": "US",
+        "state_code": "35",
+        "county_code": "013",
+        "data": [
+          {
+            "parameter_code": "72019",
+            "unit_of_measure": "ft",
+            "parent_time_series_id": "0d91e794e4a24e99abb3b363a75599ad",
+            "parent_statistic_id": "00003",
+            "parent_statistic_name": "Mean",
+            "values": [
+              {
+                "start_date": "1999-11-01",
+                "end_date": "1999-11-30",
+                "interval_type": "month",
+                "value": "67.49",
+                "sample_count": 30,
+                "approval_status": "approved",
+                "computation_id": "a984c011-5e1f-4fc7-99b2-f22e0a2772cf",
+                "computation": "arithmetic_mean"
+              },
+              {
+                "start_date": "2000-11-01",
+                "end_date": "2000-11-30",
+                "interval_type": "month",
+                "value": "68.146",
+                "sample_count": 30,
+                "approval_status": "approved",
+                "computation_id": "63b85457-ace8-423d-bb37-c623b2a4f075",
+                "computation": "arithmetic_mean"
+              },
+              {
+                "start_date": "2001-11-01",
+                "end_date": "2001-11-30",
+                "interval_type": "month",
+                "value": "68.645",
+                "sample_count": 30,
+                "approval_status": "approved",
+                "computation_id": "dcfc0d4c-8f46-42e7-af0f-78f5c06866ed",
+                "computation": "arithmetic_mean"
+              },
+              {
+                "start_date": "2002-11-01",
+                "end_date": "2002-11-30",
+                "interval_type": "month",
+                "value": "69.382",
+                "sample_count": 30,
+                "approval_status": "approved",
+                "computation_id": "a6e69cd1-f581-46be-9de2-edfb9d26dbd7",
+                "computation": "arithmetic_mean"
+              },
+              {
+                "start_date": "2003-11-01",
+                "end_date": "2003-11-30",
+                "interval_type": "month",
+                "value": "70.025",
+                "sample_count": 30,
+                "approval_status": "approved",
+                "computation_id": "331603af-2fff-48ac-9a4d-7a0a56c29e4c",
+                "computation": "arithmetic_mean"
+              },
+              {
+                "start_date": "2004-11-01",
+                "end_date": "2004-11-30",
+                "interval_type": "month",
+                "value": "70.119",
+                "sample_count": 30,
+                "approval_status": "approved",
+                "computation_id": "8da0fe2b-d087-4f5f-badd-8ad173f05a28",
+                "computation": "arithmetic_mean"
+              },
+              {
+                "start_date": "2005-11-01",
+                "end_date": "2005-11-30",
+                "interval_type": "month",
+                "value": "69.155",
+                "sample_count": 30,
+                "approval_status": "approved",
+                "computation_id": "73fa66c4-c0e0-4569-af44-e513f73d6533",
+                "computation": "arithmetic_mean"
+              },
+              {
+                "start_date": "2006-11-01",
+                "end_date": "2006-11-30",
+                "interval_type": "month",
+                "value": "58.973",
+                "sample_count": 30,
+                "approval_status": "approved",
+                "computation_id": "0038be7d-d54f-4f01-a185-ac0ed7ffaadd",
+                "computation": "arithmetic_mean"
+              },
+              {
+                "start_date": "2008-11-01",
+                "end_date": "2008-11-30",
+                "interval_type": "month",
+                "value": "58.21",
+                "sample_count": 30,
+                "approval_status": "approved",
+                "computation_id": "47edc905-085a-46cb-a7fc-4ce66d9337c8",
+                "computation": "arithmetic_mean"
+              },
+              {
+                "start_date": "2009-11-01",
+                "end_date": "2009-11-30",
+                "interval_type": "month",
+                "value": "66.28",
+                "sample_count": 30,
+                "approval_status": "approved",
+                "computation_id": "8c9f28bd-f723-4396-8090-405fc3e4d703",
+                "computation": "arithmetic_mean"
+              },
+              {
+                "start_date": "2010-11-01",
+                "end_date": "2010-11-30",
+                "interval_type": "month",
+                "value": "67.705",
+                "sample_count": 26,
+                "approval_status": "approved",
+                "computation_id": "4c5aa1ef-3764-4cc5-9a2c-1e3f651fc296",
+                "computation": "arithmetic_mean"
+              },
+              {
+                "start_date": "2011-11-01",
+                "end_date": "2011-11-30",
+                "interval_type": "month",
+                "value": "69.507",
+                "sample_count": 30,
+                "approval_status": "approved",
+                "computation_id": "93db8dcd-b23c-4bb6-8dbe-3686f91df14c",
+                "computation": "arithmetic_mean"
+              },
+              {
+                "start_date": "2012-11-01",
+                "end_date": "2012-11-30",
+                "interval_type": "month",
+                "value": "70.606",
+                "sample_count": 30,
+                "approval_status": "approved",
+                "computation_id": "e63a1b99-b312-402b-9772-7143f7b614ba",
+                "computation": "arithmetic_mean"
+              },
+              {
+                "start_date": "2013-11-01",
+                "end_date": "2013-11-30",
+                "interval_type": "month",
+                "value": "68.648",
+                "sample_count": 30,
+                "approval_status": "approved",
+                "computation_id": "d784517e-76cd-4664-80c4-adb4c17efea1",
+                "computation": "arithmetic_mean"
+              },
+              {
+                "start_date": "2014-11-01",
+                "end_date": "2014-11-30",
+                "interval_type": "month",
+                "value": "63.598",
+                "sample_count": 30,
+                "approval_status": "approved",
+                "computation_id": "8bec7e69-82f8-4af1-974d-866138cf9efb",
+                "computation": "arithmetic_mean"
+              },
+              {
+                "start_date": "2015-11-01",
+                "end_date": "2015-11-30",
+                "interval_type": "month",
+                "value": "66.568",
+                "sample_count": 29,
+                "approval_status": "approved",
+                "computation_id": "766bc52e-d402-4196-9a81-da50a6b41332",
+                "computation": "arithmetic_mean"
+              },
+              {
+                "start_date": "2016-11-01",
+                "end_date": "2016-11-30",
+                "interval_type": "month",
+                "value": "69.156",
+                "sample_count": 30,
+                "approval_status": "approved",
+                "computation_id": "cd991b02-a8f9-4867-afca-551b46e49bff",
+                "computation": "arithmetic_mean"
+              },
+              {
+                "start_date": "2017-11-01",
+                "end_date": "2017-11-30",
+                "interval_type": "month",
+                "value": "70.328",
+                "sample_count": 30,
+                "approval_status": "approved",
+                "computation_id": "fca12bd3-89e7-422d-9853-eaa744a1e2f2",
+                "computation": "arithmetic_mean"
+              },
+              {
+                "start_date": "2018-11-01",
+                "end_date": "2018-11-30",
+                "interval_type": "month",
+                "value": "71.565",
+                "sample_count": 30,
+                "approval_status": "approved",
+                "computation_id": "7cbaa485-8c09-498e-8e89-860fe7589f6e",
+                "computation": "arithmetic_mean"
+              },
+              {
+                "start_date": "2019-11-01",
+                "end_date": "2019-11-30",
+                "interval_type": "month",
+                "value": "72.468",
+                "sample_count": 30,
+                "approval_status": "approved",
+                "computation_id": "009c10ea-c0fb-45cd-98b3-28d7e944845a",
+                "computation": "arithmetic_mean"
+              },
+              {
+                "start_date": "2020-11-01",
+                "end_date": "2020-11-30",
+                "interval_type": "month",
+                "value": "72.999",
+                "sample_count": 30,
+                "approval_status": "approved",
+                "computation_id": "5db4a2c5-02db-4dbc-9823-3da8bb1d930d",
+                "computation": "arithmetic_mean"
+              },
+              {
+                "start_date": "2021-11-01",
+                "end_date": "2021-11-30",
+                "interval_type": "month",
+                "value": "70.427",
+                "sample_count": 30,
+                "approval_status": "approved",
+                "computation_id": "f40f1a3f-bb48-4bb0-a385-a15966b3e53b",
+                "computation": "arithmetic_mean"
+              },
+              {
+                "start_date": "2022-11-01",
+                "end_date": "2022-11-30",
+                "interval_type": "month",
+                "value": "71.006",
+                "sample_count": 30,
+                "approval_status": "approved",
+                "computation_id": "3d124713-cf12-4c21-b0fe-2e23f56f0a00",
+                "computation": "arithmetic_mean"
+              },
+              {
+                "start_date": "2023-11-01",
+                "end_date": "2023-11-30",
+                "interval_type": "month",
+                "value": "73.29",
+                "sample_count": 30,
+                "approval_status": "approved",
+                "computation_id": "22186685-cbd3-4fe3-849e-e2a8d51145d4",
+                "computation": "arithmetic_mean"
+              },
+              {
+                "start_date": "2024-11-01",
+                "end_date": "2024-11-30",
+                "interval_type": "month",
+                "value": "74.364",
+                "sample_count": 30,
+                "approval_status": "approved",
+                "computation_id": "01af8b73-fb6a-49d1-b6c3-7d535af79d66",
+                "computation": "arithmetic_mean"
+              },
+              {
+                "start_date": "2025-11-01",
+                "end_date": "2025-11-30",
+                "interval_type": "month",
+                "value": "75.022",
+                "sample_count": 30,
+                "approval_status": "approved",
+                "computation_id": "e9db8ad7-9eb8-407c-b575-15a10075cce1",
+                "computation": "arithmetic_mean"
+              }
+            ]
+          }
+        ]
+      }
+    }
+  ],
+  "next": null
+}

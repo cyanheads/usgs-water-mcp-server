@@ -1,0 +1,159 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_number": "01646500",
+        "monitoring_location_name": "POTOMAC RIVER NEAR WASH, DC LITTLE FALLS PUMP STA",
+        "agency_code": "USGS",
+        "time_zone_abbreviation": "EST",
+        "uses_daylight_savings": "Y"
+      },
+      "id": "USGS-01646500",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_number": "12396500",
+        "monitoring_location_name": "PEND OREILLE RIVER BELOW BOX CANYON NEAR IONE, WA",
+        "agency_code": "USGS",
+        "time_zone_abbreviation": "PST",
+        "uses_daylight_savings": "Y"
+      },
+      "id": "USGS-12396500",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_number": "14174450",
+        "monitoring_location_name": "NORTH SANTIAM RIVER NR MARION FORKS, OR",
+        "agency_code": "USGS",
+        "time_zone_abbreviation": "PST",
+        "uses_daylight_savings": "Y"
+      },
+      "id": "USGS-14174450",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_number": "14233500",
+        "monitoring_location_name": "COWLITZ RIVER NEAR KOSMOS, WA",
+        "agency_code": "USGS",
+        "time_zone_abbreviation": "PST",
+        "uses_daylight_savings": "Y"
+      },
+      "id": "USGS-14233500",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_number": "261620081464402",
+        "monitoring_location_name": "C  -1004R",
+        "agency_code": "USGS",
+        "time_zone_abbreviation": "EST",
+        "uses_daylight_savings": "Y"
+      },
+      "id": "USGS-261620081464402",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_number": "322323106314701",
+        "monitoring_location_name": "22S.04E.15.331 BLM CRN WELL",
+        "agency_code": "USGS",
+        "time_zone_abbreviation": "MST",
+        "uses_daylight_savings": "Y"
+      },
+      "id": "USGS-322323106314701",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_number": "394829074053503",
+        "monitoring_location_name": "290019-- Island Beach 3 Obs",
+        "agency_code": "USGS",
+        "time_zone_abbreviation": "EST",
+        "uses_daylight_savings": "Y"
+      },
+      "id": "USGS-394829074053503",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_number": "401105074120201",
+        "monitoring_location_name": "250635-- Howell Twp 1 Obs",
+        "agency_code": "USGS",
+        "time_zone_abbreviation": "EST",
+        "uses_daylight_savings": "Y"
+      },
+      "id": "USGS-401105074120201",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_number": "404931073382101",
+        "monitoring_location_name": "N   110. 1",
+        "agency_code": "USGS",
+        "time_zone_abbreviation": "EST",
+        "uses_daylight_savings": "N"
+      },
+      "id": "USGS-404931073382101",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_number": "414429074052001",
+        "monitoring_location_name": "Local number, U-1620, SUNY New Paltz NY",
+        "agency_code": "USGS",
+        "time_zone_abbreviation": "EST",
+        "uses_daylight_savings": "N"
+      },
+      "id": "USGS-414429074052001",
+      "geometry": null
+    }
+  ],
+  "numberReturned": 10,
+  "links": [
+    {
+      "type": "application/geo+json",
+      "rel": "self",
+      "title": "This document as GeoJSON",
+      "href": "https://api.waterdata.usgs.gov/ogcapi/v1/collections/monitoring-locations/items?f=json&skipGeometry=true&monitoring_location_number=01646500,12396500,14233500,14174450,401105074120201,404931073382101,261620081464402,322323106314701,394829074053503,414429074052001&properties=monitoring_location_number,monitoring_location_name,agency_code,time_zone_abbreviation,uses_daylight_savings&limit=1000"
+    },
+    {
+      "rel": "alternate",
+      "type": "application/ld+json",
+      "title": "This document as RDF (JSON-LD)",
+      "href": "https://api.waterdata.usgs.gov/ogcapi/v1/collections/monitoring-locations/items?f=jsonld&skipGeometry=true&monitoring_location_number=01646500,12396500,14233500,14174450,401105074120201,404931073382101,261620081464402,322323106314701,394829074053503,414429074052001&properties=monitoring_location_number,monitoring_location_name,agency_code,time_zone_abbreviation,uses_daylight_savings&limit=1000"
+    },
+    {
+      "type": "text/html",
+      "rel": "alternate",
+      "title": "This document as HTML",
+      "href": "https://api.waterdata.usgs.gov/ogcapi/v1/collections/monitoring-locations/items?f=html&skipGeometry=true&monitoring_location_number=01646500,12396500,14233500,14174450,401105074120201,404931073382101,261620081464402,322323106314701,394829074053503,414429074052001&properties=monitoring_location_number,monitoring_location_name,agency_code,time_zone_abbreviation,uses_daylight_savings&limit=1000"
+    },
+    {
+      "type": "text/csv; charset=utf-8",
+      "rel": "alternate",
+      "title": "This document as CSV",
+      "href": "https://api.waterdata.usgs.gov/ogcapi/v1/collections/monitoring-locations/items?f=csv&skipGeometry=true&monitoring_location_number=01646500,12396500,14233500,14174450,401105074120201,404931073382101,261620081464402,322323106314701,394829074053503,414429074052001&properties=monitoring_location_number,monitoring_location_name,agency_code,time_zone_abbreviation,uses_daylight_savings&limit=1000"
+    },
+    {
+      "type": "application/json",
+      "title": "Monitoring locations",
+      "rel": "collection",
+      "href": "https://api.waterdata.usgs.gov/ogcapi/v1/collections/monitoring-locations"
+    }
+  ],
+  "timeStamp": "2026-11-11T10:06:29.979736Z"
+}

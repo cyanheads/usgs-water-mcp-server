@@ -1,45 +1,40 @@
 /**
- * @fileoverview One-page OGC site-series discovery with filter-bound cursors and a shared deadline.
+ * @fileoverview One-page OGC site-series discovery with filter-bound cursors and one deadline for
+ * the call: the site resolves to its monitoring location (any agency), then one page of its
+ * `time-series-metadata` is read.
  * @module services/waterdata/site-data-catalog
  */
 import { type Context, z } from '@cyanheads/mcp-ts-core';
 import {
-  JsonRpcErrorCode,
   McpError,
   notFound,
   serviceUnavailable,
+  timeout,
   validationError,
 } from '@cyanheads/mcp-ts-core/errors';
-import { fetchWithTimeout, withRetry } from '@cyanheads/mcp-ts-core/utils';
-import { getServerConfig } from '@/config/server-config.js';
+import { resolveSites } from './site-resolver.js';
+import {
+  fetchOgcPage,
+  ogcItemsUrl,
+  startRequest,
+  type WaterDataRequest,
+} from './water-data-client.js';
+import { classifyWaterDataFailure } from './water-data-errors.js';
 
-const BASE = 'https://api.waterdata.usgs.gov/ogcapi/v1/collections';
-const METADATA = `${BASE}/time-series-metadata/items`;
 const NullableText = z.string().nullish();
-const PageSchema = z.object({
-  features: z.array(
-    z.object({
-      id: z.string().min(1),
-      properties: z.object({
-        parameter_code: z.string(),
-        parameter_name: NullableText,
-        unit_of_measure: NullableText,
-        statistic_id: NullableText,
-        begin: NullableText,
-        end: NullableText,
-        sublocation_identifier: NullableText,
-        web_description: NullableText,
-        computation_period_identifier: NullableText,
-        computation_identifier: NullableText,
-      }),
-    }),
-  ),
-  links: z.array(z.object({ rel: z.string(), href: z.string() })).optional(),
-});
-const LocationSchema = z.object({
+const SeriesSchema = z.object({
+  id: z.string().min(1),
   properties: z.object({
-    monitoring_location_number: z.string(),
-    monitoring_location_name: NullableText,
+    parameter_code: z.string(),
+    parameter_name: NullableText,
+    unit_of_measure: NullableText,
+    statistic_id: NullableText,
+    begin: NullableText,
+    end: NullableText,
+    sublocation_identifier: NullableText,
+    web_description: NullableText,
+    computation_period_identifier: NullableText,
+    computation_identifier: NullableText,
   }),
 });
 const OffsetSchema = z.number().int().min(1).max(Number.MAX_SAFE_INTEGER);
@@ -117,139 +112,114 @@ function cursorToken(params: SiteCatalogParams): number | undefined {
   }
 }
 
-/** Read location and metadata together within 45 seconds, including retries and body parsing. */
-export async function getSiteDataCatalog(
+function seriesType(
+  p: z.infer<typeof SeriesSchema>['properties'],
+): SiteCatalogSeries['seriesType'] {
+  if (p.computation_period_identifier === 'Daily') return 'daily';
+  return p.computation_period_identifier === 'Points' &&
+    p.computation_identifier === 'Instantaneous'
+    ? 'instantaneous'
+    : null;
+}
+
+/** Read one metadata page of `monitoringLocationId`, turning an upstream cursor rejection into `invalid_cursor`. */
+async function readSeriesPage(
   params: SiteCatalogParams,
-  ctx: Context,
-): Promise<SiteDataCatalog> {
-  const token = cursorToken(params);
+  monitoringLocationId: string,
+  offset: number | undefined,
+  request: WaterDataRequest,
+) {
   const query = new URLSearchParams({
-    f: 'json',
-    monitoring_location_id: `USGS-${params.site}`,
+    monitoring_location_id: monitoringLocationId,
     limit: String(params.limit),
   });
   if (params.parameterCd) query.set('parameter_code', params.parameterCd);
   if (params.seriesType)
     query.set('computation_period_identifier', params.seriesType === 'daily' ? 'Daily' : 'Points');
   if (params.seriesType === 'instantaneous') query.set('computation_identifier', 'Instantaneous');
-  if (token) query.set('offset', String(token));
-  const cfg = getServerConfig();
+  if (offset) query.set('offset', String(offset));
   try {
-    return await withRetry(
-      async ({ signal, remainingMs }) => {
-        const options = {
-          signal,
-          headers: { 'User-Agent': cfg.userAgent, Accept: 'application/json' },
-        };
-        let locationResponse: Response;
-        try {
-          locationResponse = await fetchWithTimeout(
-            `${BASE}/monitoring-locations/items/USGS-${params.site}?f=json`,
-            Math.min(cfg.requestTimeoutMs, remainingMs),
-            ctx,
-            { ...options, expectedStatuses: [404] },
-          );
-        } catch (error) {
-          if (error instanceof McpError && error.code === JsonRpcErrorCode.NotFound)
-            throw notFound(`USGS site ${params.site} was not found.`, { reason: 'not_found' });
-          throw error;
-        }
-        const location = LocationSchema.parse(await locationResponse.json());
-        if (location.properties.monitoring_location_number !== params.site)
-          throw new Error('Unexpected monitoring location');
-        let response: Response;
-        try {
-          response = await fetchWithTimeout(
-            `${METADATA}?${query}`,
-            Math.min(cfg.requestTimeoutMs, remainingMs),
-            ctx,
-            options,
-          );
-        } catch (error) {
-          if (
-            error instanceof McpError &&
-            (error.data?.status === 400 || error.data?.status === 422) &&
-            token
-          )
-            throw validationError(
-              'USGS rejected the continuation cursor. Restart the catalog without cursor.',
-              { reason: 'invalid_cursor' },
-            );
-          throw error;
-        }
-        const page = PageSchema.parse(await response.json());
-        let nextCursor: string | null = null;
-        const next = page.links?.find((link) => link.rel === 'next');
-        if (next) {
-          const url = new URL(next.href);
-          if (
-            url.origin !== new URL(METADATA).origin ||
-            url.pathname !== new URL(METADATA).pathname
-          )
-            throw new Error('Unexpected metadata continuation');
-          if (page.features.length === 0) throw new Error('Empty metadata page has a continuation');
-          /** Offset paging keeps position stable when upstream switches continuation styles. */
-          const offset = OffsetSchema.parse((token ?? 0) + page.features.length);
-          nextCursor = Buffer.from(JSON.stringify({ ...binding(params), offset })).toString(
-            'base64url',
-          );
-        }
-        return {
-          siteNumber: params.site,
-          siteName: location.properties.monitoring_location_name ?? null,
-          series: page.features.map(({ id, properties: p }) => ({
-            timeSeriesId: id,
-            parameterCd: p.parameter_code,
-            parameterName: p.parameter_name ?? null,
-            unit: p.unit_of_measure ?? null,
-            statCd: p.statistic_id ?? null,
-            beginDate: p.begin ?? null,
-            endDate: p.end ?? null,
-            sublocation: p.sublocation_identifier ?? null,
-            webDescription: p.web_description ?? null,
-            computationPeriod: p.computation_period_identifier ?? null,
-            computation: p.computation_identifier ?? null,
-            seriesType:
-              p.computation_period_identifier === 'Daily'
-                ? ('daily' as const)
-                : p.computation_period_identifier === 'Points' &&
-                    p.computation_identifier === 'Instantaneous'
-                  ? ('instantaneous' as const)
-                  : null,
-          })),
-          nextCursor,
-        };
-      },
-      {
-        deadlineMs: 45_000,
-        maxRetries: 2,
-        baseDelayMs: 500,
-        operation: 'getSiteDataCatalog',
-        context: ctx,
-        signal: ctx.signal,
-      },
+    return await fetchOgcPage(
+      'time-series-metadata',
+      ogcItemsUrl('time-series-metadata', query),
+      SeriesSchema,
+      request,
     );
   } catch (error) {
-    if (
-      ctx.signal?.aborted ||
-      (error instanceof McpError && error.code === JsonRpcErrorCode.RequestCancelled)
-    )
-      throw error;
+    if (offset && error instanceof McpError && error.data?.reason === 'invalid_request')
+      throw validationError(
+        'USGS rejected the continuation cursor. Restart the catalog without cursor.',
+        { reason: 'invalid_cursor' },
+        { cause: error },
+      );
+    throw error;
+  }
+}
+
+/**
+ * Resolve the site and read one page of its series metadata within one 45-second deadline,
+ * retries and body parsing included.
+ *
+ * @throws {McpError} `not_found` (no location has the number), `invalid_cursor`, `upstream_timeout`,
+ * `upstream_error`; a rate limit (`RateLimited`), a rejected `USGS_API_KEY`
+ * (`ConfigurationError`), and caller cancellation pass through unchanged.
+ */
+export async function getSiteDataCatalog(
+  params: SiteCatalogParams,
+  ctx: Context,
+): Promise<SiteDataCatalog> {
+  const offset = cursorToken(params);
+  const request = startRequest(ctx, 'getSiteDataCatalog');
+  try {
+    const site = (await resolveSites([params.site], request)).get(params.site);
+    if (!site) throw notFound(`USGS site ${params.site} was not found.`, { reason: 'not_found' });
+    const page = await readSeriesPage(params, site.monitoringLocationId, offset, request);
+    /** Offset paging keeps position stable when upstream switches continuation styles. */
+    const nextCursor = page.nextUrl
+      ? Buffer.from(
+          JSON.stringify({
+            ...binding(params),
+            offset: OffsetSchema.parse((offset ?? 0) + page.features.length),
+          }),
+        ).toString('base64url')
+      : null;
+    return {
+      siteNumber: params.site,
+      siteName: site.siteName,
+      series: page.features.map(({ id, properties: p }) => ({
+        timeSeriesId: id,
+        parameterCd: p.parameter_code,
+        parameterName: p.parameter_name ?? null,
+        unit: p.unit_of_measure ?? null,
+        statCd: p.statistic_id ?? null,
+        beginDate: p.begin ?? null,
+        endDate: p.end ?? null,
+        sublocation: p.sublocation_identifier ?? null,
+        webDescription: p.web_description ?? null,
+        computationPeriod: p.computation_period_identifier ?? null,
+        computation: p.computation_identifier ?? null,
+        seriesType: seriesType(p),
+      })),
+      nextCursor,
+    };
+  } catch (error) {
+    if (ctx.signal?.aborted) throw error;
     if (
       error instanceof McpError &&
       (error.data?.reason === 'not_found' || error.data?.reason === 'invalid_cursor')
     )
       throw error;
-    if (error instanceof McpError && error.code === JsonRpcErrorCode.Timeout)
-      throw new McpError(
-        error.code,
-        error.message,
-        { ...error.data, reason: 'upstream_timeout' },
+    const failure = classifyWaterDataFailure(error);
+    if (!failure) throw error;
+    if (failure.reason === 'upstream_timeout')
+      throw timeout(
+        failure.message,
+        { ...failure.data, reason: 'upstream_timeout' },
         { cause: error },
       );
     throw serviceUnavailable(
-      'The USGS site-series catalog could not be read.',
-      { reason: 'upstream_error' },
+      failure.message,
+      { ...failure.data, reason: 'upstream_error' },
       { cause: error },
     );
   }

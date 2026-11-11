@@ -30,6 +30,20 @@ export interface CuratedParameter {
   unit: string;
 }
 
+/**
+ * Codes whose value is a distance down to the water surface, so a larger value is a lower water
+ * level: depth to water below land surface in feet (72019) and meters (30210, 99019), and tidal
+ * water level as the distance from the measuring point (72276). Their percentiles rank by water
+ * level, as the USGS statistics API publishes them — the 95th is the shallowest depth. Elevation
+ * codes and sensor depth below the water surface rise with the water and are not in the set.
+ */
+export const DEPTH_BELOW_SURFACE_CODES: ReadonlySet<string> = new Set([
+  '72019',
+  '30210',
+  '99019',
+  '72276',
+]);
+
 /** The curated parameter codes, in display order. */
 export const CURATED_PARAMETERS: readonly CuratedParameter[] = [
   { code: '00060', name: 'Discharge', unit: 'ft³/s', group: 'streamflow' },

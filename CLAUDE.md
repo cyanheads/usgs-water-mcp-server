@@ -2,8 +2,8 @@
 
 **Server:** usgs-water-mcp-server
 **Version:** 0.5.0
-**Framework:** [@cyanheads/mcp-ts-core](https://www.npmjs.com/package/@cyanheads/mcp-ts-core) `^0.13.18`
-**Engines:** Bun ≥1.4.0, Node ≥24.0.0
+**Framework:** [@cyanheads/mcp-ts-core](https://www.npmjs.com/package/@cyanheads/mcp-ts-core) `^0.13.22`
+**Engines:** Bun ≥1.4.4, Node ≥24.0.0
 **MCP SDK:** `@modelcontextprotocol/server` ^2.4.0
 **Zod:** ^4.6.7
 
@@ -30,7 +30,8 @@
 ```ts
 import { tool, z } from '@cyanheads/mcp-ts-core';
 import { JsonRpcErrorCode } from '@cyanheads/mcp-ts-core/errors';
-import { findSites } from '@/services/nwis/nwis-service.js';
+import { startDeadline } from '@/services/waterdata/request-deadline.js';
+import { findSites } from '@/services/waterdata/site-discovery.js';
 
 export const waterFindSites = tool('water_find_sites', {
   description: 'Find USGS water monitoring sites by bounding box, state, county, or HUC watershed code.',
@@ -52,13 +53,16 @@ export const waterFindSites = tool('water_find_sites', {
       when: 'No sites match the given geographic and filter criteria.',
       recovery: 'Broaden the bounding box, remove parameterCd or siteType filters, or try a different state/HUC.' },
     { reason: 'upstream_error', code: JsonRpcErrorCode.ServiceUnavailable,
-      when: 'NWIS returned a 5xx error.',
+      when: 'The USGS Water Data API returned a 5xx error.',
       recovery: 'The USGS service is temporarily unavailable. Retry after a short backoff.',
       retryable: true, thrownBy: 'service' },
   ],
 
   async handler(input, ctx) {
-    const sites = await findSites({ stateCd: input.stateCd, siteType: input.siteType }, ctx);
+    const sites = await findSites(
+      { stateCd: input.stateCd, siteType: input.siteType, siteOutput: 'basic' },
+      { ctx, deadline: startDeadline(), operation: 'findSites', signal: ctx.signal },
+    );
     if (sites.length === 0) throw ctx.fail('no_sites_found', 'No USGS sites match the specified filters.');
     ctx.log.info('Sites found', { count: sites.length });
     return { sites, total: sites.length };
@@ -91,7 +95,8 @@ if (canvas && rows.length > SPILLOVER_THRESHOLD) {
 ```ts
 import { resource, z } from '@cyanheads/mcp-ts-core';
 import { notFound } from '@cyanheads/mcp-ts-core/errors';
-import { getSiteInfo } from '@/services/nwis/nwis-service.js';
+import { startDeadline } from '@/services/waterdata/request-deadline.js';
+import { getSite } from '@/services/waterdata/site-discovery.js';
 
 export const waterSiteResource = resource('usgs-water://site/{siteId}', {
   name: 'usgs-water-site',
@@ -99,7 +104,12 @@ export const waterSiteResource = resource('usgs-water://site/{siteId}', {
   mimeType: 'application/json',
   params: z.object({ siteId: z.string().describe('USGS site number (8–15 digits).') }),
   async handler(params, ctx) {
-    const site = await getSiteInfo(params.siteId, ctx);
+    const site = await getSite(params.siteId, {
+      ctx,
+      deadline: startDeadline(),
+      operation: 'getSite',
+      signal: ctx.signal,
+    });
     if (!site) throw notFound(`Site ${params.siteId} not found.`, { siteId: params.siteId });
     return site;
   },
@@ -116,8 +126,9 @@ import { parseEnvConfig } from '@cyanheads/mcp-ts-core/config';
 
 const ServerConfigSchema = z.object({
   userAgent: z.string().default('usgs-water-mcp-server/0.5.0 (contact: https://github.com/cyanheads/usgs-water-mcp-server)')
-    .describe('User-Agent header sent to USGS NWIS.'),
+    .describe('User-Agent header sent to the USGS Water Data APIs.'),
   requestTimeoutMs: z.coerce.number().default(30_000).describe('HTTP request timeout in milliseconds.'),
+  apiKey: z.string().optional().describe('Optional api.data.gov key, sent as the X-Api-Key header.'),
 });
 
 let _config: z.infer<typeof ServerConfigSchema> | undefined;
@@ -125,6 +136,7 @@ export function getServerConfig() {
   _config ??= parseEnvConfig(ServerConfigSchema, {
     userAgent: 'USGS_USER_AGENT',
     requestTimeoutMs: 'USGS_REQUEST_TIMEOUT_MS',
+    apiKey: 'USGS_API_KEY',
   });
   return _config;
 }
@@ -152,11 +164,11 @@ Handlers receive a unified `ctx` object. Key properties used in this server:
 
 Handlers throw — the framework catches, classifies, and formats.
 
-**Typed error contract (preferred).** Declare `errors: [{ reason, code, when, recovery, retryable?, severity?, thrownBy? }]` inline on each `tool()` / `resource()` to receive `ctx.fail(reason, …)` typed against the reason union. TypeScript catches typos, `data.reason` is auto-populated, and the linter enforces conformance. `recovery` is required (≥ 5 words, lint-validated) — the single source of truth for the agent's next move. The framework puts it on the wire whenever a failure carrying that `reason` arrives without a hint — a bare `ctx.fail('reason')` or a service throw with `data: { reason }` — as `data.recovery.hint`, mirrored into `content[]` text unless the message already contains it verbatim; override with an explicit `{ recovery: { hint: '...' } }` when dynamic runtime context matters. Every error envelope also carries `data.requestId`, the id the server's log records for that call carry, and `content[]` closes with `(reason … · request <id>)`. A handler's own throw holds no filled hint, so tests assert a tool's wire recovery through `runToolContract`. Mark an entry the service layer throws with `thrownBy: 'service'` so `error-contract-unthrown` skips it; this server's NWIS tools use it for `invalid_request` and `upstream_error`, which `classifyNwisFailure()` produces. Baseline codes (`InternalError`, `ServiceUnavailable`, `Timeout`, `ValidationError`, `SerializationError`, `RequestCancelled`) bubble freely and don't need declaring.
+**Typed error contract (preferred).** Declare `errors: [{ reason, code, when, recovery, retryable?, severity?, thrownBy? }]` inline on each `tool()` / `resource()` to receive `ctx.fail(reason, …)` typed against the reason union. TypeScript catches typos, `data.reason` is auto-populated, and the linter enforces conformance. `recovery` is required (≥ 5 words, lint-validated) — the single source of truth for the agent's next move. The framework puts it on the wire whenever a failure carrying that `reason` arrives without a hint — a bare `ctx.fail('reason')` or a service throw with `data: { reason }` — as `data.recovery.hint`, mirrored into `content[]` text unless the message already contains it verbatim; override with an explicit `{ recovery: { hint: '...' } }` when dynamic runtime context matters. Every error envelope also carries `data.requestId`, the id the server's log records for that call carry, and `content[]` closes with `(reason … · request <id>)`. A handler's own throw holds no filled hint, so tests assert a tool's wire recovery through `runToolContract`. Mark an entry the service layer throws with `thrownBy: 'service'` so `error-contract-unthrown` skips it; this server's Water Data tools use it for `invalid_request`, `upstream_error`, and `upstream_timeout`, which `classifyWaterDataFailure()` produces. Baseline codes (`InternalError`, `ServiceUnavailable`, `Timeout`, `ValidationError`, `SerializationError`, `RequestCancelled`) bubble freely and don't need declaring.
 
 **Declare contracts inline on each tool.** The contract is part of the tool's public surface — one file should give the full picture. Don't extract a shared `errors[]` constant; per-tool repetition is the intended cost of locality.
 
-NWIS callers also declare `upstream_timeout` with `Timeout` and retry guidance. Forward the classifier's timeout `data` into `ctx.fail` so `errorSource`, retry attempts, and operation survive; classify only after the service retry finishes. Caller cancellation stays `RequestCancelled`. A statistics-only failure in `water_get_conditions` still returns the current reading with historical context unavailable.
+Each tool call starts one 45-second deadline (`startDeadline()`) that every request, retry, and chained lookup in the call shares, and declares `upstream_timeout` with `Timeout` and retry guidance. Forward the classifier's timeout `data` into `ctx.fail` so the deadline, retry attempts, and operation survive; classify only after the service retry finishes. The classifier returns null for a rate limit (`RateLimited`, carrying `retryAfter`) and a rejected `USGS_API_KEY` (`ConfigurationError`): those rethrow unchanged and keep their own recovery hints. Caller cancellation stays `RequestCancelled`. A statistics-only failure in `water_get_conditions` still returns the current reading with historical context unavailable.
 
 **Fallback:** throw via factories or plain `Error`.
 
@@ -176,26 +188,36 @@ See framework CLAUDE.md and the `api-errors` skill for the full auto-classificat
 src/
   index.ts                              # createApp() entry point — registers tools/resources, inits canvas
   config/
-    server-config.ts                    # USGS_USER_AGENT, USGS_REQUEST_TIMEOUT_MS, WATER_DATAFRAME_DROP_ENABLED (Zod schema)
+    server-config.ts                    # USGS_USER_AGENT, USGS_REQUEST_TIMEOUT_MS, USGS_API_KEY, WATER_DATAFRAME_DROP_ENABLED (Zod schema)
   services/
     canvas/
       acquire-canvas.ts                 # acquireCanvas() — caller-supplied canvas_id → canvas, canvas_not_found via ctx.fail
       canvas-accessor.ts               # setCanvas() / getCanvas() accessors for DataCanvas
       canvas-table-name.ts              # Deterministic canvas table names derived from the query
-    nwis/
-      input-schemas.ts                  # Shared Zod input schemas (site numbers, parameter codes, filters)
-      nwis-service.ts                   # NWIS HTTP client — IV, DV, site, stat endpoints
-      types.ts                          # NWIS domain types (NwisTimeSeries, NwisValueRecord, PercentileClass, etc.)
     waterdata/
-      curated-parameters.ts             # Curated well-known parameter codes — shared by the tool and the resource
+      cql2-text.ts                      # CQL2-text literals for OGC filter queries
+      curated-parameters.ts             # Curated well-known parameter codes (shared by the tool and the resource) and the depth-below-surface code set
+      day-statistics.ts                 # Day-of-year percentiles and period of record from the Statistics API; daily-mean series pairing by time-series ID
+      input-schemas.ts                  # Shared Zod input schemas (site numbers, parameter codes, filters)
+      observation-series.ts             # Assembles continuous/daily rows and series metadata into time series: labels, qualifier codes, local timestamps
+      observations.ts                   # getReadings/getSeries — continuous, daily, and time-series-metadata reads; 366-day instantaneous chunks
       parameter-catalog.ts              # USGS parameter-code catalog reader (OGC API, 24h cache, single-flight) + search
+      request-deadline.ts               # One 45-second budget per tool call, shared by every request and retry
       site-data-catalog.ts              # OGC monitoring-location and series metadata; filter-bound cursors, shared 45s deadline
+      site-discovery.ts                 # monitoring-locations plus latest-* and peaks collections: site search, lastObservedAt, observedWithin
+      site-local-time.ts                # Site-local timestamps and day windows from the time-zone-codes table
+      site-resolver.ts                  # Bare site number → agency-prefixed monitoring location (any agency), TTL-cached
+      state-fips-codes.ts               # State and territory postal code → FIPS state code
+      statistic-codes.ts                # statistic-codes collection reader (24h cache): statName for daily series
+      types.ts                          # Domain types (NwisSite, NwisTimeSeries, NwisValueRecord, PercentileClass, etc.)
+      water-data-client.ts              # Request core for the OGC collections and the Statistics API: key header, retries, paging, 429 cooldown, fail-fast request scope
+      water-data-errors.ts              # Upstream error bodies → typed errors; classifyWaterDataFailure()
   mcp-server/
     tools/definitions/
       water-list-parameters.tool.ts     # Curated parameter codes (no network), or a full-catalog query
-      water-find-sites.tool.ts          # Site discovery via NWIS site service (RDB)
-      water-get-readings.tool.ts        # Latest IV values, up to 100 sites
-      water-get-series.tool.ts          # Historical DV/IV time series with DataCanvas spillover
+      water-find-sites.tool.ts          # Site discovery via OGC monitoring-locations; lastObservedAt and observedWithin from the latest-* collections
+      water-get-readings.tool.ts        # Latest instantaneous values, up to 100 sites
+      water-get-series.tool.ts          # Historical daily or instantaneous time series with DataCanvas spillover
       water-get-site-data-catalog.tool.ts # Site parameters, sensors, statistics, and UTC record bounds
       water-get-conditions.tool.ts      # Current reading + percentile classification
       water-dataframe-describe.tool.ts  # List tables on a DataCanvas
@@ -216,7 +238,7 @@ skills/
 |:-----|:-----------|:--------|
 | Files | kebab-case with suffix | `water-find-sites.tool.ts` |
 | Tool/resource/prompt names | snake_case | `water_find_sites` |
-| Directories | kebab-case | `src/services/nwis/` |
+| Directories | kebab-case | `src/services/waterdata/` |
 | Descriptions | Single string or template literal, no `+` concatenation | `'Find USGS water monitoring sites by bounding box.'` |
 
 ---
@@ -234,7 +256,7 @@ Development skills are modular instructions. Read them directly when a task matc
 
 A published skill in root `skills/` reaches plugin installs and the `.mcpb` bundle as-is, ships in the npm package and the Docker image, and reaches MCP clients when the server opts in with `createApp({ skills: 'skills' })`. `lint:packaging` validates the tree.
 
-This server publishes `skills/usgs-water-guide/SKILL.md` and opts in, so MCP clients also read it as `skill://usgs-water-guide/SKILL.md`. It carries the gates tool descriptions and `instructions` can't: dormant sites that `water_find_sites` still lists, the two-hour window of `water_get_conditions`, inverted depth-to-water (72019) rankings, choosing a site's parameter code, time zones and data lag, and casting the text columns of a staged series in SQL. When a tool's behavior changes, re-check the skill's claims against it; `field-test` verifies every gate and identifier claim live before a release.
+This server publishes `skills/usgs-water-guide/SKILL.md` and opts in, so MCP clients also read it as `skill://usgs-water-guide/SKILL.md`. It carries the gates tool descriptions and `instructions` can't: telling live gages from discontinued ones (`lastObservedAt` and `observedWithin` on `water_find_sites`, the catalog's `endDate`), the two-hour window of `water_get_conditions`, depth-to-water (72019) rankings read as water levels, choosing a site's parameter code, time zones and data lag, and casting the text columns of a staged series in SQL. When a tool's behavior changes, re-check the skill's claims against it; `field-test` verifies every gate and identifier claim live before a release.
 
 **Agent skill directory:** Copy `framework-skills/` into the directory your agent discovers (Claude Code: `.claude/skills/`, others: equivalent). Skills then load as context without referencing `framework-skills/` paths. After framework updates, run the `maintenance` skill — Phase B re-syncs the agent directory.
 
@@ -342,7 +364,7 @@ import { spillover } from '@cyanheads/mcp-ts-core/canvas';
 
 // Server's own code — via path alias
 import { getServerConfig } from '@/config/server-config.js';
-import { findSites } from '@/services/nwis/nwis-service.js';
+import { findSites } from '@/services/waterdata/site-discovery.js';
 import { getCanvas } from '@/services/canvas/canvas-accessor.js';
 ```
 

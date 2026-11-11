@@ -36,7 +36,7 @@ Real-time and historical water data from ~8,000 active USGS stream gages and gro
 | Tool | Description |
 |:-----|:------------|
 | `water_list_parameters` | List well-known USGS parameter codes with names, units, and domain (no network call), or search the full ~19,600-code USGS catalog by name or description. |
-| `water_find_sites` | Find USGS monitoring sites by bounding box, state, county, or HUC watershed. Filter by site type and parameter availability. Large match sets spill to DataCanvas. |
+| `water_find_sites` | Find USGS monitoring sites by bounding box, state, county, or HUC watershed. Filter by site type, parameter availability, and recency; each row reports when the site last reported. Large match sets spill to DataCanvas. |
 | `water_get_readings` | Get the latest instantaneous values (~15 min real-time) for up to 100 USGS sites. |
 | `water_get_series` | Get a time series of daily or instantaneous values for a site over a date range. Large ranges spill to DataCanvas. |
 | `water_get_site_data_catalog` | Discover a site's parameters, sensors, statistics, and full UTC record bounds, with cursor pagination. |
@@ -58,7 +58,7 @@ All resource data is also reachable via tools. Use `water_find_sites` for geogra
 
 | Skill | Description |
 |:---|:---|
-| `usgs-water-guide` | Gates and workflows for agents calling the tools: telling live gages from discontinued ones, reading depth-to-water rankings (they run inverted), finding the parameter code a site reports, time zones and data lag, and SQL over staged series |
+| `usgs-water-guide` | Gates and workflows for agents calling the tools: telling live gages from discontinued ones, reading depth-to-water rankings (a shallower depth ranks higher), finding the parameter code a site reports, time zones and data lag, and SQL over staged series |
 
 Ships in `skills/` for plugin installs, the npm package, the Docker image, and the `.mcpb` bundle, and is served over MCP as `skill://usgs-water-guide/SKILL.md`.
 
@@ -74,23 +74,25 @@ Ships in `skills/` for plugin installs, the npm package, the Docker image, and t
 
 ### `water_find_sites` <sub>tool</sub>
 
-- Exactly one geographic scope per call — `bbox` (`"west,south,east,north"`), 2-letter `stateCd`, up to 20 comma-separated 5-digit FIPS `countyCd` codes, or a 2- or 8-digit `huc` — narrowed by `siteType` (`ST`, `GW`, `LK`, `SP`, …), `parameterCd`, and `hasDataTypeCd` (`iv` / `dv` / `gw`). A missing or doubled scope fails as `missing_major_filter` / `conflicting_major_filters` before any NWIS call
-- `limit` (1–500, default 500) and `offset` page through the match set, with `truncated` and `upstreamTotal` describing what lies outside the window; `siteOutput: expanded` adds drainage and contributing area
+- Exactly one geographic scope per call — `bbox` (`"west,south,east,north"`), 2-letter `stateCd`, up to 20 comma-separated 5-digit FIPS `countyCd` codes, or a 2- or 8-digit `huc` — narrowed by `siteType` (`ST`, `GW`, `LK`, `SP`, …), `parameterCd`, `hasDataTypeCd` (`iv` with aliases `uv` and `rt`, `dv`, `gw`, `pk`; no other code has a source), and `observedWithin` (an ISO 8601 duration). A `bbox` has no area cap. A missing or doubled scope fails as `missing_major_filter` / `conflicting_major_filters` before any request
+- Every row carries `lastObservedAt`, the UTC time of the site's newest observation among the series the filters select (null when it has none, or none with a recorded time), read from the latest-value collections without a request per site. `parameterCd` and `hasDataTypeCd` match sites that have ever reported, discontinued ones included, and never discrete water-quality samples; `observedWithin` keeps only sites whose `lastObservedAt` falls inside the window
+- `limit` (1–500, default 500) and `offset` page through the match set, with `truncated` and `upstreamTotal` describing what lies outside the window; `siteOutput: expanded` adds state and county FIPS codes, drainage area, and contributing area
 - With `CANVAS_PROVIDER_TYPE=duckdb`, a match set over 500 sites also stages in full to a canvas (`canvas_id` / `table_name`) for `water_dataframe_query`
 
 ---
 
 ### `water_get_readings` <sub>tool</sub>
 
-- Up to 100 `sites` per call, an optional `parameterCd` filter, and a `period` lookback (ISO 8601, default `PT2H`); returns one series per site, parameter, and sensor method (`methodId` / `methodDescription`), capped at 100 series per call (kept round-robin across sites) and the 10 most recent records per series, with `totalSeries`, `totalValues`, and `truncated` reporting what the caps held back
-- Every value carries its qualifier codes (`P` provisional, `A` approved), and sites NWIS returned nothing for are named in `missingSites`
+- Up to 100 `sites` per call, an optional `parameterCd` filter, and a `period` lookback (ISO 8601, default `PT2H`, at most 1,100 days); returns one series per site, parameter, and sensor (`methodId` is the series' time-series ID, the `timeSeriesId` the site data catalog lists; `methodDescription` names the sensor), capped at 100 series per call (kept round-robin across sites) and the 10 most recent records per series, with `totalSeries`, `totalValues`, and `truncated` reporting what the caps held back
+- A sensor that reported nothing in the period still returns, with `totalValues: 0`, an all-dormant batch included; sites with no series at all are named in `missingSites`, and `no_data_for_parameter` fires only when no requested site returns a series
+- Every value carries its qualifier codes (`P` provisional, `A` approved, plus codes such as `e`, `Ssn`, `Dis`; a qualifier with no code passes through as the upstream word, e.g. `OTHERAGENCY`). Timestamps are site-local with the UTC offset, or UTC (`+00:00`) for a site with no known time zone
 
 ---
 
 ### `water_get_series` <sub>tool</sub>
 
 - One `site` and `parameterCd` per call over a `startDate`–`endDate` range; `seriesType` is `daily` (one value per day, the default) or `instantaneous` (~15 min). The most recent 500 records return inline, with `totalRecords` and `truncated` reporting the rest
-- Returns one named series — by default the daily mean and the sensor method with the most records; `statCd` (`00003` mean, `00001` maximum, `00002` minimum; daily only) and `methodId` select another, and `otherSeries` lists every alternative with its record count
+- Returns one named series — by default the daily mean and the sensor series with the most records, a tie going to the site's default sensor over a labeled one and then to the series that began first; `statCd` (`00003` mean, `00001` maximum, `00002` minimum; daily only) and `methodId` (a series' time-series ID, 32 hexadecimal characters) select another, and `otherSeries` lists every alternative, empty ones included, with its record count. An instantaneous range of any length is read in full up to today on the site's clock, in 366-day chunks; for a parameter the site lists no series of, only the last 366 days are read, in one request
 - With `CANVAS_PROVIDER_TYPE=duckdb`, a range over 500 records spills the complete series to a canvas (`canvas_id` / `table_name`); pass a prior `canvas_id` to add the table to an existing canvas
 
 ---
@@ -99,7 +101,7 @@ Ships in `skills/` for plugin installs, the npm package, the Docker image, and t
 
 - One `site`, optional `parameterCd` and `seriesType`, and `limit` (1–1000; default 100). Reuse the same filters and limit with `nextCursor` until it is null. An unknown site fails as `not_found`; a known site with no matching metadata returns `series: []`
 - Each row preserves its OGC `timeSeriesId`, parameter name/unit, nullable statistic, sensor description, raw computation fields, and full UTC `beginDate`/`endDate`. `Daily` maps to `daily`; `Points` with `Instantaneous` maps to `instantaneous`; other computations have null `seriesType`
-- For `water_get_series`, take YYYY-MM-DD from the bounds, pass `statCd` only for daily rows, and select `methodId` from the series response, never an OGC ID. Bounds may contain gaps and lag observations; null bounds remain unknown
+- For `water_get_series`, take YYYY-MM-DD from the bounds, pass `statCd` only for daily rows, and pass a row's `timeSeriesId` as `methodId` to request that exact series. Bounds may contain gaps and lag observations; null bounds remain unknown
 - Site identity and metadata share a 45-second deadline including retries. Malformed or rejected continuation cursors fail as `invalid_cursor`; restart without cursor
 
 ---
@@ -107,7 +109,8 @@ Ships in `skills/` for plugin installs, the npm package, the Docker image, and t
 ### `water_get_conditions` <sub>tool</sub>
 
 - One `site` and `parameterCd`; ranks the current instantaneous reading against the period-of-record daily-mean percentiles for its calendar day as a `percentileClass` — `record-high` (≥p95), `above-normal`, `normal`, `below-normal`, `low`, `record-low` (<p05), or `unknown` for a no-data reading — with `percentileLabel` stating the threshold in plain language and `comparisonBasis` noting that the ranking is approximate, not a flood-stage or drought determination
-- When percentiles can't be applied, the reading still returns with `historicalContext: null` and a `historicalContextStatus` of `no_record`, `no_matching_day`, `no_matching_method`, or `unavailable` (a transient stat-service failure); on a multi-sensor site, `methodId` and `methodMatched` name the sensor read and whether the percentiles came from its own series
+- Depth-below-surface codes (`72019`, `30210`, `99019`, `72276`) rank as water levels: a shallower depth ranks higher, `p95` is the day's shallowest depth and `p05` the deepest, `currentValue` stays the depth as measured, and `percentileLabel` and `comparisonBasis` say so
+- The calendar day is the reading's own site-local date. When percentiles can't be applied, the reading still returns with `historicalContext: null` and a `historicalContextStatus` of `no_record` (no daily-mean percentiles for the day), `no_matching_day` (the reported sensor's series has an approved record but none for that day), `no_matching_method`, or `unavailable` (a Statistics API request failed); on a multi-sensor site, `methodId` and `methodMatched` name the sensor read and whether the percentiles came from its own daily-mean series, paired by time-series ID, an exact time tie between sensors going to the site's default sensor
 
 ---
 
@@ -136,7 +139,7 @@ Ships in `skills/` for plugin installs, the npm package, the Docker image, and t
 ### `usgs-water://site/{siteId}` <sub>resource</sub>
 
 - Returns `application/json` site metadata: name, coordinates, type, HUC watershed code, state, county, drainage area, and altitude
-- `siteId` is an 8–15 digit USGS site number — discover one via `water_find_sites`
+- `siteId` is an 8–15 digit site number, whichever agency holds it — discover one via `water_find_sites`
 
 ---
 
@@ -151,16 +154,16 @@ Built on [`@cyanheads/mcp-ts-core`](https://github.com/cyanheads/mcp-ts-core): s
 
 USGS Water-specific:
 
-- Wraps NWIS IV (instantaneous), DV (daily), site, and stat endpoints plus USGS Water Data parameter codes, monitoring locations, and time-series metadata — no API key required, fully public
-- Input formats are checked at the edge against what NWIS actually accepts — site numbers, parameter codes, ISO 8601 periods, HUC, FIPS county, state, and bbox each carry a validated pattern advertised in the tool's JSON Schema
-- HTML error detection: NWIS returns 400 with an HTML body for bad input, and the service layer extracts NWIS's own message and maps it to a typed failure
+- Reads the USGS Water Data APIs: the OGC collections at `api.waterdata.usgs.gov/ogcapi/v1` (monitoring locations, latest-value and peak collections, continuous and daily observations, time-series metadata, and the parameter-code and statistic-code tables) and the Statistics API at `/statistics/v0` for percentiles. No API key is required; an optional `USGS_API_KEY` raises the rate limit
+- Input formats are checked at the edge against what the APIs accept — site numbers, parameter codes, ISO 8601 periods, HUC, FIPS county, state, and bbox each carry a validated pattern advertised in the tool's JSON Schema
+- Upstream failures are read from the API's own JSON error body and mapped to a typed failure; a 429 returns as `rate_limited` carrying `retryAfter`, and a rejected key names `USGS_API_KEY`. Every tool call shares one 45-second deadline across its requests and retries
 - DataCanvas spillover: `water_get_series` (long date ranges) and `water_find_sites` (match sets past the 500-site cap) stage the full result as a DuckDB-backed table, queryable via `water_dataframe_query`; the spillover and the dataframe tools require `CANVAS_PROVIDER_TYPE=duckdb`, and `water_dataframe_drop` also needs `WATER_DATAFRAME_DROP_ENABLED=true`
-- No-data readings stay no-data: a value NWIS reports as `-999999` (a seasonal, discontinued, dry, or malfunctioning gage) returns as an empty `value` with qualifiers naming why (`Ssn`, `Dis`, `Dry`, `Eqp`) — never as a magnitude — and stages as `NULL` on a canvas
-- Groundwater depth reads through the standard IV service via parameter `72019` — the legacy `gwlevels` endpoint was decommissioned November 2025
+- No-data readings stay no-data: a reading USGS reports without a value (a seasonal, discontinued, dry, or malfunctioning gage) returns as an empty `value` with qualifiers naming why (`Ssn`, `Dis`, `Dry`, `Eqp`) — never as a magnitude — and stages as `NULL` on a canvas
+- Groundwater depth reads like any other parameter, through `72019`: only wells with a continuous sensor return values
 
 Agent-friendly output:
 
-- Percentile classification: `water_get_conditions` returns a `percentileClass` callers can act on directly, paired with a `percentileLabel` that states the threshold in plain language
+- Percentile classification: `water_get_conditions` returns a `percentileClass` that describes the water level (a shallower depth ranks higher for depth-to-water codes), paired with a `percentileLabel` that states the threshold in plain language
 - Partial success over hard failure: `water_get_readings` returns the series it got and names the rest in `missingSites`; `water_get_conditions` separates an empty stat table (`no_record` / `no_matching_day`) from a failed stat call (`unavailable`, transient) instead of collapsing both into one error
 - Truncation signals: every capped response (`water_get_series`, `water_find_sites`, `water_get_readings`) reports its own count and a `truncated` flag, plus `canvas_id` / `table_name` when the rest is retrievable via SQL
 - Structured content and rendered text agree — every cap and count a tool applies appears identically in `structuredContent` and in the markdown
@@ -192,15 +195,16 @@ For other clients, add this to the MCP config file:
 }
 ```
 
-DataCanvas is enabled by default for SQL analytics over large result sets; set `CANVAS_PROVIDER_TYPE=none` to return inline previews only. No API key is required — USGS NWIS is a free, public API. For Docker or a source build, see [Running the server](#running-the-server).
+DataCanvas is enabled by default for SQL analytics over large result sets; set `CANVAS_PROVIDER_TYPE=none` to return inline previews only. No API key is required; an optional `USGS_API_KEY` raises the rate limit. For Docker or a source build, see [Running the server](#running-the-server).
 
 ## Configuration
 
 | Variable | Description | Default |
 |:---------|:------------|:--------|
 | `CANVAS_PROVIDER_TYPE` | DataCanvas spillover for large results from `water_get_series` and `water_find_sites`; set to `none` to disable. The portable desktop bundle sets `none`. | `duckdb` |
-| `USGS_USER_AGENT` | Custom User-Agent string sent to USGS NWIS and OGC discovery endpoints. USGS requests a descriptive User-Agent per their terms. | `usgs-water-mcp-server/0.5.0 (contact: https://github.com/cyanheads/usgs-water-mcp-server)` |
-| `USGS_REQUEST_TIMEOUT_MS` | HTTP request timeout in milliseconds for USGS NWIS and OGC calls. Site-series discovery also has a shared 45-second deadline. | `30000` |
+| `USGS_USER_AGENT` | Custom User-Agent string sent to the USGS Water Data APIs. USGS requests a descriptive User-Agent per their terms. | `usgs-water-mcp-server/0.5.0 (contact: https://github.com/cyanheads/usgs-water-mcp-server)` |
+| `USGS_REQUEST_TIMEOUT_MS` | HTTP request timeout in milliseconds for each USGS Water Data API request. Every tool call also has a shared 45-second deadline across its requests and retries. | `30000` |
+| `USGS_API_KEY` | Optional api.data.gov key, sent as the `X-Api-Key` header. Without one, requests share the anonymous per-IP hourly limit (1,000 on the OGC collections); a shared or hosted deployment should set one. | unset |
 | `WATER_DATAFRAME_DROP_ENABLED` | Set to `true` to make `water_dataframe_drop` callable. Off, the tool is listed as disabled. Needs `CANVAS_PROVIDER_TYPE=duckdb` to have anything to drop. | `false` |
 | `MCP_TRANSPORT_TYPE` | Transport: `stdio` or `http`. | `stdio` |
 | `MCP_HTTP_PORT` | Port for HTTP server. | `3010` |
@@ -217,7 +221,7 @@ See [`.env.example`](./.env.example) for the full list of optional overrides.
 
 ### Local development
 
-Requires [Bun v1.4.0](https://bun.sh/) or higher (or Node.js v24+).
+Requires [Bun v1.4.4](https://bun.sh/) or higher (or Node.js v24+).
 
 - **Clone and install:**
 
@@ -263,8 +267,7 @@ The image defaults to HTTP transport, stateless session mode, and logs to `/var/
 | `src/config` | Server-specific environment variable parsing and validation with Zod. |
 | `src/mcp-server/tools` | Tool definitions (`*.tool.ts`). |
 | `src/mcp-server/resources` | Resource definitions (`*.resource.ts`). |
-| `src/services/nwis` | NWIS HTTP client — IV, DV, site, and stat endpoints with HTML error detection. |
-| `src/services/waterdata` | USGS Water Data site-series discovery, parameter-code catalog reader (24-hour cache), and curated parameter table. |
+| `src/services/waterdata` | USGS Water Data client (OGC collections and Statistics API, one deadline per tool call), site discovery, observations, percentile statistics, site-series metadata, parameter-code catalog reader (24-hour cache), and curated parameter table. |
 | `src/services/canvas` | DataCanvas accessor, caller-supplied `canvas_id` resolution, and deterministic table names for DuckDB-backed spillover. |
 | `tests/` | Unit and integration tests mirroring `src/`. |
 

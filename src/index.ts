@@ -55,12 +55,12 @@ await createApp({
   prompts: [],
   instructions: `USGS Water Data MCP server — access real-time and historical water data from ~8,000 active USGS stream gages and groundwater wells across the US and territories.
 - Start with water_list_parameters to discover parameter codes (00060=Discharge, 00065=Gage height); pass its query to search the full USGS parameter-code catalog for codes beyond the common ones (turbidity, nitrate, chlorophyll, suspended sediment)
-- Use water_find_sites to find sites by bbox, state, county, or HUC watershed
-- Use water_get_site_data_catalog to discover a site's parameters, sensors, statistics and UTC bounds; take YYYY-MM-DD from beginDate/endDate for water_get_series, pass statCd only for daily rows, and obtain methodId from the series response, never from an OGC timeSeriesId
-- water_get_readings returns the latest ~15-min real-time values for up to 100 sites, one series per sensor (method) when a site measures a parameter more than one way
+- Use water_find_sites to find sites by exactly one of bbox, state, county, or HUC watershed; every row carries lastObservedAt, and observedWithin (an ISO 8601 duration) keeps only sites that reported inside that window — parameterCd and hasDataTypeCd match sites that have ever reported
+- Use water_get_site_data_catalog to discover a site's parameters, sensors, statistics and UTC bounds; take YYYY-MM-DD from beginDate/endDate for water_get_series, pass statCd only for daily rows, and pass a row's timeSeriesId as methodId to request that exact series (water_get_readings and water_get_series report the same ID as methodId)
+- water_get_readings returns the latest ~15-min real-time values for up to 100 sites, one series per sensor (method) when a site measures a parameter more than one way; a sensor that reported nothing in the period still returns with totalValues 0
 - water_get_series returns one historical daily or instantaneous series, most recent records inline — the daily mean by default, with statCd and methodId to pick another statistic or sensor from those listed in otherSeries; large ranges spill the complete series to DataCanvas when enabled on this server instance — inspect the staged table with water_dataframe_describe, then read it with water_dataframe_query; where this server enables it, water_dataframe_drop removes a staged table you no longer need
-- water_get_conditions gives a current reading ranked against the full period-of-record percentiles
-- Groundwater depth (parameter 72019) uses the standard IV service — gwlevels was decommissioned Nov 2025
+- water_get_conditions gives a current reading ranked against the full period-of-record percentiles; depth-to-water codes (72019) rank as water levels, so a shallower depth ranks higher
+- Groundwater depth (parameter 72019) is read from the same continuous and daily series as streamflow, so only wells with a continuous sensor return values; hand-measured well levels and lab samples return no values
 - The usgs-water-guide skill (skill://usgs-water-guide/SKILL.md) carries the gates for telling live gages from discontinued ones, reading depth-to-water rankings, picking a site's parameter code, time zones and data lag, and SQL over staged series`,
   skills: 'skills',
 

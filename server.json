@@ -23,16 +23,23 @@
       "environmentVariables": [
         {
           "name": "USGS_USER_AGENT",
-          "description": "Custom User-Agent string for USGS NWIS and OGC discovery endpoints. Defaults to a descriptive identifier including the repo URL.",
+          "description": "Custom User-Agent string for USGS Water Data API requests. Defaults to a descriptive identifier including the repo URL.",
           "format": "string",
           "isRequired": false
         },
         {
           "name": "USGS_REQUEST_TIMEOUT_MS",
-          "description": "HTTP request timeout in milliseconds for USGS NWIS and OGC calls. Site-series discovery also has a shared 45-second deadline. Default: 30000.",
+          "description": "HTTP request timeout in milliseconds for each USGS Water Data API request. Every tool call also has a shared 45-second deadline across its requests and retries. Default: 30000.",
           "format": "string",
           "isRequired": false,
           "default": "30000"
+        },
+        {
+          "name": "USGS_API_KEY",
+          "description": "Optional api.data.gov key for the USGS Water Data APIs, sent as the X-Api-Key header. Without one, requests share the anonymous per-IP hourly limit (1,000 requests on the OGC collections); a shared or hosted deployment should set one.",
+          "format": "string",
+          "isRequired": false,
+          "isSecret": true
         },
         {
           "name": "WATER_DATAFRAME_DROP_ENABLED",
@@ -68,16 +75,23 @@
         },
         {
           "name": "USGS_USER_AGENT",
-          "description": "Custom User-Agent string for USGS NWIS and OGC discovery endpoints. Defaults to a descriptive identifier including the repo URL.",
+          "description": "Custom User-Agent string for USGS Water Data API requests. Defaults to a descriptive identifier including the repo URL.",
           "format": "string",
           "isRequired": false
         },
         {
           "name": "USGS_REQUEST_TIMEOUT_MS",
-          "description": "HTTP request timeout in milliseconds for USGS NWIS and OGC calls. Site-series discovery also has a shared 45-second deadline. Default: 30000.",
+          "description": "HTTP request timeout in milliseconds for each USGS Water Data API request. Every tool call also has a shared 45-second deadline across its requests and retries. Default: 30000.",
           "format": "string",
           "isRequired": false,
           "default": "30000"
+        },
+        {
+          "name": "USGS_API_KEY",
+          "description": "Optional api.data.gov key for the USGS Water Data APIs, sent as the X-Api-Key header. Without one, requests share the anonymous per-IP hourly limit (1,000 requests on the OGC collections); a shared or hosted deployment should set one.",
+          "format": "string",
+          "isRequired": false,
+          "isSecret": true
         },
         {
           "name": "WATER_DATAFRAME_DROP_ENABLED",

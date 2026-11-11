@@ -1,0 +1,89 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "parent_time_series_id": "c8e767f6cdfc4ff484a99f77962dc46c",
+        "sublocation_identifier": "7.1 ft from riverbed (top)",
+        "web_description": "Discontinued"
+      },
+      "id": "262b35c5fc68445bb9d84990eb7b7bb3",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "parent_time_series_id": "d1875d1d73e447d2a1203105ba654e7d",
+        "sublocation_identifier": "From multiparameter sonde",
+        "web_description": null
+      },
+      "id": "40bfcf380ef240e18699ee4875350640",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "parent_time_series_id": "52b33353ad684b76a8afd49cf017a42c",
+        "sublocation_identifier": "4.1 ft from riverbed (middle)",
+        "web_description": "Discontinued"
+      },
+      "id": "6f2cdd6644424eb188a29a5dcc098a76",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "parent_time_series_id": "089a50eca92a4e268b8816a1bc22c000",
+        "sublocation_identifier": "From multiparameter sonde",
+        "web_description": "Discontinued"
+      },
+      "id": "7fb9204b83544455ada0bd8c8f441cce",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "parent_time_series_id": "f60be489a22b4dfd9fd0fb97f3acc285",
+        "sublocation_identifier": "1.0 ft from riverbed (bottom)",
+        "web_description": "Discontinued"
+      },
+      "id": "e7b2e294e6ff4b37823201aa90adb381",
+      "geometry": null
+    }
+  ],
+  "numberReturned": 5,
+  "links": [
+    {
+      "type": "application/geo+json",
+      "rel": "self",
+      "title": "This document as GeoJSON",
+      "href": "https://api.waterdata.usgs.gov/ogcapi/v1/collections/time-series-metadata/items?f=json&monitoring_location_id=USGS-01646500&parameter_code=00010&computation_period_identifier=Daily&statistic_id=00003&skipGeometry=true&properties=parent_time_series_id,sublocation_identifier,web_description&limit=1000"
+    },
+    {
+      "rel": "alternate",
+      "type": "application/ld+json",
+      "title": "This document as RDF (JSON-LD)",
+      "href": "https://api.waterdata.usgs.gov/ogcapi/v1/collections/time-series-metadata/items?f=jsonld&monitoring_location_id=USGS-01646500&parameter_code=00010&computation_period_identifier=Daily&statistic_id=00003&skipGeometry=true&properties=parent_time_series_id,sublocation_identifier,web_description&limit=1000"
+    },
+    {
+      "type": "text/html",
+      "rel": "alternate",
+      "title": "This document as HTML",
+      "href": "https://api.waterdata.usgs.gov/ogcapi/v1/collections/time-series-metadata/items?f=html&monitoring_location_id=USGS-01646500&parameter_code=00010&computation_period_identifier=Daily&statistic_id=00003&skipGeometry=true&properties=parent_time_series_id,sublocation_identifier,web_description&limit=1000"
+    },
+    {
+      "type": "text/csv; charset=utf-8",
+      "rel": "alternate",
+      "title": "This document as CSV",
+      "href": "https://api.waterdata.usgs.gov/ogcapi/v1/collections/time-series-metadata/items?f=csv&monitoring_location_id=USGS-01646500&parameter_code=00010&computation_period_identifier=Daily&statistic_id=00003&skipGeometry=true&properties=parent_time_series_id,sublocation_identifier,web_description&limit=1000"
+    },
+    {
+      "type": "application/json",
+      "title": "Time series metadata",
+      "rel": "collection",
+      "href": "https://api.waterdata.usgs.gov/ogcapi/v1/collections/time-series-metadata"
+    }
+  ],
+  "timeStamp": "2026-11-11T10:06:36.375084Z"
+}

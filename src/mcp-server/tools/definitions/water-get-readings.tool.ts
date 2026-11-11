@@ -10,9 +10,11 @@ import {
   ParameterCdSchema,
   PeriodSchema,
   SiteNumberSchema,
-} from '@/services/nwis/input-schemas.js';
-import { carriesValues, classifyNwisFailure, getReadings } from '@/services/nwis/nwis-service.js';
-import type { NwisTimeSeries } from '@/services/nwis/types.js';
+} from '@/services/waterdata/input-schemas.js';
+import { carriesValues, getReadings } from '@/services/waterdata/observations.js';
+import type { NwisTimeSeries } from '@/services/waterdata/types.js';
+import { startRequest } from '@/services/waterdata/water-data-client.js';
+import { classifyWaterDataFailure } from '@/services/waterdata/water-data-errors.js';
 
 /**
  * Maximum value records returned per site + parameter + method series. This tool answers "what is happening
@@ -31,8 +33,8 @@ const MAX_SERIES = 100;
 /**
  * Keep at most {@link MAX_SERIES} series, round-robin across sites: every site's first series, then
  * every site's second, and so on, with a site's valued series ahead of its empty ones — a series
- * whose every record is no data ranks as empty. The kept series stay in NWIS response order (site,
- * then parameter code, then method).
+ * whose every record is no data ranks as empty. The kept series stay in the order the service
+ * returned them.
  */
 function capSeries(series: NwisTimeSeries[]): NwisTimeSeries[] {
   if (series.length <= MAX_SERIES) return series;
@@ -59,13 +61,19 @@ const ValueRecordSchema = z.object({
   value: z
     .string()
     .describe(
-      'Measured value as a string. Empty string when NWIS reported no value for that interval — qualifiers then give the reason (e.g. "Ssn" seasonal, "Dis" discontinued, "Dry", "Eqp" equipment malfunction).',
+      'Measured value as a string. Empty string when the upstream reported no value for that interval — qualifiers then give the reason (e.g. "Ssn" seasonal, "Dis" discontinued, "Dry", "Eqp" equipment malfunction).',
     ),
   qualifiers: z
     .array(
-      z.string().describe('A USGS data qualifier code (e.g. "P" = provisional, "A" = approved).'),
+      z
+        .string()
+        .describe(
+          'A USGS data qualifier code (e.g. "P" = provisional, "A" = approved, "e" = estimated). A qualifier with no code is the upstream word as written (e.g. "OTHERAGENCY").',
+        ),
     )
-    .describe('Data qualifier codes for this value.'),
+    .describe(
+      'Data qualifier codes for this value: the approval code first, then one per qualifier.',
+    ),
 });
 
 /** One time-series result per site + parameter + method combination. */
@@ -77,21 +85,23 @@ const ReadingResultSchema = z.object({
   parameterCd: z.string().describe('5-digit parameter code (e.g. "00060" for discharge).'),
   parameterName: z
     .string()
-    .describe('Human-readable parameter name with units (e.g. "Streamflow, ft³/s").'),
+    .describe(
+      'Parameter description from the USGS parameter-code catalog, units included (e.g. "Discharge, cubic feet per second").',
+    ),
   unitCode: z
     .string()
-    .describe('Unit of measure for the values in this series (e.g. "ft3/s", "ft", "°C").'),
+    .describe('Unit of measure for the values in this series (e.g. "ft3/s", "ft", "deg C").'),
   methodId: z
     .string()
     .nullable()
     .describe(
-      'NWIS method ID of this series. A site can measure one parameter with several sensors or at several locations — each is its own method and its own entry in readings. Null only when NWIS returned the series with no method block.',
+      'Time-series ID of this sensor series — the OGC time_series_id, the same value water_get_site_data_catalog lists as timeSeriesId. A site can measure one parameter with several sensors or at several locations — each is its own series and its own entry in readings. Null only when the upstream sent the series without an ID.',
     ),
   methodDescription: z
     .string()
     .nullable()
     .describe(
-      'NWIS description of the method, e.g. "From multiparameter sonde", "[(2)]", or "7.1 ft from riverbed (top), [Discontinued]". Null when NWIS leaves it blank, as it does for the default series at most single-sensor sites.',
+      'Description of the sensor, built from the series metadata as "<sublocation>, [<web description>]" (e.g. "From multiparameter sonde, [Discontinued]"), or either part alone when the other is blank (e.g. "From multiparameter sonde", "[Radar]"). Null when the metadata leaves both blank, as it does for the default series at most single-sensor sites.',
     ),
   values: z
     .array(
@@ -104,12 +114,12 @@ const ReadingResultSchema = z.object({
     .number()
     .int()
     .describe(
-      `Number of value records NWIS returned for this site and parameter over the requested period, before the ${VALUES_PER_SERIES_CAP}-record cap. Equals values.length when nothing was capped.`,
+      `Number of value records the upstream returned for this sensor over the requested period, before the ${VALUES_PER_SERIES_CAP}-record cap. Equals values.length when nothing was capped. 0 when the sensor reported nothing in the period — the endDate water_get_site_data_catalog lists for its timeSeriesId gives its last report.`,
     ),
 });
 
 export const waterGetReadings = tool('water_get_readings', {
-  description: `Get the latest instantaneous (~15-min, real-time) values for up to 100 USGS sites in one call — per-site, per-parameter records with timestamp, value, unit, and provisional/approved qualifiers. Omitting parameterCd returns every parameter each site publishes. A site measuring one parameter with several sensors returns one series per method, each named by methodId and methodDescription. At most ${MAX_SERIES} series return per call — every site that returned data keeps at least one, and totalSeries reports how many NWIS returned; pass parameterCd or split the sites across calls to reach the rest. Each series returns only its ${VALUES_PER_SERIES_CAP} most recent records (totalValues reports the true count); truncated=true when either cap applied. Use water_get_series for a full date-range series. Sites NWIS returns nothing for are listed in missingSites, not dropped silently. Use water_find_sites first to discover site numbers and available parameters.`,
+  description: `Get the latest instantaneous (~15-min, real-time) values for up to 100 USGS sites in one call — per-site, per-parameter records with timestamp, value, unit, and provisional/approved qualifiers. Omitting parameterCd returns every parameter each site publishes. A site measuring one parameter with several sensors returns one series per sensor, each named by methodId (its time-series ID) and methodDescription; a sensor that reported nothing in the period still returns, with totalValues 0. At most ${MAX_SERIES} series return per call — every site that returned a series keeps at least one, and totalSeries reports how many the upstream returned; pass parameterCd or split the sites across calls to reach the rest. Each series returns only its ${VALUES_PER_SERIES_CAP} most recent records (totalValues reports the true count); truncated=true when either cap applied. Use water_get_series for a full date-range series. Sites that return no series are listed in missingSites, not dropped silently. Find site numbers with water_find_sites; water_get_site_data_catalog lists the parameters and sensors a site measures and when each last reported.`,
   annotations: { readOnlyHint: true, idempotentHint: true, openWorldHint: true },
   input: z.object({
     sites: z
@@ -126,7 +136,7 @@ export const waterGetReadings = tool('water_get_readings', {
         `Parameter codes to return. Omit to get every parameter each site publishes — one series per site, parameter, and method, so a large batch can exceed the ${MAX_SERIES}-series cap. Use water_list_parameters to discover codes.`,
       ),
     period: PeriodSchema.default('PT2H').describe(
-      `ISO 8601 duration for the lookback period (e.g. "PT2H" = last 2 hours, "P1D" = last 1 day, "P7D" = last 7 days). Default: "PT2H" (last 2 hours of readings). Widening it raises totalValues, but each series still returns only its ${VALUES_PER_SERIES_CAP} most recent records — use water_get_series to retrieve a full series.`,
+      `ISO 8601 duration for the lookback period (e.g. "PT2H" = last 2 hours, "P1D" = last 1 day, "P7D" = last 7 days). Default: "PT2H" (last 2 hours of readings). Widening it raises totalValues, but each series still returns only its ${VALUES_PER_SERIES_CAP} most recent records — use water_get_series to retrieve a full series. At most 1,100 days (e.g. "P3Y"); a longer period is refused upstream.`,
     ),
   }),
   output: z.object({
@@ -137,7 +147,7 @@ export const waterGetReadings = tool('water_get_readings', {
         ),
       )
       .describe(
-        `Time series per site + parameter + method combination, in NWIS order (site, then parameter code, then method). A method block NWIS returned empty is omitted when another method of the same site and parameter carries values. At most ${MAX_SERIES}: past that, series are kept round-robin across sites — every site's first series, then every site's second — with a site's series carrying values ahead of its empty ones, a series whose every record is no data counting as empty.`,
+        `Time series per site + parameter + method combination, ordered by site number, parameter code, then the sensor's first observation. At most ${MAX_SERIES}: past that, series are kept round-robin across sites — every site's first series, then every site's second — with a site's series carrying values ahead of its empty ones, a series whose every record is no data counting as empty.`,
       ),
     total: z
       .number()
@@ -149,7 +159,7 @@ export const waterGetReadings = tool('water_get_readings', {
       .number()
       .int()
       .describe(
-        `Number of site + parameter + method time series before the ${MAX_SERIES}-series cap — an empty method block omitted as described under readings is not counted. Greater than total exactly when the cap dropped series; narrow with parameterCd or split the sites across calls to get the rest.`,
+        `Number of site + parameter + method time series before the ${MAX_SERIES}-series cap. Greater than total exactly when the cap dropped series; narrow with parameterCd or split the sites across calls to get the rest.`,
       ),
     truncated: z
       .boolean()
@@ -159,7 +169,7 @@ export const waterGetReadings = tool('water_get_readings', {
     missingSites: z
       .array(z.string().describe('A requested USGS site number that returned no time series.'))
       .describe(
-        'Requested site numbers NWIS returned no series for — the site may not exist, or may not measure the requested parameter(s) in the requested period. Empty when every requested site returned data. Verify these with water_find_sites.',
+        'Requested site numbers that returned no series — the site does not exist, or has no instantaneous series of the requested parameter(s). A site whose sensor reported nothing in the period is not listed here: it returns a series with totalValues 0. Empty when every requested site returned a series. Check a listed site with water_get_site_data_catalog: not_found means no such site, an empty series list means it never measured the parameter, and each row’s endDate gives its last report.',
       ),
   }),
 
@@ -190,30 +200,31 @@ export const waterGetReadings = tool('water_get_readings', {
     {
       reason: 'no_data_for_parameter',
       code: JsonRpcErrorCode.NotFound,
-      when: 'NWIS returned no time series — the site(s) may not exist, or may not have data for the requested parameter(s) in the requested period. NWIS returns the same empty response for both cases.',
+      when: 'No requested site returned a series — each site either does not exist or has no instantaneous series of the requested parameter(s). A site whose sensor reported nothing in the period returns a series with totalValues 0 instead.',
       recovery:
-        'Use water_find_sites with a parameterCd filter to verify the site exists and measures the parameter. Try a longer period if the site is valid.',
+        'Check each site with water_get_site_data_catalog: not_found means no such site, an empty series list means it never measured the parameter, and each row’s endDate gives its last report.',
     },
     {
       reason: 'invalid_request',
       code: JsonRpcErrorCode.ValidationError,
-      when: 'NWIS rejected the request. Input formats are validated against NWIS-accepted patterns before the call, so this surfaces a value that is well-formed but unacceptable upstream.',
+      when: 'The USGS Water Data API rejected the request. Input formats are validated before the call, so this surfaces a value that is well-formed but unacceptable upstream.',
       recovery:
-        'Read the NWIS message in this error — it names the field it rejected. Correct that field and retry.',
+        'Read the upstream message in this error — it names what it rejected. Correct that input and retry.',
       thrownBy: 'service',
     },
     {
       reason: 'upstream_error',
       code: JsonRpcErrorCode.ServiceUnavailable,
-      when: 'NWIS returned a 5xx error or sent a response body that is not valid WaterML-JSON (cut off mid-document), and retrying did not clear it.',
-      recovery: 'The USGS service is temporarily unavailable. Retry after a short backoff.',
+      when: 'The USGS Water Data API returned a server error or a response it could not read, and retrying did not clear it.',
+      recovery:
+        'A server error usually clears: retry after a short backoff. An error marked not retryable means the upstream sent a response this server cannot read, and the same request will fail again.',
       retryable: true,
       thrownBy: 'service',
     },
     {
       reason: 'upstream_timeout',
       code: JsonRpcErrorCode.Timeout,
-      when: 'The NWIS request exceeded its deadline.',
+      when: 'The upstream requests, retries included, ran past the 45-second budget for this call.',
       recovery:
         'Retry after a short backoff; request fewer sites or a shorter period if it repeatedly times out.',
       retryable: true,
@@ -222,41 +233,36 @@ export const waterGetReadings = tool('water_get_readings', {
   ],
 
   async handler(input, ctx) {
-    ctx.log.info('Getting IV readings', {
+    ctx.log.info('Getting instantaneous readings', {
       siteCount: input.sites.length,
       parameterCount: input.parameterCd?.length ?? 0,
       period: input.period,
     });
 
-    let series: Awaited<ReturnType<typeof getReadings>>;
+    const request = startRequest(ctx, 'water_get_readings');
+    let series: NwisTimeSeries[];
     try {
-      const readingsParams: Parameters<typeof getReadings>[0] = {
-        sites: input.sites,
-        period: input.period,
-      };
-      if (input.parameterCd?.length) readingsParams.parameterCds = input.parameterCd;
-      series = await getReadings(readingsParams, ctx);
+      series = await getReadings(
+        {
+          sites: input.sites,
+          period: input.period,
+          ...(input.parameterCd?.length ? { parameterCds: input.parameterCd } : {}),
+        },
+        request,
+      );
     } catch (err: unknown) {
-      const failure = classifyNwisFailure(err);
+      if (ctx.signal?.aborted) throw err;
+      const failure = classifyWaterDataFailure(err);
       if (failure) throw ctx.fail(failure.reason, failure.message, failure.data, { cause: err });
       throw err;
     }
 
+    // A sensor that reported nothing in the period still returns, as a series with no records, so
+    // an empty list means no requested site has an instantaneous series of these parameters at all.
     if (series.length === 0) {
-      // NWIS returns an empty timeSeries array for both unknown site IDs and valid sites that have
-      // no data for the requested parameter — the two cases are indistinguishable from this call.
       throw ctx.fail(
         'no_data_for_parameter',
-        'No data returned for the given sites and parameters — the site(s) may not exist, or may not measure the requested parameter(s) in the requested period. Use water_find_sites with a parameterCd filter to verify parameter availability at a site.',
-      );
-    }
-
-    // Check for series with no values (data gap for parameter)
-    const withData = series.filter((s) => s.values.length > 0);
-    if (withData.length === 0 && series.length > 0) {
-      throw ctx.fail(
-        'no_data_for_parameter',
-        'Sites found but no data available for the specified parameters in the requested period.',
+        `No requested site returned an instantaneous series${input.parameterCd?.length ? ` for parameterCd ${input.parameterCd.join(', ')}` : ''} — each site either does not exist or has no such series.`,
       );
     }
 
@@ -274,8 +280,8 @@ export const waterGetReadings = tool('water_get_readings', {
     const truncated =
       readings.length < series.length || readings.some((r) => r.values.length < r.totalValues);
 
-    // NWIS drops unknown or non-matching sites from a batch response without comment — diff the
-    // request against what came back so a partial batch is visible rather than inferred.
+    // A site that does not exist or has no matching series returns nothing — diff the request
+    // against what came back so a partial batch is visible rather than inferred.
     const returnedSites = new Set(series.map((s) => s.siteNumber));
     const missingSites = input.sites.filter((s) => !returnedSites.has(s));
 
@@ -324,7 +330,7 @@ export const waterGetReadings = tool('water_get_readings', {
 
     if (result.missingSites.length > 0) {
       lines.push(
-        `**No data returned for:** ${result.missingSites.join(', ')} — verify with water_find_sites.\n`,
+        `**No series returned for:** ${result.missingSites.join(', ')} — check each with water_get_site_data_catalog: not_found means no such site, an empty series list means it never measured the parameter.\n`,
       );
     }
 

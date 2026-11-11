@@ -4,6 +4,7 @@
     "args": ["-y", "@cyanheads/usgs-water-mcp-server"],
     "env": {
       "MCP_TRANSPORT_TYPE": "stdio"
-    }
+    },
+    "env_vars": ["USGS_API_KEY"]
   }
 }

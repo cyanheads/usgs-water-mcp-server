@@ -1,0 +1,43 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-73.63875, 40.82538889]
+      },
+      "properties": {
+        "monitoring_location_id": "USGS-404931073382101",
+        "monitoring_location_name": "N   110. 1",
+        "site_type": "Well",
+        "site_type_code": "GW",
+        "country_code": "US",
+        "state_code": "36",
+        "county_code": "059",
+        "data": [
+          {
+            "parameter_code": "62610",
+            "unit_of_measure": "ft",
+            "parent_time_series_id": "f2b89f59d6ae4037bca3de1b25cb3f8d",
+            "parent_statistic_id": "00003",
+            "parent_statistic_name": "Mean",
+            "values": [
+              {
+                "time_of_year": "11-10",
+                "time_of_year_type": "day_of_year",
+                "values": ["12.4", "15.843", "16.725", "18.03", "19.675", "20.061", "20.575"],
+                "percentiles": ["5", "10", "25", "50", "75", "90", "95"],
+                "sample_count": 32,
+                "approval_status": "approved",
+                "computation_id": "9de67a16-987f-482f-863f-9b8b0b3dbbaf",
+                "computation": "percentile"
+              }
+            ]
+          }
+        ]
+      }
+    }
+  ],
+  "next": null
+}

@@ -1,0 +1,43 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-121.966, 44.59908333]
+      },
+      "properties": {
+        "monitoring_location_id": "USGS-14174450",
+        "monitoring_location_name": "NORTH SANTIAM RIVER NR MARION FORKS, OR",
+        "site_type": "Stream",
+        "site_type_code": "ST",
+        "country_code": "US",
+        "state_code": "41",
+        "county_code": "043",
+        "data": [
+          {
+            "parameter_code": "00060",
+            "unit_of_measure": "ft^3/s",
+            "parent_time_series_id": "008d4cefc8044e909c192446c13967bb",
+            "parent_statistic_id": "00003",
+            "parent_statistic_name": "Mean",
+            "values": [
+              {
+                "time_of_year": "11-10",
+                "time_of_year_type": "day_of_year",
+                "values": ["nan", "nan", "nan", "106.0", "nan", "nan", "nan"],
+                "percentiles": ["5", "10", "25", "50", "75", "90", "95"],
+                "sample_count": 1,
+                "approval_status": "approved",
+                "computation_id": "b20fbeab-4811-4fac-ad8f-2a6b2da06857",
+                "computation": "percentile"
+              }
+            ]
+          }
+        ]
+      }
+    }
+  ],
+  "next": null
+}

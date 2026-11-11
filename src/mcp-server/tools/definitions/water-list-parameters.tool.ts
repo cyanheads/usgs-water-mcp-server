@@ -90,7 +90,7 @@ export const waterListParameters = tool('water_list_parameters', {
       code: JsonRpcErrorCode.ServiceUnavailable,
       when: 'The USGS parameter-code catalog could not be read — the request failed, timed out, or returned something other than a catalog page.',
       recovery:
-        'The USGS Water Data API is temporarily unavailable. Retry after a short backoff; calling without query still lists the curated codes.',
+        'A server error usually clears: retry after a short backoff. An error marked not retryable means the upstream sent a response this server cannot read, and the same request will fail again. Calling without query still lists the curated codes.',
       retryable: true,
     },
   ],

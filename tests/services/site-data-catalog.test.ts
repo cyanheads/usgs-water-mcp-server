@@ -1,46 +1,110 @@
 /**
- * @fileoverview Site-catalog input characterization and OGC integration contracts.
+ * @fileoverview Site-catalog input characterization and OGC integration contracts, run through the
+ * tool at the fetch seam: the Water Data fake serves the site-resolver query and the
+ * `time-series-metadata` pages, so resolution, paging, retries, the call deadline, and error
+ * classification all execute. Each test loads the tool fresh, so the resolver cache and the host
+ * cooldown gate start empty.
  * @module tests/services/site-data-catalog.test
  */
-import { readFileSync } from 'node:fs';
 import { JsonRpcErrorCode } from '@cyanheads/mcp-ts-core/errors';
 import { runToolContract } from '@cyanheads/mcp-ts-core/testing';
-import { afterEach, describe, expect, it, vi } from 'vitest';
-import { waterGetSiteDataCatalog as tool } from '@/mcp-server/tools/definitions/water-get-site-data-catalog.tool.js';
-import { ParameterCdSchema, SiteNumberSchema } from '@/services/nwis/input-schemas.js';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { ParameterCdSchema, SiteNumberSchema } from '@/services/waterdata/input-schemas.js';
 import type { SiteDataCatalog } from '@/services/waterdata/site-data-catalog.js';
+import {
+  createWaterDataFake,
+  jsonResponse,
+  ogcPage,
+  ogcRoute,
+  rateLimitResponse,
+  stalled,
+  stalledBody,
+  type WaterDataFake,
+  waterDataFixture,
+} from '../helpers/water-data-fake.js';
 
-const fixture = (name: string) =>
-  JSON.parse(
-    readFileSync(new URL(`../fixtures/waterdata/site-${name}.json`, import.meta.url), 'utf8'),
-  );
-const location = fixture('location-known');
+type CatalogTool =
+  typeof import('@/mcp-server/tools/definitions/water-get-site-data-catalog.tool.js')['waterGetSiteDataCatalog'];
+
+const fixture = (name: string) => JSON.parse(waterDataFixture(`site-${name}.json`));
 const page1 = fixture('page-one');
 const page2 = fixture('page-two');
 const empty = { features: [], links: [] };
 const input = { site: '01646500', limit: 1 };
+const METADATA_PATH = '/ogcapi/v1/collections/time-series-metadata/items';
 const text = (content: readonly { type: string; text?: string }[]) =>
   content.map((block) => block.text ?? '').join('\n');
 
-afterEach(() => {
-  vi.unstubAllGlobals();
-  vi.useRealTimers();
+/** Resolver answers by number: the live captures, plus a sparse site with no name. */
+const byNumber = JSON.parse(waterDataFixture('monitoring-locations-by-number.json')).features as {
+  id: string;
+}[];
+const LOCATIONS = new Map<string, unknown>([
+  ['01646500', byNumber.find((f) => f.id === 'USGS-01646500')],
+  ['364643089212301', byNumber.find((f) => f.id === 'MO005-364643089212301')],
+  [
+    '01648000',
+    {
+      type: 'Feature',
+      id: 'USGS-01648000',
+      properties: {
+        monitoring_location_number: '01648000',
+        monitoring_location_name: null,
+        agency_code: 'USGS',
+        time_zone_abbreviation: 'EST',
+        uses_daylight_savings: 'Y',
+      },
+      geometry: null,
+    },
+  ],
+]);
+
+let tool: CatalogTool;
+let water: WaterDataFake;
+
+async function loadTool() {
+  vi.resetModules();
+  ({ waterGetSiteDataCatalog: tool } = await import(
+    '@/mcp-server/tools/definitions/water-get-site-data-catalog.tool.js'
+  ));
+}
+
+beforeEach(async () => {
+  vi.stubEnv('USGS_API_KEY', undefined);
+  await loadTool();
+  water = createWaterDataFake();
+  water.install();
 });
 
-/** Run the real fetch, retry, and parsing seam against bounded captured responses. */
-function serve(metadata: (url: URL) => unknown, identity: unknown = location) {
-  const fetch = vi.fn(async (url: string) => {
-    const parsed = new URL(url);
-    expect(parsed.origin).toBe('https://api.waterdata.usgs.gov');
-    return new Response(
-      JSON.stringify(
-        parsed.pathname.includes('monitoring-locations') ? identity : metadata(parsed),
-      ),
-    );
-  });
-  vi.stubGlobal('fetch', fetch);
-  return fetch;
+afterEach(() => {
+  vi.useRealTimers();
+  vi.unstubAllEnvs();
+  water.restore();
+});
+
+function useFakeClock() {
+  vi.useFakeTimers({ toFake: ['Date', 'setTimeout', 'clearTimeout'] });
 }
+
+function locationResponse(request: Request) {
+  const numbers =
+    new URL(request.url).searchParams.get('monitoring_location_number')?.split(',') ?? [];
+  return jsonResponse(
+    ogcPage(numbers.flatMap((n) => (LOCATIONS.has(n) ? [LOCATIONS.get(n)] : []))),
+  );
+}
+
+const locationRoute = () => ogcRoute('monitoring-locations', locationResponse);
+
+/** Serve the resolver and every metadata page from `metadata(url)`. */
+function serve(metadata: (url: URL) => unknown) {
+  water.route(
+    locationRoute(),
+    ogcRoute('time-series-metadata', (request) => jsonResponse(metadata(new URL(request.url)))),
+  );
+}
+
+const metadataRequests = () => water.requests.filter((r) => r.url.pathname === METADATA_PATH);
 
 /** Run the full contract and require every structured field to appear in the rendered page. */
 async function success(args: {
@@ -65,6 +129,7 @@ describe('site-series catalog', () => {
   it('retains captured sensors, statistics, UTC bounds and sparse values on both surfaces', async () => {
     serve(() => ({ features: [...page1.features, ...page2.features], links: [] }));
     const result = await success({ site: '01646500' });
+    expect(result.siteName).toBe('POTOMAC RIVER NEAR WASH, DC LITTLE FALLS PUMP STA');
     expect(result.series).toHaveLength(2);
     expect(result.series[0]).toMatchObject({
       timeSeriesId: '063be3d188fc43859c6436f021a9a31f',
@@ -86,6 +151,34 @@ describe('site-series catalog', () => {
     expect(rendered).toContain('**endDate:** 2019-05-26T04:00:00+00:00');
     expect(rendered).toContain('**sublocation:** SUNA');
     expect(rendered).toContain('**webDescription:** `null`');
+  });
+
+  it('resolves a site registered under another agency and reads its series by that identifier', async () => {
+    water.route(
+      ogcRoute('monitoring-locations', new Response('{"code":"NotFound"}', { status: 404 }), {
+        item: 'USGS-364643089212301',
+      }),
+      locationRoute(),
+      ogcRoute(
+        'time-series-metadata',
+        jsonResponse(ogcPage([{ id: 'abc', properties: { parameter_code: '72019' } }])),
+        { query: { monitoring_location_id: 'MO005-364643089212301' } },
+      ),
+    );
+    const result = await success({ site: '364643089212301' });
+    expect(result).toMatchObject({
+      siteNumber: '364643089212301',
+      siteName: 'East Prairie',
+      series: [{ timeSeriesId: 'abc', parameterCd: '72019' }],
+      nextCursor: null,
+    });
+    expect(water.requests.map((r) => r.url.pathname)).toEqual([
+      '/ogcapi/v1/collections/monitoring-locations/items',
+      METADATA_PATH,
+    ]);
+    expect(water.requests[0]?.url.searchParams.get('monitoring_location_number')).toBe(
+      '364643089212301',
+    );
   });
 
   it('escapes markup and preserves line breaks, tabs, empty strings and null distinctly', async () => {
@@ -119,14 +212,14 @@ describe('site-series catalog', () => {
   });
 
   it('rejects noncanonical base64 cursors before I/O', async () => {
-    const fetch = serve(() => page1);
+    serve(() => page1);
     const first = await success(input);
-    fetch.mockClear();
+    const sent = water.requests.length;
     const result = await runToolContract(tool, { ...input, cursor: `${first.nextCursor}!` });
     expect(result.structuredContent).toMatchObject({
       error: { data: { reason: 'invalid_cursor' } },
     });
-    expect(fetch).not.toHaveBeenCalled();
+    expect(water.requests).toHaveLength(sent);
   });
 
   it('continues offset-based filtered pages without losing filters, including past the end', async () => {
@@ -185,8 +278,8 @@ describe('site-series catalog', () => {
     });
   });
 
-  it('keeps filters through two continuations and an empty final page', async () => {
-    const fetch = serve((url) => {
+  it('keeps filters through two continuations and an empty final page, resolving the site once', async () => {
+    serve((url) => {
       expect(url.searchParams.get('monitoring_location_id')).toBe('USGS-01646500');
       expect(url.searchParams.get('parameter_code')).toBe('63680');
       expect(url.searchParams.get('computation_period_identifier')).toBe('Daily');
@@ -203,16 +296,42 @@ describe('site-series catalog', () => {
     if (second.nextCursor === null) throw new Error('Expected second continuation');
     const third = await success({ ...args, cursor: second.nextCursor });
     expect(third).toMatchObject({ series: [], nextCursor: null });
-    expect(fetch).toHaveBeenCalledTimes(6);
+    // The resolved site is cached: one identity request, then one metadata request per page.
+    expect(water.requests).toHaveLength(4);
+    expect(metadataRequests()).toHaveLength(3);
+  });
+
+  it('continues after the rows a short page delivered, not after its limit', async () => {
+    serve((url) =>
+      url.searchParams.has('offset')
+        ? empty
+        : {
+            features: [
+              { ...page1.features[0], id: 'first' },
+              { ...page1.features[0], id: 'second' },
+            ],
+            links: [
+              {
+                rel: 'next',
+                href: 'https://api.waterdata.usgs.gov/ogcapi/v1/collections/time-series-metadata/items?cursor=c2',
+              },
+            ],
+          },
+    );
+    const first = await success({ ...input, limit: 3 });
+    expect(first.series.map((row) => row.timeSeriesId)).toEqual(['first', 'second']);
+    if (first.nextCursor === null) throw new Error('Expected continuation');
+    await success({ ...input, limit: 3, cursor: first.nextCursor });
+    expect(metadataRequests().map((r) => r.url.searchParams.get('offset'))).toEqual([null, '2']);
   });
 
   it.each(['site', 'parameterCd', 'seriesType', 'limit'])(
     'rejects cursor binding mismatch in %s before I/O',
     async (key) => {
-      const fetch = serve(() => page1);
+      serve(() => page1);
       const first = await success(input);
       if (first.nextCursor === null) throw new Error('Expected continuation');
-      fetch.mockClear();
+      const sent = water.requests.length;
       const changes = { site: '01648000', parameterCd: '00060', seriesType: 'daily', limit: 2 };
       const result = await runToolContract(tool, {
         ...input,
@@ -228,12 +347,12 @@ describe('site-series catalog', () => {
         },
       });
       expect(text(result.content)).toContain('original filters');
-      expect(fetch).not.toHaveBeenCalled();
+      expect(water.requests).toHaveLength(sent);
     },
   );
 
   it('rejects malformed cursors and malformed IDs before I/O', async () => {
-    const fetch = serve(() => empty);
+    serve(() => empty);
     for (const args of [
       { ...input, cursor: 'not-json' },
       { ...input, site: '../x' },
@@ -243,11 +362,11 @@ describe('site-series catalog', () => {
     ]) {
       expect((await runToolContract(tool, args)).isError).toBe(true);
     }
-    expect(fetch).not.toHaveBeenCalled();
+    expect(water.requests).toHaveLength(0);
   });
 
   it('returns no rows for a known site with no matching parameter and treats blanks as omitted', async () => {
-    const fetch = serve(() => empty);
+    serve(() => empty);
     expect(await success({ ...input, parameterCd: '99999' })).toMatchObject({
       series: [],
       nextCursor: null,
@@ -255,28 +374,31 @@ describe('site-series catalog', () => {
     expect(await success({ ...input, parameterCd: '', seriesType: '', cursor: '' })).toMatchObject({
       series: [],
     });
-    expect(new URL(fetch.mock.calls.at(-1)![0]).searchParams.has('parameter_code')).toBe(false);
+    expect(metadataRequests().at(-1)?.url.searchParams.has('parameter_code')).toBe(false);
   });
 
   it('preserves a sparse site and maps only the precise callable periods', async () => {
     const sparse = fixture('ogc-sparse');
-    serve(() => sparse, { properties: { monitoring_location_number: '01648000' } });
+    const periods = ['Daily', 'Points', 'Points', 'Water Year', undefined];
+    serve((url) =>
+      url.searchParams.get('monitoring_location_id') === 'USGS-01648000'
+        ? sparse
+        : {
+            features: periods.map((period, i) => ({
+              id: String(i),
+              properties: {
+                parameter_code: '00060',
+                computation_period_identifier: period,
+                computation_identifier: i === 1 ? 'Instantaneous' : 'Mean',
+              },
+            })),
+          },
+    );
     const result = await success({ site: '01648000', limit: 1000 });
     expect(result.siteName).toBeNull();
     expect(result.series).toHaveLength(6);
     expect(result.series.some((row) => row.statCd === null)).toBe(true);
     expect(result.series.some((row) => row.sublocation === null)).toBe(true);
-    const periods = ['Daily', 'Points', 'Points', 'Water Year', undefined];
-    serve(() => ({
-      features: periods.map((period, i) => ({
-        id: String(i),
-        properties: {
-          parameter_code: '00060',
-          computation_period_identifier: period,
-          computation_identifier: i === 1 ? 'Instantaneous' : 'Mean',
-        },
-      })),
-    }));
     const mapped = await success(input);
     expect(mapped.series.map((row) => row.seriesType)).toEqual([
       'daily',
@@ -298,46 +420,55 @@ describe('site-series catalog', () => {
   });
 
   it('reports unknown locations with recovery on both surfaces', async () => {
-    const fetch = vi.fn(async () => new Response('{}', { status: 404 }));
-    vi.stubGlobal('fetch', fetch);
-    const result = await runToolContract(tool, input);
+    water.route(locationRoute());
+    const result = await runToolContract(tool, { ...input, site: '99999999' });
     expect(result.structuredContent).toMatchObject({
-      error: { code: JsonRpcErrorCode.NotFound, data: { reason: 'not_found' } },
+      error: {
+        code: JsonRpcErrorCode.NotFound,
+        message: 'USGS site 99999999 was not found.',
+        data: { reason: 'not_found' },
+      },
     });
     expect(text(result.content)).toContain('water_find_sites');
-    expect(fetch).toHaveBeenCalledTimes(1);
+    expect(water.requests).toHaveLength(1);
   });
 
-  it('retries malformed metadata before returning the recovered page', async () => {
-    vi.useFakeTimers();
-    let attempt = 0;
-    serve(() => (++attempt === 1 ? { features: 'truncated' } : empty));
+  it('fails malformed metadata at once instead of re-sending a deterministic body failure', async () => {
+    useFakeClock();
+    serve(() => ({ features: 'truncated' }));
     const pending = runToolContract(tool, input);
-    await vi.advanceTimersByTimeAsync(3000);
+    await vi.advanceTimersByTimeAsync(10_000);
     const result = await pending;
-    expect(result.isError).toBeFalsy();
-    expect(attempt).toBe(2);
+    expect(result.structuredContent).toMatchObject({
+      error: {
+        code: JsonRpcErrorCode.ServiceUnavailable,
+        message: expect.stringContaining(
+          'USGS Water Data OGC API sent an unexpected response (getSiteDataCatalog): features:',
+        ),
+        data: { reason: 'upstream_error' },
+      },
+    });
+    expect(metadataRequests()).toHaveLength(1);
   });
 
   it.each(['malformed', '503', 'foreign-continuation'])(
     'reports %s upstream failures with recovery on both surfaces',
     async (mode) => {
-      vi.useFakeTimers();
-      const fetch = vi.fn(async (url: string) => {
-        if (url.includes('monitoring-locations')) return new Response(JSON.stringify(location));
-        if (mode === '503') return new Response('Unavailable', { status: 503 });
-        return new Response(
-          JSON.stringify(
+      useFakeClock();
+      water.route(
+        locationRoute(),
+        ogcRoute('time-series-metadata', () => {
+          if (mode === '503') return new Response('Unavailable', { status: 503 });
+          return jsonResponse(
             mode === 'malformed'
               ? { features: null }
               : {
                   features: page1.features,
                   links: [{ rel: 'next', href: 'https://example.com/?cursor=secret' }],
                 },
-          ),
-        );
-      });
-      vi.stubGlobal('fetch', fetch);
+          );
+        }),
+      );
       const pending = runToolContract(tool, input);
       await vi.advanceTimersByTimeAsync(10_000);
       const result = await pending;
@@ -351,115 +482,153 @@ describe('site-series catalog', () => {
         },
       });
       expect(text(result.content)).toContain('short backoff');
-      expect(
-        fetch.mock.calls.every(([url]) => url.startsWith('https://api.waterdata.usgs.gov/')),
-      ).toBe(true);
+      // Only the 503 can clear on a retry; the other two are deterministic.
+      const { data } = (result.structuredContent as { error: { data: { retryable?: boolean } } })
+        .error;
+      if (mode === '503') expect(data.retryable).not.toBe(false);
+      else expect(data.retryable).toBe(false);
+      expect(metadataRequests()).toHaveLength(mode === '503' ? 4 : 1);
+      expect(water.requests.every((r) => r.url.origin === 'https://api.waterdata.usgs.gov')).toBe(
+        true,
+      );
     },
   );
 
-  it.each([false, true])(
-    'bounds the combined identity and metadata deadline (body=%s)',
-    async (body) => {
-      vi.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout', 'performance'] });
-      const fetch = vi.fn(async (url: string, options?: RequestInit) => {
-        if (url.includes('monitoring-locations')) {
+  it.each([
+    ['headers', stalled],
+    ['body', stalledBody],
+  ] as const)(
+    'bounds the combined identity and metadata deadline (stalled %s)',
+    async (_stage, respond) => {
+      useFakeClock();
+      water.route(
+        ogcRoute('monitoring-locations', async (request) => {
           await new Promise((resolve) => setTimeout(resolve, 25_000));
-          return new Response(JSON.stringify(location));
-        }
-        const signal = options!.signal!;
-        if (body)
-          return new Response(
-            new ReadableStream({
-              start(controller) {
-                signal.addEventListener('abort', () => controller.error(signal.reason), {
-                  once: true,
-                });
-              },
-            }),
-          );
-        return new Promise<Response>((_resolve, reject) =>
-          signal.addEventListener('abort', () => reject(signal.reason), { once: true }),
-        );
-      });
-      vi.stubGlobal('fetch', fetch);
+          return locationResponse(request);
+        }),
+        ogcRoute('time-series-metadata', respond),
+      );
       const pending = runToolContract(tool, input);
       await vi.advanceTimersByTimeAsync(45_001);
       const result = await pending;
       expect(result.structuredContent).toMatchObject({
         error: {
           code: JsonRpcErrorCode.Timeout,
-          data: { reason: 'upstream_timeout', deadlineMs: 45_000 },
+          message:
+            'getSiteDataCatalog ran out of the 45000 ms budget for this call after 1 attempt.',
+          data: { reason: 'upstream_timeout', deadlineMs: 45_000, retryAttempts: 1 },
         },
       });
       expect(text(result.content)).toContain('same filters and cursor');
-      expect(fetch).toHaveBeenCalledTimes(2);
+      expect(water.requests).toHaveLength(2);
       expect(vi.getTimerCount()).toBe(0);
     },
   );
 
-  it.each(['identity', 'metadata', 'backoff'])(
-    'preserves caller cancellation during %s',
-    async (stage) => {
-      vi.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout'] });
-      const controller = new AbortController();
-      const fetch = vi.fn(async (url: string, options?: RequestInit) => {
-        if (stage !== 'identity' && url.includes('monitoring-locations'))
-          return new Response(JSON.stringify(location));
-        if (stage === 'backoff') return new Response('Unavailable', { status: 503 });
-        const signal = options!.signal!;
-        return new Promise<Response>((_resolve, reject) =>
-          signal.addEventListener('abort', () => reject(signal.reason), { once: true }),
-        );
-      });
-      vi.stubGlobal('fetch', fetch);
-      const pending = runToolContract(tool, input, { context: { signal: controller.signal } });
-      await vi.advanceTimersByTimeAsync(0);
-      const calls = fetch.mock.calls.length;
-      controller.abort(new DOMException('Caller cancelled catalog', 'AbortError'));
-      const result = await pending;
-      expect(result.isError).toBe(true);
-      expect(result.structuredContent).toMatchObject({
-        error: { code: JsonRpcErrorCode.RequestCancelled },
-      });
-      expect(text(result.content)).toMatch(/aborted|cancelled/i);
-      await vi.advanceTimersByTimeAsync(60_000);
-      expect(fetch).toHaveBeenCalledTimes(calls);
-    },
-  );
+  it.each([
+    ['identity', 'fetch GET https://api.waterdata.usgs.gov/…?… was aborted.'],
+    ['metadata', 'fetch GET https://api.waterdata.usgs.gov/…?… was aborted.'],
+    ['backoff', 'Caller cancelled catalog'],
+  ])('preserves caller cancellation during %s', async (stage, message) => {
+    useFakeClock();
+    water.route(
+      ogcRoute('monitoring-locations', stage === 'identity' ? stalled : locationResponse),
+      ogcRoute(
+        'time-series-metadata',
+        stage === 'backoff' ? new Response('Unavailable', { status: 503 }) : stalled,
+      ),
+    );
+    const controller = new AbortController();
+    const pending = runToolContract(tool, input, { context: { signal: controller.signal } });
+    await vi.advanceTimersByTimeAsync(0);
+    const sent = water.requests.length;
+    expect(sent).toBe(stage === 'identity' ? 1 : 2);
+    controller.abort(new DOMException('Caller cancelled catalog', 'AbortError'));
+    const result = await pending;
+    expect(result.isError).toBe(true);
+    expect(result.structuredContent).toMatchObject({
+      error: { code: JsonRpcErrorCode.RequestCancelled, message },
+    });
+    expect(text(result.content)).toContain(message);
+    await vi.advanceTimersByTimeAsync(60_000);
+    expect(water.requests).toHaveLength(sent);
+  });
 
   it.each([400, 422])(
     'maps an upstream cursor rejection (%s) to invalid_cursor',
     async (status) => {
-      serve(() => page1);
+      let rejectWith: number | undefined;
+      water.route(
+        locationRoute(),
+        ogcRoute('time-series-metadata', () =>
+          rejectWith === undefined
+            ? jsonResponse(page1)
+            : new Response('Invalid cursor', { status: rejectWith }),
+        ),
+      );
       const first = await success(input);
       if (first.nextCursor === null) throw new Error('Expected continuation');
-      const fetch = vi.fn(async (url: string) =>
-        url.includes('monitoring-locations')
-          ? new Response(JSON.stringify(location))
-          : new Response('Invalid cursor', { status }),
-      );
-      vi.stubGlobal('fetch', fetch);
+      rejectWith = status;
       const result = await runToolContract(tool, { ...input, cursor: first.nextCursor });
       expect(result.structuredContent).toMatchObject({
         error: { code: JsonRpcErrorCode.ValidationError, data: { reason: 'invalid_cursor' } },
       });
       expect(text(result.content)).toContain('Omit cursor to restart');
-      expect(fetch).toHaveBeenCalledTimes(2);
+      expect(metadataRequests()).toHaveLength(2);
     },
   );
 
-  it('never treats a metadata endpoint404 as an unknown monitoring location', async () => {
-    serve(() => empty);
-    vi.stubGlobal('fetch', async (url: string) =>
-      url.includes('monitoring-locations')
-        ? new Response(JSON.stringify(location))
-        : new Response('{}', { status: 404 }),
+  it('never treats a metadata endpoint 404 as an unknown monitoring location', async () => {
+    water.route(
+      locationRoute(),
+      ogcRoute('time-series-metadata', new Response('{}', { status: 404 })),
     );
     const result = await runToolContract(tool, input);
     expect(result.structuredContent).toMatchObject({
-      error: { code: JsonRpcErrorCode.ServiceUnavailable, data: { reason: 'upstream_error' } },
+      error: {
+        code: JsonRpcErrorCode.ServiceUnavailable,
+        data: { reason: 'upstream_error', retryable: false },
+      },
     });
     expect(text(result.content)).toContain('short backoff');
+    expect(text(result.content)).toContain('(reason upstream_error · not retryable)');
+    expect(metadataRequests()).toHaveLength(1);
+  });
+
+  it('reports a rate limit with its wait on both surfaces, without retrying', async () => {
+    water.route(ogcRoute('monitoring-locations', rateLimitResponse(924)));
+    const result = await runToolContract(tool, input);
+    expect(result.structuredContent).toMatchObject({
+      error: {
+        code: JsonRpcErrorCode.RateLimited,
+        data: {
+          reason: 'rate_limited',
+          retryAfter: 924,
+          recovery: { hint: expect.stringContaining('Wait the retryAfter interval') },
+        },
+      },
+    });
+    expect(text(result.content)).toContain('Retry after 924 s.');
+    expect(text(result.content)).toContain('Wait the retryAfter interval');
+    expect(water.requests).toHaveLength(1);
+  });
+
+  it('sends a configured USGS_API_KEY and reports its rejection naming the setting', async () => {
+    vi.stubEnv('USGS_API_KEY', 'test-key-catalog');
+    await loadTool();
+    water.route(
+      ogcRoute(
+        'monitoring-locations',
+        jsonResponse(waterDataFixture('error-403-api-key-invalid.json'), { status: 403 }),
+      ),
+    );
+    const result = await runToolContract(tool, input);
+    expect(result.structuredContent).toMatchObject({
+      error: { code: JsonRpcErrorCode.ConfigurationError, data: { reason: 'api_key_rejected' } },
+    });
+    expect(text(result.content)).toContain('USGS_API_KEY');
+    expect(text(result.content)).not.toContain('test-key-catalog');
+    expect(water.requests[0]?.headers.get('x-api-key')).toBe('test-key-catalog');
   });
 });
 

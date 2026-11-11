@@ -1,0 +1,309 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-77.12763889, 38.94977778]
+      },
+      "properties": {
+        "monitoring_location_id": "USGS-01646500",
+        "monitoring_location_name": "POTOMAC RIVER NEAR WASH, DC LITTLE FALLS PUMP STA",
+        "site_type": "Stream",
+        "site_type_code": "ST",
+        "country_code": "US",
+        "state_code": "24",
+        "county_code": "031",
+        "data": [
+          {
+            "parameter_code": "00010",
+            "unit_of_measure": "degC",
+            "parent_time_series_id": "5840cf8538df4bc8b12cb4f7fd4bb057",
+            "parent_statistic_id": "00002",
+            "parent_statistic_name": "Min",
+            "values": [
+              {
+                "time_of_year": "11-11",
+                "time_of_year_type": "day_of_year",
+                "values": ["nan", "nan", "8.625", "11.1", "12.225", "nan", "nan"],
+                "percentiles": ["5", "10", "25", "50", "75", "90", "95"],
+                "sample_count": 4,
+                "approval_status": "approved",
+                "computation_id": "e833629c-1bf2-4837-80ad-9bf7219587d5",
+                "computation": "percentile"
+              }
+            ]
+          },
+          {
+            "parameter_code": "00010",
+            "unit_of_measure": "degC",
+            "parent_time_series_id": "4be302ef5b17459e825dc431e6837f98",
+            "parent_statistic_id": "00001",
+            "parent_statistic_name": "Max",
+            "values": [
+              {
+                "time_of_year": "11-11",
+                "time_of_year_type": "day_of_year",
+                "values": ["nan", "nan", "10.025", "12.15", "13.3", "nan", "nan"],
+                "percentiles": ["5", "10", "25", "50", "75", "90", "95"],
+                "sample_count": 4,
+                "approval_status": "approved",
+                "computation_id": "ccf2ce2d-978f-4fa8-897d-a23ed2648e93",
+                "computation": "percentile"
+              }
+            ]
+          },
+          {
+            "parameter_code": "00010",
+            "unit_of_measure": "degC",
+            "parent_time_series_id": "7a3d8fd9808947c2ab23d938e1c0ce6b",
+            "parent_statistic_id": "00001",
+            "parent_statistic_name": "Max",
+            "values": [
+              {
+                "time_of_year": "11-11",
+                "time_of_year_type": "day_of_year",
+                "values": ["nan", "nan", "11.225", "12.7", "15.525", "nan", "nan"],
+                "percentiles": ["5", "10", "25", "50", "75", "90", "95"],
+                "sample_count": 6,
+                "approval_status": "approved",
+                "computation_id": "e5874453-0cff-404d-ad34-dbfb8a51659d",
+                "computation": "percentile"
+              }
+            ]
+          },
+          {
+            "parameter_code": "00010",
+            "unit_of_measure": "degC",
+            "parent_time_series_id": "5c12923ccedb4e53b12c036810f1127d",
+            "parent_statistic_id": "00002",
+            "parent_statistic_name": "Min",
+            "values": [
+              {
+                "time_of_year": "11-11",
+                "time_of_year_type": "day_of_year",
+                "values": ["nan", "8.1", "8.85", "10.2", "12.15", "nan", "nan"],
+                "percentiles": ["5", "10", "25", "50", "75", "90", "95"],
+                "sample_count": 13,
+                "approval_status": "approved",
+                "computation_id": "f97e8d82-895d-4ee4-8c38-8af3179e0097",
+                "computation": "percentile"
+              }
+            ]
+          },
+          {
+            "parameter_code": "00010",
+            "unit_of_measure": "degC",
+            "parent_time_series_id": "df26f4c5e5c844e583ed44a9419bb8ff",
+            "parent_statistic_id": "00001",
+            "parent_statistic_name": "Max",
+            "values": [
+              {
+                "time_of_year": "11-11",
+                "time_of_year_type": "day_of_year",
+                "values": ["8.055", "9.03", "9.775", "10.95", "12.7", "13.0", "13.625"],
+                "percentiles": ["5", "10", "25", "50", "75", "90", "95"],
+                "sample_count": 30,
+                "approval_status": "approved",
+                "computation_id": "23f6dbae-868c-4c7f-9fee-7aee064f3446",
+                "computation": "percentile"
+              }
+            ]
+          },
+          {
+            "parameter_code": "00010",
+            "unit_of_measure": "degC",
+            "parent_time_series_id": "7fb9204b83544455ada0bd8c8f441cce",
+            "parent_statistic_id": "00003",
+            "parent_statistic_name": "Mean",
+            "values": [
+              {
+                "time_of_year": "11-11",
+                "time_of_year_type": "day_of_year",
+                "values": ["nan", "nan", "9.4", "11.5", "12.7", "nan", "nan"],
+                "percentiles": ["5", "10", "25", "50", "75", "90", "95"],
+                "sample_count": 4,
+                "approval_status": "approved",
+                "computation_id": "db53dddd-a054-468f-96dd-7855fddab49b",
+                "computation": "percentile"
+              }
+            ]
+          },
+          {
+            "parameter_code": "00010",
+            "unit_of_measure": "degC",
+            "parent_time_series_id": "262b35c5fc68445bb9d84990eb7b7bb3",
+            "parent_statistic_id": "00003",
+            "parent_statistic_name": "Mean",
+            "values": [
+              {
+                "time_of_year": "11-11",
+                "time_of_year_type": "day_of_year",
+                "values": ["7.47", "8.36", "9.2", "10.6", "12.3", "12.5", "12.98"],
+                "percentiles": ["5", "10", "25", "50", "75", "90", "95"],
+                "sample_count": 30,
+                "approval_status": "approved",
+                "computation_id": "64ee8d4c-de6c-4be3-8957-a2e1a0b2ba1f",
+                "computation": "percentile"
+              }
+            ]
+          },
+          {
+            "parameter_code": "00010",
+            "unit_of_measure": "degC",
+            "parent_time_series_id": "e7b2e294e6ff4b37823201aa90adb381",
+            "parent_statistic_id": "00003",
+            "parent_statistic_name": "Mean",
+            "values": [
+              {
+                "time_of_year": "11-11",
+                "time_of_year_type": "day_of_year",
+                "values": ["nan", "8.84", "9.4", "10.7", "12.25", "12.64", "nan"],
+                "percentiles": ["5", "10", "25", "50", "75", "90", "95"],
+                "sample_count": 13,
+                "approval_status": "approved",
+                "computation_id": "58dc4f15-cc99-4882-bff6-1e0e1db8b108",
+                "computation": "percentile"
+              }
+            ]
+          },
+          {
+            "parameter_code": "00010",
+            "unit_of_measure": "degC",
+            "parent_time_series_id": "4f6db6b43e88466fb46fd6b65ded7d0c",
+            "parent_statistic_id": "00002",
+            "parent_statistic_name": "Min",
+            "values": [
+              {
+                "time_of_year": "11-11",
+                "time_of_year_type": "day_of_year",
+                "values": ["nan", "nan", "9.4", "11.5", "14.45", "nan", "nan"],
+                "percentiles": ["5", "10", "25", "50", "75", "90", "95"],
+                "sample_count": 6,
+                "approval_status": "approved",
+                "computation_id": "2344c7a7-7866-4843-a668-99f174e2dc75",
+                "computation": "percentile"
+              }
+            ]
+          },
+          {
+            "parameter_code": "00010",
+            "unit_of_measure": "degC",
+            "parent_time_series_id": "e3c168a6cbd840e095206dc7289991d3",
+            "parent_statistic_id": "00002",
+            "parent_statistic_name": "Min",
+            "values": [
+              {
+                "time_of_year": "11-11",
+                "time_of_year_type": "day_of_year",
+                "values": ["nan", "8.18", "8.65", "10.2", "11.95", "12.12", "nan"],
+                "percentiles": ["5", "10", "25", "50", "75", "90", "95"],
+                "sample_count": 13,
+                "approval_status": "approved",
+                "computation_id": "4e2a9c51-074f-492e-8854-d83a5136cbfa",
+                "computation": "percentile"
+              }
+            ]
+          },
+          {
+            "parameter_code": "00010",
+            "unit_of_measure": "degC",
+            "parent_time_series_id": "802fc027a9b6432da7dfa08a44b5c1aa",
+            "parent_statistic_id": "00002",
+            "parent_statistic_name": "Min",
+            "values": [
+              {
+                "time_of_year": "11-11",
+                "time_of_year_type": "day_of_year",
+                "values": ["7.15", "7.92", "8.775", "9.9", "11.75", "12.19", "12.525"],
+                "percentiles": ["5", "10", "25", "50", "75", "90", "95"],
+                "sample_count": 30,
+                "approval_status": "approved",
+                "computation_id": "950f69d2-fa7a-4528-bb33-6c28a42d8866",
+                "computation": "percentile"
+              }
+            ]
+          },
+          {
+            "parameter_code": "00010",
+            "unit_of_measure": "degC",
+            "parent_time_series_id": "d79cffc85456491db8f5e416a62c369e",
+            "parent_statistic_id": "00001",
+            "parent_statistic_name": "Max",
+            "values": [
+              {
+                "time_of_year": "11-11",
+                "time_of_year_type": "day_of_year",
+                "values": ["nan", "9.56", "10.0", "11.2", "13.05", "13.58", "nan"],
+                "percentiles": ["5", "10", "25", "50", "75", "90", "95"],
+                "sample_count": 13,
+                "approval_status": "approved",
+                "computation_id": "0e6a6dfd-e13d-41d7-83af-bcf7d0ef76ef",
+                "computation": "percentile"
+              }
+            ]
+          },
+          {
+            "parameter_code": "00010",
+            "unit_of_measure": "degC",
+            "parent_time_series_id": "fb924810fc234811ac97b517cb179a86",
+            "parent_statistic_id": "00001",
+            "parent_statistic_name": "Max",
+            "values": [
+              {
+                "time_of_year": "11-11",
+                "time_of_year_type": "day_of_year",
+                "values": ["nan", "9.42", "10.1", "11.2", "12.85", "13.24", "nan"],
+                "percentiles": ["5", "10", "25", "50", "75", "90", "95"],
+                "sample_count": 13,
+                "approval_status": "approved",
+                "computation_id": "e4c2056a-6b7b-444d-94da-25a3ca868d2b",
+                "computation": "percentile"
+              }
+            ]
+          },
+          {
+            "parameter_code": "00010",
+            "unit_of_measure": "degC",
+            "parent_time_series_id": "6f2cdd6644424eb188a29a5dcc098a76",
+            "parent_statistic_id": "00003",
+            "parent_statistic_name": "Mean",
+            "values": [
+              {
+                "time_of_year": "11-11",
+                "time_of_year_type": "day_of_year",
+                "values": ["nan", "8.9", "9.45", "10.7", "12.6", "12.86", "nan"],
+                "percentiles": ["5", "10", "25", "50", "75", "90", "95"],
+                "sample_count": 13,
+                "approval_status": "approved",
+                "computation_id": "64558016-59b9-4c1d-b783-7da07a77e049",
+                "computation": "percentile"
+              }
+            ]
+          },
+          {
+            "parameter_code": "00010",
+            "unit_of_measure": "degC",
+            "parent_time_series_id": "40bfcf380ef240e18699ee4875350640",
+            "parent_statistic_id": "00003",
+            "parent_statistic_name": "Mean",
+            "values": [
+              {
+                "time_of_year": "11-11",
+                "time_of_year_type": "day_of_year",
+                "values": ["nan", "nan", "10.05", "12.15", "14.925", "nan", "nan"],
+                "percentiles": ["5", "10", "25", "50", "75", "90", "95"],
+                "sample_count": 6,
+                "approval_status": "approved",
+                "computation_id": "1708ca54-995e-42f5-b00c-ef484951413f",
+                "computation": "percentile"
+              }
+            ]
+          }
+        ]
+      }
+    }
+  ],
+  "next": null
+}

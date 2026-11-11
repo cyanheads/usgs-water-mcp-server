@@ -1,0 +1,135 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_number": "364643089212301",
+        "monitoring_location_name": "East Prairie",
+        "agency_code": "MO005",
+        "time_zone_abbreviation": "CST",
+        "uses_daylight_savings": "Y"
+      },
+      "id": "MO005-364643089212301",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_number": "01115170",
+        "monitoring_location_name": "MOSWANSICUT STREAM NR NORTH SCITUATE, RI",
+        "agency_code": "USGS",
+        "time_zone_abbreviation": "EST",
+        "uses_daylight_savings": "Y"
+      },
+      "id": "USGS-01115170",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_number": "01646500",
+        "monitoring_location_name": "POTOMAC RIVER NEAR WASH, DC LITTLE FALLS PUMP STA",
+        "agency_code": "USGS",
+        "time_zone_abbreviation": "EST",
+        "uses_daylight_savings": "Y"
+      },
+      "id": "USGS-01646500",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_number": "06819550",
+        "monitoring_location_name": "Mozingo Creek near Pickering, MO",
+        "agency_code": "USGS",
+        "time_zone_abbreviation": "CST",
+        "uses_daylight_savings": "Y"
+      },
+      "id": "USGS-06819550",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_number": "08131400",
+        "monitoring_location_name": "Pecan Ck nr San Angelo, TX",
+        "agency_code": "USGS",
+        "time_zone_abbreviation": "CST",
+        "uses_daylight_savings": "Y"
+      },
+      "id": "USGS-08131400",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_number": "09497830",
+        "monitoring_location_name": "CANYON CREEK ABOVE COW CREEK NEAR YOUNG, AZ",
+        "agency_code": "USGS",
+        "time_zone_abbreviation": "MST",
+        "uses_daylight_savings": "N"
+      },
+      "id": "USGS-09497830",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_number": "11176400",
+        "monitoring_location_name": "ARROYO VALLE BL LANG CYN NR LIVERMORE CA",
+        "agency_code": "USGS",
+        "time_zone_abbreviation": "PST",
+        "uses_daylight_savings": "Y"
+      },
+      "id": "USGS-11176400",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_number": "14233500",
+        "monitoring_location_name": "COWLITZ RIVER NEAR KOSMOS, WA",
+        "agency_code": "USGS",
+        "time_zone_abbreviation": "PST",
+        "uses_daylight_savings": "Y"
+      },
+      "id": "USGS-14233500",
+      "geometry": null
+    }
+  ],
+  "numberReturned": 8,
+  "links": [
+    {
+      "type": "application/geo+json",
+      "rel": "self",
+      "title": "This document as GeoJSON",
+      "href": "https://api.waterdata.usgs.gov/ogcapi/v1/collections/monitoring-locations/items?f=json&skipGeometry=true&monitoring_location_number=01646500,364643089212301,14233500,09497830,06819550,08131400,01115170,11176400,99999999&properties=monitoring_location_number,monitoring_location_name,agency_code,time_zone_abbreviation,uses_daylight_savings&limit=1000"
+    },
+    {
+      "rel": "alternate",
+      "type": "application/ld+json",
+      "title": "This document as RDF (JSON-LD)",
+      "href": "https://api.waterdata.usgs.gov/ogcapi/v1/collections/monitoring-locations/items?f=jsonld&skipGeometry=true&monitoring_location_number=01646500,364643089212301,14233500,09497830,06819550,08131400,01115170,11176400,99999999&properties=monitoring_location_number,monitoring_location_name,agency_code,time_zone_abbreviation,uses_daylight_savings&limit=1000"
+    },
+    {
+      "type": "text/html",
+      "rel": "alternate",
+      "title": "This document as HTML",
+      "href": "https://api.waterdata.usgs.gov/ogcapi/v1/collections/monitoring-locations/items?f=html&skipGeometry=true&monitoring_location_number=01646500,364643089212301,14233500,09497830,06819550,08131400,01115170,11176400,99999999&properties=monitoring_location_number,monitoring_location_name,agency_code,time_zone_abbreviation,uses_daylight_savings&limit=1000"
+    },
+    {
+      "type": "text/csv; charset=utf-8",
+      "rel": "alternate",
+      "title": "This document as CSV",
+      "href": "https://api.waterdata.usgs.gov/ogcapi/v1/collections/monitoring-locations/items?f=csv&skipGeometry=true&monitoring_location_number=01646500,364643089212301,14233500,09497830,06819550,08131400,01115170,11176400,99999999&properties=monitoring_location_number,monitoring_location_name,agency_code,time_zone_abbreviation,uses_daylight_savings&limit=1000"
+    },
+    {
+      "type": "application/json",
+      "title": "Monitoring locations",
+      "rel": "collection",
+      "href": "https://api.waterdata.usgs.gov/ogcapi/v1/collections/monitoring-locations"
+    }
+  ],
+  "timeStamp": "2026-11-11T10:06:32.718875Z"
+}

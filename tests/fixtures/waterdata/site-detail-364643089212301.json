@@ -1,0 +1,58 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_number": "364643089212301",
+        "monitoring_location_name": "East Prairie",
+        "site_type_code": "GW",
+        "altitude": 305.77,
+        "hydrologic_unit_code": "080103000103",
+        "state_code": "29",
+        "county_code": "133",
+        "drainage_area": null,
+        "contributing_drainage_area": null
+      },
+      "id": "MO005-364643089212301",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-89.356028, 36.779472]
+      }
+    }
+  ],
+  "numberReturned": 1,
+  "links": [
+    {
+      "type": "application/geo+json",
+      "rel": "self",
+      "title": "This document as GeoJSON",
+      "href": "https://api.waterdata.usgs.gov/ogcapi/v1/collections/monitoring-locations/items?f=json&monitoring_location_number=364643089212301&properties=monitoring_location_number,monitoring_location_name,site_type_code,altitude,hydrologic_unit_code,state_code,county_code,drainage_area,contributing_drainage_area&limit=50000"
+    },
+    {
+      "rel": "alternate",
+      "type": "application/ld+json",
+      "title": "This document as RDF (JSON-LD)",
+      "href": "https://api.waterdata.usgs.gov/ogcapi/v1/collections/monitoring-locations/items?f=jsonld&monitoring_location_number=364643089212301&properties=monitoring_location_number,monitoring_location_name,site_type_code,altitude,hydrologic_unit_code,state_code,county_code,drainage_area,contributing_drainage_area&limit=50000"
+    },
+    {
+      "type": "text/html",
+      "rel": "alternate",
+      "title": "This document as HTML",
+      "href": "https://api.waterdata.usgs.gov/ogcapi/v1/collections/monitoring-locations/items?f=html&monitoring_location_number=364643089212301&properties=monitoring_location_number,monitoring_location_name,site_type_code,altitude,hydrologic_unit_code,state_code,county_code,drainage_area,contributing_drainage_area&limit=50000"
+    },
+    {
+      "type": "text/csv; charset=utf-8",
+      "rel": "alternate",
+      "title": "This document as CSV",
+      "href": "https://api.waterdata.usgs.gov/ogcapi/v1/collections/monitoring-locations/items?f=csv&monitoring_location_number=364643089212301&properties=monitoring_location_number,monitoring_location_name,site_type_code,altitude,hydrologic_unit_code,state_code,county_code,drainage_area,contributing_drainage_area&limit=50000"
+    },
+    {
+      "type": "application/json",
+      "title": "Monitoring locations",
+      "rel": "collection",
+      "href": "https://api.waterdata.usgs.gov/ogcapi/v1/collections/monitoring-locations"
+    }
+  ],
+  "timeStamp": "2026-11-11T10:07:17.823763Z"
+}

@@ -1,0 +1,2544 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_number": "12072629",
+        "monitoring_location_name": "GORSUCH CREEK NEAR VASHON, WA",
+        "site_type_code": "ST",
+        "altitude": 130.0,
+        "hydrologic_unit_code": "171100190403"
+      },
+      "id": "USGS-12072629",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-122.44801944444445, 47.45500277777778]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_number": "12072630",
+        "monitoring_location_name": "JUDD CREEK ON VASHON ISLAND NEAR VASHON, WA",
+        "site_type_code": "ST",
+        "altitude": null,
+        "hydrologic_unit_code": "171100190403"
+      },
+      "id": "USGS-12072630",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-122.470683022597, 47.4056538765028]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_number": "12091700",
+        "monitoring_location_name": "JUDD CREEK NEAR BURTON, WA",
+        "site_type_code": "ST",
+        "altitude": 80.0,
+        "hydrologic_unit_code": "171100190403"
+      },
+      "id": "USGS-12091700",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-122.472905409428, 47.4109316186838]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_number": "12103305",
+        "monitoring_location_name": "MILLER CREEK BLW SOUTHCENTER BLVD NR SEA TAC, WA",
+        "site_type_code": "ST",
+        "altitude": 241.0,
+        "hydrologic_unit_code": "171100190204"
+      },
+      "id": "USGS-12103305",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-122.32183611111111, 47.45934722222223]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_number": "12103315",
+        "monitoring_location_name": "DES MOINES CR  BLW S 200TH ST NR DES MOINES, WA",
+        "site_type_code": "ST",
+        "altitude": 237.0,
+        "hydrologic_unit_code": "171100190204"
+      },
+      "id": "USGS-12103315",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-122.30607777777777, 47.418927777777775]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_number": "12103322",
+        "monitoring_location_name": "DES MOINES CREEK AT DES MOINES, WA",
+        "site_type_code": "ST",
+        "altitude": 69.0,
+        "hydrologic_unit_code": "171100190204"
+      },
+      "id": "USGS-12103322",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-122.3249, 47.4099]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_number": "12103324",
+        "monitoring_location_name": "DES MOINES CREEK NEAR MOUTH AT DES MOINES, WA",
+        "site_type_code": "ST",
+        "altitude": null,
+        "hydrologic_unit_code": "171100190204"
+      },
+      "id": "USGS-12103324",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-122.328456967212, 47.4053771672666]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_number": "12103326",
+        "monitoring_location_name": "MILLER CREEK NEAR DES MOINES, WA",
+        "site_type_code": "ST",
+        "altitude": null,
+        "hydrologic_unit_code": "171100190204"
+      },
+      "id": "USGS-12103326",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-122.3520693051, 47.4462101331183]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_number": "1210332660",
+        "monitoring_location_name": "MILLER CREEK NEAR SW 166TH PL NEAR DES MOINES, WA",
+        "site_type_code": "ST",
+        "altitude": 168.0,
+        "hydrologic_unit_code": "171100190204"
+      },
+      "id": "USGS-1210332660",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-122.33734444444444, 47.45614444444445]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_number": "1210332680",
+        "monitoring_location_name": "MILLER CREEK NEAR 6TH AVE SW DES MOINES, WA",
+        "site_type_code": "ST",
+        "altitude": 69.0,
+        "hydrologic_unit_code": "171100190204"
+      },
+      "id": "USGS-1210332680",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-122.34255555555555, 47.45153055555556]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_number": "12103330",
+        "monitoring_location_name": "SEOLA BEACH DRAIN AT SEATTLE, WA",
+        "site_type_code": "ST",
+        "altitude": null,
+        "hydrologic_unit_code": "171100190204"
+      },
+      "id": "USGS-12103330",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-122.375404088991, 47.4964875203921]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_number": "12109400",
+        "monitoring_location_name": "LITTLE SOOS CREEK BELOW LAKE YOUNGS NEAR KENT, WA",
+        "site_type_code": "ST",
+        "altitude": 475.0,
+        "hydrologic_unit_code": "171100130302"
+      },
+      "id": "USGS-12109400",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-122.12259999999999, 47.4001]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_number": "12113340",
+        "monitoring_location_name": "GREEN RIVER AT 212 ST NEAR KENT, WA",
+        "site_type_code": "ST",
+        "altitude": null,
+        "hydrologic_unit_code": "171100130305"
+      },
+      "id": "USGS-12113340",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-122.264844217757, 47.4123220514451]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_number": "12113344",
+        "monitoring_location_name": "GREEN RIVER AT 200TH STREET AT KENT, WA",
+        "site_type_code": "ST",
+        "altitude": 0.0,
+        "hydrologic_unit_code": "171100130305"
+      },
+      "id": "USGS-12113344",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-122.265399900635, 47.4228775455522]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_number": "12113346",
+        "monitoring_location_name": "SPRINGBROOK CREEK AT ORILLIA, WA",
+        "site_type_code": "ST",
+        "altitude": 0.0,
+        "hydrologic_unit_code": "171100130305"
+      },
+      "id": "USGS-12113346",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-122.227621296302, 47.431211085669]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_number": "12113349",
+        "monitoring_location_name": "MILL CREEK NEAR MOUTH AT ORILLIA, WA",
+        "site_type_code": "ST",
+        "altitude": 0.0,
+        "hydrologic_unit_code": "171100130305"
+      },
+      "id": "USGS-12113349",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-122.243177181298, 47.43009988229]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_number": "12113350",
+        "monitoring_location_name": "GREEN RIVER AT TUKWILA, WA",
+        "site_type_code": "ST",
+        "altitude": null,
+        "hydrologic_unit_code": "171100130305"
+      },
+      "id": "USGS-12113350",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-122.248455429989, 47.465099658137]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_number": "12113370",
+        "monitoring_location_name": "SPRINGBROOK CREEK AT SW 27TH AT TUKWILLA, WA",
+        "site_type_code": "ST",
+        "altitude": null,
+        "hydrologic_unit_code": "171100130305"
+      },
+      "id": "USGS-12113370",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-122.227621569982, 47.4556554143835]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_number": "12113375",
+        "monitoring_location_name": "SPRINGBROOK CREEK AT TUKWILA, WA",
+        "site_type_code": "ST",
+        "altitude": null,
+        "hydrologic_unit_code": "171100130305"
+      },
+      "id": "USGS-12113375",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-122.232621782826, 47.4656553295083]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_number": "12113385",
+        "monitoring_location_name": "BLACK RIVER BELOW PUMP STATION NEAR RENTON, WA",
+        "site_type_code": "ST",
+        "altitude": null,
+        "hydrologic_unit_code": "171100130305"
+      },
+      "id": "USGS-12113385",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-122.245955487853, 47.4756551757054]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_number": "12113390",
+        "monitoring_location_name": "DUWAMISH RIVER AT GOLF COURSE AT TUKWILA, WA",
+        "site_type_code": "ST",
+        "altitude": 0.0,
+        "hydrologic_unit_code": "171100130305"
+      },
+      "id": "USGS-12113390",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-122.258733333333, 47.4789861111111]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_number": "12113400",
+        "monitoring_location_name": "DUWAMISH RIVER AT TUKWILLA, WA",
+        "site_type_code": "ST",
+        "altitude": null,
+        "hydrologic_unit_code": "171100130305"
+      },
+      "id": "USGS-12113400",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-122.2679, 47.4825972222222]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_number": "12113406",
+        "monitoring_location_name": "DUWAMISH R AT 42ND AVE BRIDGE AT DUWAMISH, WA",
+        "site_type_code": "ST",
+        "altitude": 12.0,
+        "hydrologic_unit_code": "171100130305"
+      },
+      "id": "USGS-12113406",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-122.280091666667, 47.4901555555556]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_number": "12113415",
+        "monitoring_location_name": "DUWAMISH R AT E MARGINAL WAY BR AT DUWAMISH, WA",
+        "site_type_code": "ST",
+        "altitude": 0.0,
+        "hydrologic_unit_code": "171100130305"
+      },
+      "id": "USGS-12113415",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-122.288141666667, 47.5005055555556]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_number": "12113425",
+        "monitoring_location_name": "DUWAMISH R AT 102ND ST BRIDGE AT DUWAMISH, WA",
+        "site_type_code": "ST",
+        "altitude": 9.0,
+        "hydrologic_unit_code": "171100130305"
+      },
+      "id": "USGS-12113425",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-122.296183333333, 47.5109833333333]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_number": "12113445",
+        "monitoring_location_name": "DUWAMISH RIVER AT PEOPLE'S PARK AT DUWAMISH, WA",
+        "site_type_code": "ST",
+        "altitude": null,
+        "hydrologic_unit_code": "171100130305"
+      },
+      "id": "USGS-12113445",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-122.31113888888889, 47.527138888888885]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_number": "12113470",
+        "monitoring_location_name": "DUWAMISH RIVER AT FIRST AVENUE S AT SEATTLE, WA",
+        "site_type_code": "ST",
+        "altitude": null,
+        "hydrologic_unit_code": "171100130305"
+      },
+      "id": "USGS-12113470",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-122.3348305186108, 47.542293538699646]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_number": "12113485",
+        "monitoring_location_name": "DUWAMISH RIVER AT TERMINAL 3 AT SEATTLE, WA",
+        "site_type_code": "ST",
+        "altitude": null,
+        "hydrologic_unit_code": "171100130305"
+      },
+      "id": "USGS-12113485",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-122.349293092127, 47.5650984771281]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_number": "12113488",
+        "monitoring_location_name": "LONGFELLOW CR AT SW BRANDON ST NR WEST SEATTLE, WA",
+        "site_type_code": "ST",
+        "altitude": null,
+        "hydrologic_unit_code": "17110013"
+      },
+      "id": "USGS-12113488",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-122.367071293226, 47.5545428612197]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_number": "1211348810",
+        "monitoring_location_name": "LONGFELLOW CR BLW SW BRANDON ST WEST SEATTLE, WA",
+        "site_type_code": "ST",
+        "altitude": 82.0,
+        "hydrologic_unit_code": "171100190204"
+      },
+      "id": "USGS-1211348810",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-122.36875277777777, 47.55656111111111]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_number": "12113490",
+        "monitoring_location_name": "LONGFELLOW CREEK AB GENESEE ST NR WEST SEATTLE, WA",
+        "site_type_code": "ST",
+        "altitude": null,
+        "hydrologic_unit_code": "17110013"
+      },
+      "id": "USGS-12113490",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-122.367166666667, 47.5632777777778]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_number": "12113492",
+        "monitoring_location_name": "DUWAMISH RIVER AT TERMINAL 5 AT SEATTLE, WA",
+        "site_type_code": "ST",
+        "altitude": null,
+        "hydrologic_unit_code": "17110013"
+      },
+      "id": "USGS-12113492",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-122.361793697883, 47.5803761058903]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_number": "12113493",
+        "monitoring_location_name": "DUWAMISH RIVER AT TERMINAL 20 AT SEATTLE, WA",
+        "site_type_code": "ST",
+        "altitude": null,
+        "hydrologic_unit_code": "17110013"
+      },
+      "id": "USGS-12113493",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-122.346237647015, 47.5806539764291]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_number": "12113499",
+        "monitoring_location_name": "TAYLOR CREEK AT LAKERIDGE PARK NEAR RENTON, WA",
+        "site_type_code": "ST",
+        "altitude": null,
+        "hydrologic_unit_code": "171100120400"
+      },
+      "id": "USGS-12113499",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-122.248178112225, 47.5089883085798]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_number": "12118510",
+        "monitoring_location_name": "CEDAR RIVER AT MAPLE VALLEY, WA",
+        "site_type_code": "ST",
+        "altitude": null,
+        "hydrologic_unit_code": "171100120107"
+      },
+      "id": "USGS-12118510",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-122.039561094399, 47.4059344485594]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_number": "12118525",
+        "monitoring_location_name": "TAYLOR CREEK ABV 236th AVE SE AT MAPLE VALLEY, WA",
+        "site_type_code": "ST",
+        "altitude": 415.0,
+        "hydrologic_unit_code": "171100120107"
+      },
+      "id": "USGS-12118525",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-122.026519444444, 47.4083805555556]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_number": "12118610",
+        "monitoring_location_name": "CEDAR RIVER NR MAPLE VALLEY HEIGHTS NR RENTON, WA",
+        "site_type_code": "ST",
+        "altitude": 198.0,
+        "hydrologic_unit_code": "171100120107"
+      },
+      "id": "USGS-12118610",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-122.071461111111, 47.4517472222222]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_number": "12118900",
+        "monitoring_location_name": "UNNAMED TRIB TO CEDAR RIVER NEAR RENTON, WA",
+        "site_type_code": "ST",
+        "altitude": 334.0,
+        "hydrologic_unit_code": "171100120107"
+      },
+      "id": "USGS-12118900",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-122.15057222222222, 47.478097222222225]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_number": "12119000",
+        "monitoring_location_name": "CEDAR RIVER AT RENTON, WA",
+        "site_type_code": "ST",
+        "altitude": 18.77,
+        "hydrologic_unit_code": "171100120107"
+      },
+      "id": "USGS-12119000",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-122.20345473813, 47.4825999269035]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_number": "12119005",
+        "monitoring_location_name": "CEDAR RIVER AT WILLIAMS AVE AT RENTON, WA",
+        "site_type_code": "ST",
+        "altitude": null,
+        "hydrologic_unit_code": "171100120107"
+      },
+      "id": "USGS-12119005",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-122.206232590036, 47.4842665644317]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_number": "12119007",
+        "monitoring_location_name": "CEDAR RIVER AT LOGAN ST AT RENTON, WA",
+        "site_type_code": "ST",
+        "altitude": null,
+        "hydrologic_unit_code": "171100120107"
+      },
+      "id": "USGS-12119007",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-122.2090104381, 47.4856554249954]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_number": "12119300",
+        "monitoring_location_name": "MAY CREEK NEAR ISSAQUAH, WA",
+        "site_type_code": "ST",
+        "altitude": null,
+        "hydrologic_unit_code": "171100120400"
+      },
+      "id": "USGS-12119300",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-122.099286329536, 47.4978785438196]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_number": "12119302",
+        "monitoring_location_name": "MAY CREEK TRIB AT STATE ROAD 900 NEAR ISSAQUAH, WA",
+        "site_type_code": "ST",
+        "altitude": null,
+        "hydrologic_unit_code": "171100120400"
+      },
+      "id": "USGS-12119302",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-122.099564112465, 47.4978785414233]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_number": "12119375",
+        "monitoring_location_name": "MAY CREEK AT RENTON, WA",
+        "site_type_code": "ST",
+        "altitude": null,
+        "hydrologic_unit_code": "171100120400"
+      },
+      "id": "USGS-12119375",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-122.149843124693, 47.5170446504976]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_number": "12119440",
+        "monitoring_location_name": "HONEY DEW CREEK NEAR QUEEN AVE NE NEAR RENTON, WA",
+        "site_type_code": "ST",
+        "altitude": 341.0,
+        "hydrologic_unit_code": "171100120400"
+      },
+      "id": "USGS-12119440",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-122.16998333333333, 47.50633611111111]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_number": "12119450",
+        "monitoring_location_name": "HONEY DEW CREEK NEAR RENTON, WA",
+        "site_type_code": "ST",
+        "altitude": null,
+        "hydrologic_unit_code": "171100120400"
+      },
+      "id": "USGS-12119450",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-122.179289, 47.513156]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_number": "12119495",
+        "monitoring_location_name": "MAY CREEK BELOW HONEY DEW CREEK NEAR RENTON, WA",
+        "site_type_code": "ST",
+        "altitude": null,
+        "hydrologic_unit_code": "171100120400"
+      },
+      "id": "USGS-12119495",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-122.196510674716, 47.5206553442154]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_number": "12119500",
+        "monitoring_location_name": "MAY CREEK NEAR RENTON, WA",
+        "site_type_code": "ST",
+        "altitude": 60.0,
+        "hydrologic_unit_code": "171100120400"
+      },
+      "id": "USGS-12119500",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-122.197066279415, 47.5234330998036]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_number": "12119600",
+        "monitoring_location_name": "MAY CREEK AT MOUTH NEAR RENTON, WA",
+        "site_type_code": "ST",
+        "altitude": 25.0,
+        "hydrologic_unit_code": "171100120400"
+      },
+      "id": "USGS-12119600",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-122.201233108896, 47.5298219139043]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_number": "12119690",
+        "monitoring_location_name": "COAL CREEK BLW COAL CRK PKWY NEAR BELLEVUE, WA",
+        "site_type_code": "ST",
+        "altitude": 142.0,
+        "hydrologic_unit_code": "171100120400"
+      },
+      "id": "USGS-12119690",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-122.170561111111, 47.5602888888889]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_number": "12119700",
+        "monitoring_location_name": "COAL CREEK NEAR BELLEVUE, WA",
+        "site_type_code": "ST",
+        "altitude": 50.0,
+        "hydrologic_unit_code": "171100120400"
+      },
+      "id": "USGS-12119700",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-122.180399954142, 47.5664885132916]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_number": "12119705",
+        "monitoring_location_name": "COAL CREEK AT BELLEVUE, WA",
+        "site_type_code": "ST",
+        "altitude": 47.0,
+        "hydrologic_unit_code": "171100120400"
+      },
+      "id": "USGS-12119705",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-122.181788893927, 47.5684329342691]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_number": "12119710",
+        "monitoring_location_name": "COAL CREEK AT SKAGIT KEY RD BELLEVUE, WA",
+        "site_type_code": "ST",
+        "altitude": 19.0,
+        "hydrologic_unit_code": "171100120400"
+      },
+      "id": "USGS-12119710",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-122.18900000000001, 47.57299444444445]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_number": "12119730",
+        "monitoring_location_name": "148TH AVE STORM SWR BL LK HILLS BLVD BELLEVUE, WA",
+        "site_type_code": "ST",
+        "altitude": null,
+        "hydrologic_unit_code": "171100120202"
+      },
+      "id": "USGS-12119730",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-122.142899891863, 47.6000996785034]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_number": "12119731",
+        "monitoring_location_name": "148TH AVE UPSTREAM MANOMETER AT BELLEVUE, WA",
+        "site_type_code": "ST",
+        "altitude": null,
+        "hydrologic_unit_code": "171100120202"
+      },
+      "id": "USGS-12119731",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-122.143177673773, 47.6000996764747]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_number": "12119732",
+        "monitoring_location_name": "148TH AVE DOWNSTREAM MANOMETER AT BELLEVUE, WA",
+        "site_type_code": "ST",
+        "altitude": null,
+        "hydrologic_unit_code": "171100120202"
+      },
+      "id": "USGS-12119732",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-122.143455455683, 47.6000996744461]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_number": "12119785",
+        "monitoring_location_name": "VALLEY CREEK NR NE 46TH ST NEAR BELLEVUE, WA",
+        "site_type_code": "ST",
+        "altitude": 308.0,
+        "hydrologic_unit_code": "171100120400"
+      },
+      "id": "USGS-12119785",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-122.15035833333334, 47.65145833333333]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_number": "12119795",
+        "monitoring_location_name": "VALLEY CREEK AT NE 27TH ST NEAR BELLEVUE, WA",
+        "site_type_code": "ST",
+        "altitude": null,
+        "hydrologic_unit_code": "171100120400"
+      },
+      "id": "USGS-12119795",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-122.152067246235, 47.6350993689544]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_number": "12119800",
+        "monitoring_location_name": "VALLEY (NO BRANCH MERCER) CREEK NEAR BELLEVUE, WA",
+        "site_type_code": "ST",
+        "altitude": null,
+        "hydrologic_unit_code": "171100120400"
+      },
+      "id": "USGS-12119800",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-122.152900481739, 47.6281549668843]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_number": "12119815",
+        "monitoring_location_name": "YARROW CREEK NR NE 34TH ST NEAR BELLEVUE, WA",
+        "site_type_code": "ST",
+        "altitude": 254.0,
+        "hydrologic_unit_code": "171100120400"
+      },
+      "id": "USGS-12119815",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-122.18555, 47.6400805555556]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_number": "12119850",
+        "monitoring_location_name": "WEST BRANCH KELSEY CREEK AT BELLEVUE, WA",
+        "site_type_code": "ST",
+        "altitude": null,
+        "hydrologic_unit_code": "171100120400"
+      },
+      "id": "USGS-12119850",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-122.165122474385, 47.6020439475323]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_number": "12119900",
+        "monitoring_location_name": "SUNSET CREEK AT SE 30TH ST NEAR BELLEVUE, WA",
+        "site_type_code": "ST",
+        "altitude": null,
+        "hydrologic_unit_code": "171100120400"
+      },
+      "id": "USGS-12119900",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-122.163455527253, 47.5853774058845]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_number": "12119950",
+        "monitoring_location_name": "WOODRIDGE PARK TRIB OF RICHARDS CR AT BELLEVUE, WA",
+        "site_type_code": "ST",
+        "altitude": null,
+        "hydrologic_unit_code": "171100120400"
+      },
+      "id": "USGS-12119950",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-122.165677885485, 47.592044010917]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_number": "12119990",
+        "monitoring_location_name": "KELSEY CREEK NEAR BELLEVUE, WA",
+        "site_type_code": "ST",
+        "altitude": 110.0,
+        "hydrologic_unit_code": "171100120400"
+      },
+      "id": "USGS-12119990",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-122.164289354222, 47.6167660762667]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_number": "12119995",
+        "monitoring_location_name": "KELSEY CREEK AT KELSEY CREEK PARK NR BELLEVUE, WA",
+        "site_type_code": "ST",
+        "altitude": null,
+        "hydrologic_unit_code": "171100120400"
+      },
+      "id": "USGS-12119995",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-122.16234722222222, 47.603005555555555]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_number": "12120000",
+        "monitoring_location_name": "MERCER CREEK NEAR BELLEVUE, WA",
+        "site_type_code": "ST",
+        "altitude": 16.11,
+        "hydrologic_unit_code": "171100120400"
+      },
+      "id": "USGS-12120000",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-122.180956054426, 47.6028771602191]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_number": "12120003",
+        "monitoring_location_name": "STURTEVANT CREEK NEAR 114TH AVE SE AT BELLEVUE, WA",
+        "site_type_code": "ST",
+        "altitude": 77.0,
+        "hydrologic_unit_code": "171100120400"
+      },
+      "id": "USGS-12120003",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-122.187900661809, 47.6070437496281]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_number": "12120350",
+        "monitoring_location_name": "DENNY CREEK AT KIRKLAND, WA",
+        "site_type_code": "ST",
+        "altitude": 124.0,
+        "hydrologic_unit_code": "171100120400"
+      },
+      "id": "USGS-12120350",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-122.24206666666667, 47.71221666666667]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_number": "12120480",
+        "monitoring_location_name": "JUANITA CREEK AT NE 132ND ST NEAR KIRKLAND, WA",
+        "site_type_code": "ST",
+        "altitude": null,
+        "hydrologic_unit_code": "171100120400"
+      },
+      "id": "USGS-12120480",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-122.203180218948, 47.7187096113631]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_number": "12120490",
+        "monitoring_location_name": "JUANITA CREEK AT JUANITA, WA",
+        "site_type_code": "ST",
+        "altitude": null,
+        "hydrologic_unit_code": "171100120400"
+      },
+      "id": "USGS-12120490",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-122.210957973369, 47.7109318371414]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_number": "12120500",
+        "monitoring_location_name": "JUANITA CREEK NEAR KIRKLAND, WA",
+        "site_type_code": "ST",
+        "altitude": 20.0,
+        "hydrologic_unit_code": "171100120400"
+      },
+      "id": "USGS-12120500",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-122.215402417649, 47.7073207222646]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_number": "12120600",
+        "monitoring_location_name": "ISSAQUAH CREEK NEAR HOBART, WA",
+        "site_type_code": "ST",
+        "altitude": 326.63,
+        "hydrologic_unit_code": "171100120201"
+      },
+      "id": "USGS-12120600",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-122.00509638330466, 47.457297039226525]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_number": "12121000",
+        "monitoring_location_name": "ISSAQUAH CREEK NEAR ISSAQUAH, WA",
+        "site_type_code": "ST",
+        "altitude": 210.0,
+        "hydrologic_unit_code": "171100120201"
+      },
+      "id": "USGS-12121000",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-122.03734040069, 47.4817679367553]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_number": "12121350",
+        "monitoring_location_name": "UNNAMED TRIB TO ISSAQUAH CREEK NEAR ISSAQUAH, WA",
+        "site_type_code": "ST",
+        "altitude": 234.0,
+        "hydrologic_unit_code": "171100120201"
+      },
+      "id": "USGS-12121350",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-122.03945555555555, 47.518966666666664]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_number": "12121500",
+        "monitoring_location_name": "EAST FORK ISSAQUAH CREEK AT ISSAQUAH, WA",
+        "site_type_code": "ST",
+        "altitude": 180.0,
+        "hydrologic_unit_code": "171100120201"
+      },
+      "id": "USGS-12121500",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-122.023452281288, 47.5317678130794]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_number": "12121504",
+        "monitoring_location_name": "E FORK ISSAQUAH CR ABV 3RD AVE NE AT ISSAQUAH, WA",
+        "site_type_code": "ST",
+        "altitude": 117.0,
+        "hydrologic_unit_code": "171100120201"
+      },
+      "id": "USGS-12121504",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-122.030169444444, 47.5324333333333]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_number": "12121510",
+        "monitoring_location_name": "EAST FORK ISSAQUAH CREEK AT MOUTH AT ISSAQUAH, WA",
+        "site_type_code": "ST",
+        "altitude": 76.0,
+        "hydrologic_unit_code": "171100120201"
+      },
+      "id": "USGS-12121510",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-122.037619264755, 47.5353787765333]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_number": "12121565",
+        "monitoring_location_name": "NF ISSAQUAH CREEK NR 229TH AVE SE AT ISSAQUAH, WA",
+        "site_type_code": "ST",
+        "altitude": 195.0,
+        "hydrologic_unit_code": "171100120201"
+      },
+      "id": "USGS-12121565",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-122.02880833333333, 47.5471]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_number": "12121570",
+        "monitoring_location_name": "NORTH FORK ISSAQUAH CREEK AT ISSAQUAH, WA",
+        "site_type_code": "ST",
+        "altitude": 81.0,
+        "hydrologic_unit_code": "171100120201"
+      },
+      "id": "USGS-12121570",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-122.034833333333, 47.5428194444444]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_number": "12121580",
+        "monitoring_location_name": "NF ISSAQUAH CREEK BLW 224TH AVE SE AT ISSAQUAH, WA",
+        "site_type_code": "ST",
+        "altitude": 57.0,
+        "hydrologic_unit_code": "171100120201"
+      },
+      "id": "USGS-12121580",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-122.042711111111, 47.5465694444444]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_number": "12121600",
+        "monitoring_location_name": "ISSAQUAH CREEK NEAR MOUTH NEAR ISSAQUAH, WA",
+        "site_type_code": "ST",
+        "altitude": 42.84,
+        "hydrologic_unit_code": "171100120201"
+      },
+      "id": "USGS-12121600",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-122.04787763668425, 47.552296578564516]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_number": "12121699",
+        "monitoring_location_name": "TIBBETTS CREEK AT SE NEWPORT WAY NEAR ISSAQUAH, WA",
+        "site_type_code": "ST",
+        "altitude": null,
+        "hydrologic_unit_code": "171100120202"
+      },
+      "id": "USGS-12121699",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-122.063175348683, 47.540100750615]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_number": "12121700",
+        "monitoring_location_name": "TIBBETTS CREEK NEAR ISSAQUAH, WA",
+        "site_type_code": "ST",
+        "altitude": 75.0,
+        "hydrologic_unit_code": "171100120202"
+      },
+      "id": "USGS-12121700",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-122.064286504915, 47.5414896191456]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_number": "12121720",
+        "monitoring_location_name": "LAUGHING JACOBS CREEK NEAR ISSAQUAH, WA",
+        "site_type_code": "ST",
+        "altitude": null,
+        "hydrologic_unit_code": "171100120202"
+      },
+      "id": "USGS-12121720",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-122.052342324348, 47.5656561818046]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_number": "12121745",
+        "monitoring_location_name": "LEWIS CREEK AT 185TH AVE SE NEAR BELLEVUE, WA",
+        "site_type_code": "ST",
+        "altitude": 123.0,
+        "hydrologic_unit_code": "171100120202"
+      },
+      "id": "USGS-12121745",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-122.09369166666666, 47.564611111111105]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_number": "12121750",
+        "monitoring_location_name": "LEWIS CREEK AT 187TH AVE SE NEAR BELLEVUE, WA",
+        "site_type_code": "ST",
+        "altitude": null,
+        "hydrologic_unit_code": "171100120202"
+      },
+      "id": "USGS-12121750",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-122.092620840024, 47.5706558296221]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_number": "12121810",
+        "monitoring_location_name": "PINE LAKE OUTLET NEAR ISSAQUAH, WA",
+        "site_type_code": "ST",
+        "altitude": 375.5,
+        "hydrologic_unit_code": "171100120202"
+      },
+      "id": "USGS-12121810",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-122.053731652756, 47.5873226579177]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_number": "12121812",
+        "monitoring_location_name": "EBRIGHT CREEK AT SAMMAMISH, WA",
+        "site_type_code": "ST",
+        "altitude": 360.0,
+        "hydrologic_unit_code": "171100120202"
+      },
+      "id": "USGS-12121812",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-122.05942222222222, 47.59578611111111]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_number": "12121815",
+        "monitoring_location_name": "PINE LAKE CREEK AT B.N. RR NEAR ISSAQUAH, WA",
+        "site_type_code": "ST",
+        "altitude": null,
+        "hydrologic_unit_code": "171100120202"
+      },
+      "id": "USGS-12121815",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-122.079287870154, 47.6020445720607]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_number": "12121820",
+        "monitoring_location_name": "SAMMAMISH LAKE TRIBUTARY NEAR REDMOND, WA",
+        "site_type_code": "ST",
+        "altitude": null,
+        "hydrologic_unit_code": "171100120202"
+      },
+      "id": "USGS-12121820",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-122.072899000157, 47.6081556805852]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_number": "12121830",
+        "monitoring_location_name": "INGLEWOOD CREEK AT E LK SAMM PKWY NR REDMOND, WA",
+        "site_type_code": "ST",
+        "altitude": null,
+        "hydrologic_unit_code": "171100120202"
+      },
+      "id": "USGS-12121830",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-122.067621280862, 47.6153778822376]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_number": "12122010",
+        "monitoring_location_name": "SAMMAMISH RIVER ABOVE BEAR CREEK NEAR REDMOND, WA",
+        "site_type_code": "ST",
+        "altitude": null,
+        "hydrologic_unit_code": "171100120304"
+      },
+      "id": "USGS-12122010",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-122.115956026297, 47.6575994479038]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_number": "12122390",
+        "monitoring_location_name": "STRUVE CREEK NR 204th PL NE NEAR REDMOND, WA",
+        "site_type_code": "ST",
+        "altitude": 199.0,
+        "hydrologic_unit_code": "171100120301"
+      },
+      "id": "USGS-12122390",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-122.06486388888888, 47.73314444444445]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_number": "12122500",
+        "monitoring_location_name": "BEAR CREEK NEAR REDMOND, WA",
+        "site_type_code": "ST",
+        "altitude": 111.0,
+        "hydrologic_unit_code": "171100120301"
+      },
+      "id": "USGS-12122500",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-122.077345524617, 47.7175992209736]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_number": "12122980",
+        "monitoring_location_name": "COTTAGE LAKE CREEK ABV 187TH AVE NE NR REDMOND, WA",
+        "site_type_code": "ST",
+        "altitude": 235.0,
+        "hydrologic_unit_code": "171100120301"
+      },
+      "id": "USGS-12122980",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-122.09115277777778, 47.745419444444444]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_number": "12123000",
+        "monitoring_location_name": "COTTAGE LAKE CREEK NEAR REDMOND, WA",
+        "site_type_code": "ST",
+        "altitude": 210.0,
+        "hydrologic_unit_code": "171100120301"
+      },
+      "id": "USGS-12123000",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-122.08040147384, 47.7373212695447]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_number": "12123100",
+        "monitoring_location_name": "COTTAGE LAKE CREEK AB BEAR CREEK NEAR REDMOND, WA",
+        "site_type_code": "ST",
+        "altitude": null,
+        "hydrologic_unit_code": "171100120301"
+      },
+      "id": "USGS-12123100",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-122.086512284277, 47.7173213933746]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_number": "12123200",
+        "monitoring_location_name": "BEAR CREEK TRIBUTARY NEAR REDMOND, WA",
+        "site_type_code": "ST",
+        "altitude": null,
+        "hydrologic_unit_code": "171100120301"
+      },
+      "id": "USGS-12123200",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-122.070122903632, 47.7003771786795]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_number": "12123300",
+        "monitoring_location_name": "EVANS CREEK TRIBUTARY NEAR REDMOND, WA",
+        "site_type_code": "ST",
+        "altitude": null,
+        "hydrologic_unit_code": "171100120301"
+      },
+      "id": "USGS-12123300",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-122.047066129121, 47.6512110607433]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_number": "12123500",
+        "monitoring_location_name": "EVANS CREEK NEAR REDMOND, WA",
+        "site_type_code": "ST",
+        "altitude": null,
+        "hydrologic_unit_code": "171100120301"
+      },
+      "id": "USGS-12123500",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-122.080399948507, 47.6539885967099]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_number": "12124000",
+        "monitoring_location_name": "EVANS CREEK (ABOVE MOUTH) NEAR REDMOND, WA",
+        "site_type_code": "ST",
+        "altitude": 50.0,
+        "hydrologic_unit_code": "171100120301"
+      },
+      "id": "USGS-12124000",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-122.08123367843, 47.6750995352761]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_number": "12124490",
+        "monitoring_location_name": "BEAR CREEK AT UNION HILL RD AT REDMOND, WA",
+        "site_type_code": "ST",
+        "altitude": 90.0,
+        "hydrologic_unit_code": "171100100404"
+      },
+      "id": "USGS-12124490",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-122.107155555556, 47.6751333333333]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_number": "12124500",
+        "monitoring_location_name": "BEAR CREEK AT REDMOND, WA",
+        "site_type_code": "ST",
+        "altitude": 30.0,
+        "hydrologic_unit_code": "171100120301"
+      },
+      "id": "USGS-12124500",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-122.109567256879, 47.6692660683832]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_number": "12124998",
+        "monitoring_location_name": "SAMMAMISH RIVER AT REDMOND, WA",
+        "site_type_code": "ST",
+        "altitude": null,
+        "hydrologic_unit_code": "171100120304"
+      },
+      "id": "USGS-12124998",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-122.127623059654, 47.670654832642]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_number": "12125000",
+        "monitoring_location_name": "SAMMAMISH RIVER NEAR REDMOND, WA",
+        "site_type_code": "ST",
+        "altitude": 23.08,
+        "hydrologic_unit_code": "171100120304"
+      },
+      "id": "USGS-12125000",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-122.131789754956, 47.6692659274209]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_number": "12125130",
+        "monitoring_location_name": "PETERS CREEK ABV 151ST AVE NE NEAR REDMOND, WA",
+        "site_type_code": "ST",
+        "altitude": 42.0,
+        "hydrologic_unit_code": "171100120304"
+      },
+      "id": "USGS-12125130",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-122.140569444444, 47.6832194444444]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_number": "12125150",
+        "monitoring_location_name": "UNNAMED TRIB TO WILLOWS CRK NEAR REDMOND, WA",
+        "site_type_code": "ST",
+        "altitude": 81.0,
+        "hydrologic_unit_code": "171100120304"
+      },
+      "id": "USGS-12125150",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-122.151758333333, 47.6859194444444]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_number": "12125200",
+        "monitoring_location_name": "SAMMAMISH RIVER NEAR WOODINVILLE, WA",
+        "site_type_code": "ST",
+        "altitude": null,
+        "hydrologic_unit_code": "171100120304"
+      },
+      "id": "USGS-12125200",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-122.143734896026, 47.7034322775415]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_number": "12125500",
+        "monitoring_location_name": "BEAR CREEK AT WOODINVILLE, WA",
+        "site_type_code": "ST",
+        "altitude": 30.0,
+        "hydrologic_unit_code": "171100120304"
+      },
+      "id": "USGS-12125500",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-122.16512500673, 47.7567651072575]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_number": "12126000",
+        "monitoring_location_name": "NORTH CREEK NEAR BOTHELL, WA",
+        "site_type_code": "ST",
+        "altitude": 70.0,
+        "hydrologic_unit_code": "171100120302"
+      },
+      "id": "USGS-12126000",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-122.197626831647, 47.7914867838164]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_number": "12126050",
+        "monitoring_location_name": "NORTH CREEK NEAR 230TH PL SE NEAR BOTHELL, WA",
+        "site_type_code": "ST",
+        "altitude": 67.0,
+        "hydrologic_unit_code": "171100120302"
+      },
+      "id": "USGS-12126050",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-122.19314722222222, 47.78728888888889]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_number": "12126100",
+        "monitoring_location_name": "NORTH CREEK NEAR WOODINVILLE, WA",
+        "site_type_code": "ST",
+        "altitude": null,
+        "hydrologic_unit_code": "171100120302"
+      },
+      "id": "USGS-12126100",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-122.18818176528, 47.7798203006191]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_number": "12126110",
+        "monitoring_location_name": "NORTH CREEK NR 242ND ST SE NR BOTHELL, WA",
+        "site_type_code": "ST",
+        "altitude": 43.0,
+        "hydrologic_unit_code": "171100120302"
+      },
+      "id": "USGS-12126110",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-122.187830555556, 47.7791305555556]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_number": "12126200",
+        "monitoring_location_name": "NORTH CREEK AT NORTH CREEK PARKWAY NR BOTHELL, WA",
+        "site_type_code": "ST",
+        "altitude": 30.0,
+        "hydrologic_unit_code": "171100120302"
+      },
+      "id": "USGS-12126200",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-122.186514915094, 47.7759314618345]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_number": "12126500",
+        "monitoring_location_name": "SAMMAMISH RIVER AT BOTHELL, WA",
+        "site_type_code": "ST",
+        "altitude": null,
+        "hydrologic_unit_code": "171100120304"
+      },
+      "id": "USGS-12126500",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-122.210958750973, 47.7553759822352]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_number": "12126900",
+        "monitoring_location_name": "SCRIBER CREEK NEAR MOUNTLAKE TERRACE, WA",
+        "site_type_code": "ST",
+        "altitude": null,
+        "hydrologic_unit_code": "171100120303"
+      },
+      "id": "USGS-12126900",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-122.258739342773, 47.7992640568522]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_number": "12126908",
+        "monitoring_location_name": "SWAMP CR BELOW SCRIBER CR NR MOUNTLAKE TERRACE, WA",
+        "site_type_code": "ST",
+        "altitude": null,
+        "hydrologic_unit_code": "171100120303"
+      },
+      "id": "USGS-12126908",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-122.25494166666667, 47.79441111111111]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_number": "12126910",
+        "monitoring_location_name": "SWAMP CREEK NEAR MOUNTLAKE TERRACE, WA",
+        "site_type_code": "ST",
+        "altitude": 161.0,
+        "hydrologic_unit_code": "171100120303"
+      },
+      "id": "USGS-12126910",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-122.256305555556, 47.7922138888889]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_number": "12127000",
+        "monitoring_location_name": "SWAMP CREEK NEAR BOTHELL, WA",
+        "site_type_code": "ST",
+        "altitude": 40.0,
+        "hydrologic_unit_code": "171100120303"
+      },
+      "id": "USGS-12127000",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-122.241515147303, 47.7664867913086]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_number": "12127100",
+        "monitoring_location_name": "SWAMP CREEK AT KENMORE, WA",
+        "site_type_code": "ST",
+        "altitude": 14.46,
+        "hydrologic_unit_code": "171100120303"
+      },
+      "id": "USGS-12127100",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-122.233736786154, 47.7559314073505]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_number": "12127101",
+        "monitoring_location_name": "SWAMP CREEK NEAR KENMORE, WA",
+        "site_type_code": "ST",
+        "altitude": null,
+        "hydrologic_unit_code": "171100120304"
+      },
+      "id": "USGS-12127101",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-122.231792295914, 47.7553758689984]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_number": "12127200",
+        "monitoring_location_name": "LYON CREEK BLW NE 195TH ST NR LAKE FOREST PARK, WA",
+        "site_type_code": "ST",
+        "altitude": 171.0,
+        "hydrologic_unit_code": "171100120400"
+      },
+      "id": "USGS-12127200",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-122.29310833333334, 47.769108333333335]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_number": "12127250",
+        "monitoring_location_name": "LYON CREEK BLW 35TH AVE NE NR LAKE FOREST PARK, WA",
+        "site_type_code": "ST",
+        "altitude": 101.0,
+        "hydrologic_unit_code": "171100120400"
+      },
+      "id": "USGS-12127250",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-122.289672, 47.761028]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_number": "12127290",
+        "monitoring_location_name": "LYON CREEK AT NE 178TH AT LAKE FOREST PARK, WA",
+        "site_type_code": "ST",
+        "altitude": null,
+        "hydrologic_unit_code": "171100120400"
+      },
+      "id": "USGS-12127290",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-122.282071367535, 47.7562089361605]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_number": "12127300",
+        "monitoring_location_name": "LYON CREEK AT LAKE FOREST PARK, WA",
+        "site_type_code": "ST",
+        "altitude": null,
+        "hydrologic_unit_code": "171100120400"
+      },
+      "id": "USGS-12127300",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-122.277626606589, 47.7528756680151]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_number": "12127475",
+        "monitoring_location_name": "MCALEER CREEK ABV 15TH AVE NR LAKE FOREST PARK, WA",
+        "site_type_code": "ST",
+        "altitude": 247.0,
+        "hydrologic_unit_code": "171100120400"
+      },
+      "id": "USGS-12127475",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-122.31425555555555, 47.772958333333335]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_number": "12127480",
+        "monitoring_location_name": "MCALEER CRK BLW PERKINS WY NR LAKE FOREST PARK, WA",
+        "site_type_code": "ST",
+        "altitude": 139.0,
+        "hydrologic_unit_code": "171100120400"
+      },
+      "id": "USGS-12127480",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-122.29976388888889, 47.761672222222224]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_number": "12127500",
+        "monitoring_location_name": "MCALEER CREEK NEAR BOTHELL, WA",
+        "site_type_code": "ST",
+        "altitude": null,
+        "hydrologic_unit_code": "171100120400"
+      },
+      "id": "USGS-12127500",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-122.291516231703, 47.7581533087713]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_number": "12127600",
+        "monitoring_location_name": "MCALEER CREEK AT LAKE FOREST PARK, WA",
+        "site_type_code": "ST",
+        "altitude": 22.5,
+        "hydrologic_unit_code": "171100120400"
+      },
+      "id": "USGS-12127600",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-122.28123778626, 47.7517645541459]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_number": "12127700",
+        "monitoring_location_name": "NF THORNTON CREEK BL GOLF COURSE NEAR SEATTLE, WA",
+        "site_type_code": "ST",
+        "altitude": null,
+        "hydrologic_unit_code": "171100120400"
+      },
+      "id": "USGS-12127700",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-122.314294052719, 47.7250978813701]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_number": "12127750",
+        "monitoring_location_name": "THORNTON CREEK BELOW 19TH AVE NEAR LAKE CITY, WA",
+        "site_type_code": "ST",
+        "altitude": 197.0,
+        "hydrologic_unit_code": "171100120400"
+      },
+      "id": "USGS-12127750",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-122.30506944444444, 47.72173055555556]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_number": "12127800",
+        "monitoring_location_name": "SF THORNTON CREEK AT 30TH AVE NE NEAR SEATTLE, WA",
+        "site_type_code": "ST",
+        "altitude": null,
+        "hydrologic_unit_code": "171100120400"
+      },
+      "id": "USGS-12127800",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-122.29457092983, 47.7067647412393]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_number": "12128000",
+        "monitoring_location_name": "THORNTON CREEK NEAR SEATTLE, WA",
+        "site_type_code": "ST",
+        "altitude": 40.0,
+        "hydrologic_unit_code": "171100120400"
+      },
+      "id": "USGS-12128000",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-122.276236841336, 47.6956537828795]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_number": "12128040",
+        "monitoring_location_name": "PIPERS CREEK AT CARKEEK PARK, AT SEATTLE, WA",
+        "site_type_code": "ST",
+        "altitude": 33.0,
+        "hydrologic_unit_code": "171100190203"
+      },
+      "id": "USGS-12128040",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-122.373462534105, 47.7114865408157]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_number": "12128075",
+        "monitoring_location_name": "BOEING CREEK AT SHORELINE, WA",
+        "site_type_code": "ST",
+        "altitude": 218.0,
+        "hydrologic_unit_code": "171100190203"
+      },
+      "id": "USGS-12128075",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-122.36585, 47.7539694444444]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_number": "12128078",
+        "monitoring_location_name": "BOEING CREEK NR HIDDEN LAKE AT SHORELINE, WA",
+        "site_type_code": "ST",
+        "altitude": 188.0,
+        "hydrologic_unit_code": "171100190203"
+      },
+      "id": "USGS-12128078",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-122.36906388888889, 47.75302222222222]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_number": "12150200",
+        "monitoring_location_name": "TUCK CREEK NEAR DUVALL, WA",
+        "site_type_code": "ST",
+        "altitude": null,
+        "hydrologic_unit_code": null
+      },
+      "id": "USGS-12150200",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-122.0126361111111, 47.74410833333334]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_number": "12150300",
+        "monitoring_location_name": "ADAIR CREEK NEAR DUVALL, WA",
+        "site_type_code": "ST",
+        "altitude": 0.0,
+        "hydrologic_unit_code": "171100100601"
+      },
+      "id": "USGS-12150300",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-122.01416666666667, 47.71404444444445]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_number": "473256122202901",
+        "monitoring_location_name": "24N/04E-19Q02  Duwamish River near Seattle, WA",
+        "site_type_code": "ST-TS",
+        "altitude": 0.0,
+        "hydrologic_unit_code": "171100130305"
+      },
+      "id": "USGS-473256122202901",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-122.34163888888888, 47.54902777777777]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_number": "473430122094100",
+        "monitoring_location_name": "WF RICHARDS CR AT TYEE MID SCHOOL AT BELLEVUE, WA",
+        "site_type_code": "ST",
+        "altitude": null,
+        "hydrologic_unit_code": "171100120400"
+      },
+      "id": "USGS-473430122094100",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-122.16145, 47.5750805555556]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_number": "473439122100800",
+        "monitoring_location_name": "EF RICHARDS CR AT FACTORIA BLVD SE AT BELLEVUE, WA",
+        "site_type_code": "ST",
+        "altitude": null,
+        "hydrologic_unit_code": "171100120400"
+      },
+      "id": "USGS-473439122100800",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-122.169161111111, 47.5776805555556]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_number": "473513122094200",
+        "monitoring_location_name": "E FORK RICHARDS CR AT SE 26TH ST AT BELLEVUE, WA",
+        "site_type_code": "ST",
+        "altitude": null,
+        "hydrologic_unit_code": "171100120400"
+      },
+      "id": "USGS-473513122094200",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-122.161780555556, 47.5870805555556]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_number": "473542122083001",
+        "monitoring_location_name": "148TH AV SE DET'N BASIN 3 OUTLET AT BELLEVUE, WA",
+        "site_type_code": "ST",
+        "altitude": null,
+        "hydrologic_unit_code": "171100120400"
+      },
+      "id": "USGS-473542122083001",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-122.142899807002, 47.5948219379801]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_number": "473542122095300",
+        "monitoring_location_name": "RICHARDS CR AT BANNERWOOD PARK AT BELLEVUE, WA",
+        "site_type_code": "ST",
+        "altitude": null,
+        "hydrologic_unit_code": "171100120400"
+      },
+      "id": "USGS-473542122095300",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-122.164822222222, 47.5952305555556]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_number": "473544122083001",
+        "monitoring_location_name": "148TH AV SE DET'N BASIN 5 OUTLET AT BELLEVUE, WA",
+        "site_type_code": "ST",
+        "altitude": null,
+        "hydrologic_unit_code": "171100120400"
+      },
+      "id": "USGS-473544122083001",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-122.142899815934, 47.5953774896141]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_number": "473610122105300",
+        "monitoring_location_name": "MERCER CREEK DS OF RR BRIDGE NEAR BELLEVUE, WA",
+        "site_type_code": "ST",
+        "altitude": null,
+        "hydrologic_unit_code": "171100120400"
+      },
+      "id": "USGS-473610122105300",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-122.181613888889, 47.6029083333333]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_number": "473621122095300",
+        "monitoring_location_name": "W FORK KELSEY CR AT SE 4TH PL AT BELLEVUE, WA",
+        "site_type_code": "ST",
+        "altitude": null,
+        "hydrologic_unit_code": "171100120400"
+      },
+      "id": "USGS-473621122095300",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-122.164861111111, 47.6059111111111]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_number": "473710122094200",
+        "monitoring_location_name": "KELSEY CR AT 134TH AVE NE AT BELLEVUE, WA",
+        "site_type_code": "ST",
+        "altitude": null,
+        "hydrologic_unit_code": "171100120400"
+      },
+      "id": "USGS-473710122094200",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-122.161688888889, 47.6195638888889]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_number": "473727122091200",
+        "monitoring_location_name": "KELSEY CR AT 140TH AVE NE AT BELLEVUE, WA",
+        "site_type_code": "ST",
+        "altitude": null,
+        "hydrologic_unit_code": "171100120400"
+      },
+      "id": "USGS-473727122091200",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-122.153480555556, 47.6241888888889]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_number": "473754122100200",
+        "monitoring_location_name": "W TRIB TO KELSEY CR AT NE 24TH ST AT BELLEVUE, WA",
+        "site_type_code": "ST",
+        "altitude": null,
+        "hydrologic_unit_code": "171100120400"
+      },
+      "id": "USGS-473754122100200",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-122.167391666667, 47.631775]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_number": "473805122090900",
+        "monitoring_location_name": "E TRIB TO KELSEY CR AT NE 26TH ST AT BELLEVUE, WA",
+        "site_type_code": "ST",
+        "altitude": null,
+        "hydrologic_unit_code": "171100120400"
+      },
+      "id": "USGS-473805122090900",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-122.152680555556, 47.63475]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_number": "473945122072401",
+        "monitoring_location_name": "SAMMAMISH RIVER AT MARYMOOR PARK BRIDGE",
+        "site_type_code": "ST",
+        "altitude": null,
+        "hydrologic_unit_code": "171100120304"
+      },
+      "id": "USGS-473945122072401",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-122.124567326889, 47.6623215795749]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_number": "474006122073601",
+        "monitoring_location_name": "SAMMAMISH RIVER BELOW BEAR CREEK",
+        "site_type_code": "ST",
+        "altitude": null,
+        "hydrologic_unit_code": "171100120304"
+      },
+      "id": "USGS-474006122073601",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-122.127900799334, 47.6681548490525]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_number": "474025122114500",
+        "monitoring_location_name": "EVEREST CREEK AT 6TH ST S NEAR KIRKLAND, WA",
+        "site_type_code": "ST",
+        "altitude": 167.0,
+        "hydrologic_unit_code": "171100120400"
+      },
+      "id": "USGS-474025122114500",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-122.19591111111112, 47.67353611111111]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_number": "474057122075201",
+        "monitoring_location_name": "SAMMAMISH RIVER AT 90TH STREET BRIDGE",
+        "site_type_code": "ST",
+        "altitude": null,
+        "hydrologic_unit_code": "171100120304"
+      },
+      "id": "USGS-474057122075201",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-122.132345532235, 47.6823213853843]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_number": "474216122083101",
+        "monitoring_location_name": "SAMMAMISH RIVER AT 116TH STREET BRIDGE",
+        "site_type_code": "ST",
+        "altitude": null,
+        "hydrologic_unit_code": "171100120304"
+      },
+      "id": "USGS-474216122083101",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-122.143179347641, 47.7042656082564]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_number": "474242122083001",
+        "monitoring_location_name": "SAMMAMISH RIVER AT 124TH STREET BRIDGE",
+        "site_type_code": "ST",
+        "altitude": null,
+        "hydrologic_unit_code": "171100120304"
+      },
+      "id": "USGS-474242122083001",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-122.142901682887, 47.7114877811259]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_number": "474243122083001",
+        "monitoring_location_name": "SAMMAMISH RIVER IRRIGATION RETURN AT 124TH STREET",
+        "site_type_code": "ST",
+        "altitude": null,
+        "hydrologic_unit_code": "171100120304"
+      },
+      "id": "USGS-474243122083001",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-122.142901687354, 47.7117655569429]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_number": "474313122072700",
+        "monitoring_location_name": "UNNAMED TRIB. BELOW NE 135TH ST NEAR AVONDALE, WA",
+        "site_type_code": "ST",
+        "altitude": 207.0,
+        "hydrologic_unit_code": "171100120304"
+      },
+      "id": "USGS-474313122072700",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-122.124275, 47.72020555555556]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_number": "474358122084001",
+        "monitoring_location_name": "SAMMAMISH RIVER IRRIGATION RETURN AT 145TH STREET",
+        "site_type_code": "ST-DCH",
+        "altitude": null,
+        "hydrologic_unit_code": "171100120304"
+      },
+      "id": "USGS-474358122084001",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-122.14567982833, 47.7325987280397]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_number": "474359122084001",
+        "monitoring_location_name": "SAMMAMISH RIVER AT 145TH STREET BRIDGE",
+        "site_type_code": "ST",
+        "altitude": null,
+        "hydrologic_unit_code": "171100120304"
+      },
+      "id": "USGS-474359122084001",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-122.145679832769, 47.7328765038674]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_number": "474456122094801",
+        "monitoring_location_name": "SAMMAMISH RIVER BELOW WOODIN CREEK",
+        "site_type_code": "ST",
+        "altitude": null,
+        "hydrologic_unit_code": "171100120304"
+      },
+      "id": "USGS-474456122094801",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-122.164569155732, 47.7487096270516]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_number": "474517122145501",
+        "monitoring_location_name": "SAMMAMISH R. AT BOTHELL LANDING BOAT LAUNCHN BRIDG",
+        "site_type_code": "ST",
+        "altitude": null,
+        "hydrologic_unit_code": "171100120304"
+      },
+      "id": "USGS-474517122145501",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-122.249847994317, 47.7545424479855]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_number": "474518122100801",
+        "monitoring_location_name": "SAMMAMISH RIVER BELOW LITTLE BEAR CREEK",
+        "site_type_code": "ST",
+        "altitude": null,
+        "hydrologic_unit_code": "171100120304"
+      },
+      "id": "USGS-474518122100801",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-122.170124980734, 47.7548206539237]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_number": "474519122114201",
+        "monitoring_location_name": "SAMMAMISH R. AT BOTHELL LANDING BIKE TRAIL BRIDGE",
+        "site_type_code": "ST",
+        "altitude": null,
+        "hydrologic_unit_code": "171100120304"
+      },
+      "id": "USGS-474519122114201",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-122.196236367339, 47.755098287402]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_number": "474733122194601",
+        "monitoring_location_name": "Hall Ck at 228th St SW, Mountlake Terrace, WA",
+        "site_type_code": "ST",
+        "altitude": 290.0,
+        "hydrologic_unit_code": "171100120400"
+      },
+      "id": "USGS-474733122194601",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-122.329472222222, 47.7924444444444]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_number": "474758122194401",
+        "monitoring_location_name": "Hall Ck at 220th St SW, Mountlake Terrace, WA",
+        "site_type_code": "ST",
+        "altitude": 300.0,
+        "hydrologic_unit_code": "171100120400"
+      },
+      "id": "USGS-474758122194401",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-122.329027777778, 47.7993333333333]
+      }
+    }
+  ],
+  "numberReturned": 167,
+  "links": [
+    {
+      "type": "application/geo+json",
+      "rel": "self",
+      "title": "This document as GeoJSON",
+      "href": "https://api.waterdata.usgs.gov/ogcapi/v1/collections/monitoring-locations/items?f=json&bbox=-122.5,47.4,-122.0,47.8&filter-lang=cql2-text&filter=%28site_type_code%3D%27ST%27%20OR%20site_type_code%20LIKE%20%27ST-%25%27%29&properties=monitoring_location_number,monitoring_location_name,site_type_code,altitude,hydrologic_unit_code&limit=50000"
+    },
+    {
+      "rel": "alternate",
+      "type": "application/ld+json",
+      "title": "This document as RDF (JSON-LD)",
+      "href": "https://api.waterdata.usgs.gov/ogcapi/v1/collections/monitoring-locations/items?f=jsonld&bbox=-122.5,47.4,-122.0,47.8&filter-lang=cql2-text&filter=%28site_type_code%3D%27ST%27%20OR%20site_type_code%20LIKE%20%27ST-%25%27%29&properties=monitoring_location_number,monitoring_location_name,site_type_code,altitude,hydrologic_unit_code&limit=50000"
+    },
+    {
+      "type": "text/html",
+      "rel": "alternate",
+      "title": "This document as HTML",
+      "href": "https://api.waterdata.usgs.gov/ogcapi/v1/collections/monitoring-locations/items?f=html&bbox=-122.5,47.4,-122.0,47.8&filter-lang=cql2-text&filter=%28site_type_code%3D%27ST%27%20OR%20site_type_code%20LIKE%20%27ST-%25%27%29&properties=monitoring_location_number,monitoring_location_name,site_type_code,altitude,hydrologic_unit_code&limit=50000"
+    },
+    {
+      "type": "text/csv; charset=utf-8",
+      "rel": "alternate",
+      "title": "This document as CSV",
+      "href": "https://api.waterdata.usgs.gov/ogcapi/v1/collections/monitoring-locations/items?f=csv&bbox=-122.5,47.4,-122.0,47.8&filter-lang=cql2-text&filter=%28site_type_code%3D%27ST%27%20OR%20site_type_code%20LIKE%20%27ST-%25%27%29&properties=monitoring_location_number,monitoring_location_name,site_type_code,altitude,hydrologic_unit_code&limit=50000"
+    },
+    {
+      "type": "application/json",
+      "title": "Monitoring locations",
+      "rel": "collection",
+      "href": "https://api.waterdata.usgs.gov/ogcapi/v1/collections/monitoring-locations"
+    }
+  ],
+  "timeStamp": "2026-11-11T10:06:27.863698Z"
+}

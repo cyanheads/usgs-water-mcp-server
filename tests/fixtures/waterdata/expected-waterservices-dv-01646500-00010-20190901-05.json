@@ -1,0 +1,449 @@
+[
+  {
+    "siteNumber": "01646500",
+    "parameterCd": "00010",
+    "unitCode": "deg C",
+    "statCd": "00001",
+    "statName": "Maximum",
+    "methodDescription": "4.1 ft from riverbed (middle), [Discontinued]",
+    "values": [
+      {
+        "dateTime": "2019-09-01T00:00:00.000",
+        "value": "27.4",
+        "qualifiers": ["A"]
+      },
+      {
+        "dateTime": "2019-09-02T00:00:00.000",
+        "value": "27.9",
+        "qualifiers": ["A"]
+      },
+      {
+        "dateTime": "2019-09-03T00:00:00.000",
+        "value": "27.8",
+        "qualifiers": ["A"]
+      },
+      {
+        "dateTime": "2019-09-04T00:00:00.000",
+        "value": "29.0",
+        "qualifiers": ["A"]
+      },
+      {
+        "dateTime": "2019-09-05T00:00:00.000",
+        "value": "28.1",
+        "qualifiers": ["A"]
+      }
+    ]
+  },
+  {
+    "siteNumber": "01646500",
+    "parameterCd": "00010",
+    "unitCode": "deg C",
+    "statCd": "00001",
+    "statName": "Maximum",
+    "methodDescription": "1.0 ft from riverbed (bottom), [Discontinued]",
+    "values": [
+      {
+        "dateTime": "2019-09-01T00:00:00.000",
+        "value": "27.3",
+        "qualifiers": ["A"]
+      },
+      {
+        "dateTime": "2019-09-02T00:00:00.000",
+        "value": "27.4",
+        "qualifiers": ["A"]
+      },
+      {
+        "dateTime": "2019-09-03T00:00:00.000",
+        "value": "27.4",
+        "qualifiers": ["A"]
+      },
+      {
+        "dateTime": "2019-09-04T00:00:00.000",
+        "value": "28.2",
+        "qualifiers": ["A"]
+      },
+      {
+        "dateTime": "2019-09-05T00:00:00.000",
+        "value": "28.0",
+        "qualifiers": ["A"]
+      }
+    ]
+  },
+  {
+    "siteNumber": "01646500",
+    "parameterCd": "00010",
+    "unitCode": "deg C",
+    "statCd": "00001",
+    "statName": "Maximum",
+    "methodDescription": "7.1 ft from riverbed (top), [Discontinued]",
+    "values": [
+      {
+        "dateTime": "2019-09-01T00:00:00.000",
+        "value": "27.1",
+        "qualifiers": ["A"]
+      },
+      {
+        "dateTime": "2019-09-02T00:00:00.000",
+        "value": "27.3",
+        "qualifiers": ["A"]
+      },
+      {
+        "dateTime": "2019-09-03T00:00:00.000",
+        "value": "27.2",
+        "qualifiers": ["A"]
+      },
+      {
+        "dateTime": "2019-09-04T00:00:00.000",
+        "value": "28.0",
+        "qualifiers": ["A"]
+      },
+      {
+        "dateTime": "2019-09-05T00:00:00.000",
+        "value": "27.9",
+        "qualifiers": ["A"]
+      }
+    ]
+  },
+  {
+    "siteNumber": "01646500",
+    "parameterCd": "00010",
+    "unitCode": "deg C",
+    "statCd": "00001",
+    "statName": "Maximum",
+    "methodDescription": "From multiparameter sonde, [Discontinued]",
+    "values": []
+  },
+  {
+    "siteNumber": "01646500",
+    "parameterCd": "00010",
+    "unitCode": "deg C",
+    "statCd": "00001",
+    "statName": "Maximum",
+    "methodDescription": "From multiparameter sonde",
+    "values": [
+      {
+        "dateTime": "2019-09-01T00:00:00.000",
+        "value": "27.3",
+        "qualifiers": ["A"]
+      },
+      {
+        "dateTime": "2019-09-02T00:00:00.000",
+        "value": "27.9",
+        "qualifiers": ["A"]
+      },
+      {
+        "dateTime": "2019-09-03T00:00:00.000",
+        "value": "27.5",
+        "qualifiers": ["A"]
+      },
+      {
+        "dateTime": "2019-09-04T00:00:00.000",
+        "value": "28.9",
+        "qualifiers": ["A"]
+      },
+      {
+        "dateTime": "2019-09-05T00:00:00.000",
+        "value": "28.0",
+        "qualifiers": ["A"]
+      }
+    ]
+  },
+  {
+    "siteNumber": "01646500",
+    "parameterCd": "00010",
+    "unitCode": "deg C",
+    "statCd": "00002",
+    "statName": "Minimum",
+    "methodDescription": "4.1 ft from riverbed (middle), [Discontinued]",
+    "values": [
+      {
+        "dateTime": "2019-09-01T00:00:00.000",
+        "value": "26.0",
+        "qualifiers": ["A"]
+      },
+      {
+        "dateTime": "2019-09-02T00:00:00.000",
+        "value": "26.1",
+        "qualifiers": ["A"]
+      },
+      {
+        "dateTime": "2019-09-03T00:00:00.000",
+        "value": "26.2",
+        "qualifiers": ["A"]
+      },
+      {
+        "dateTime": "2019-09-04T00:00:00.000",
+        "value": "26.6",
+        "qualifiers": ["A"]
+      },
+      {
+        "dateTime": "2019-09-05T00:00:00.000",
+        "value": "27.2",
+        "qualifiers": ["A"]
+      }
+    ]
+  },
+  {
+    "siteNumber": "01646500",
+    "parameterCd": "00010",
+    "unitCode": "deg C",
+    "statCd": "00002",
+    "statName": "Minimum",
+    "methodDescription": "1.0 ft from riverbed (bottom), [Discontinued]",
+    "values": [
+      {
+        "dateTime": "2019-09-01T00:00:00.000",
+        "value": "25.9",
+        "qualifiers": ["A"]
+      },
+      {
+        "dateTime": "2019-09-02T00:00:00.000",
+        "value": "26.1",
+        "qualifiers": ["A"]
+      },
+      {
+        "dateTime": "2019-09-03T00:00:00.000",
+        "value": "26.2",
+        "qualifiers": ["A"]
+      },
+      {
+        "dateTime": "2019-09-04T00:00:00.000",
+        "value": "26.5",
+        "qualifiers": ["A"]
+      },
+      {
+        "dateTime": "2019-09-05T00:00:00.000",
+        "value": "27.2",
+        "qualifiers": ["A"]
+      }
+    ]
+  },
+  {
+    "siteNumber": "01646500",
+    "parameterCd": "00010",
+    "unitCode": "deg C",
+    "statCd": "00002",
+    "statName": "Minimum",
+    "methodDescription": "7.1 ft from riverbed (top), [Discontinued]",
+    "values": [
+      {
+        "dateTime": "2019-09-01T00:00:00.000",
+        "value": "25.8",
+        "qualifiers": ["A"]
+      },
+      {
+        "dateTime": "2019-09-02T00:00:00.000",
+        "value": "26.0",
+        "qualifiers": ["A"]
+      },
+      {
+        "dateTime": "2019-09-03T00:00:00.000",
+        "value": "26.1",
+        "qualifiers": ["A"]
+      },
+      {
+        "dateTime": "2019-09-04T00:00:00.000",
+        "value": "26.4",
+        "qualifiers": ["A"]
+      },
+      {
+        "dateTime": "2019-09-05T00:00:00.000",
+        "value": "27.1",
+        "qualifiers": ["A"]
+      }
+    ]
+  },
+  {
+    "siteNumber": "01646500",
+    "parameterCd": "00010",
+    "unitCode": "deg C",
+    "statCd": "00002",
+    "statName": "Minimum",
+    "methodDescription": "From multiparameter sonde, [Discontinued]",
+    "values": []
+  },
+  {
+    "siteNumber": "01646500",
+    "parameterCd": "00010",
+    "unitCode": "deg C",
+    "statCd": "00002",
+    "statName": "Minimum",
+    "methodDescription": "From multiparameter sonde",
+    "values": [
+      {
+        "dateTime": "2019-09-01T00:00:00.000",
+        "value": "25.9",
+        "qualifiers": ["A"]
+      },
+      {
+        "dateTime": "2019-09-02T00:00:00.000",
+        "value": "26.1",
+        "qualifiers": ["A"]
+      },
+      {
+        "dateTime": "2019-09-03T00:00:00.000",
+        "value": "26.2",
+        "qualifiers": ["A"]
+      },
+      {
+        "dateTime": "2019-09-04T00:00:00.000",
+        "value": "26.5",
+        "qualifiers": ["A"]
+      },
+      {
+        "dateTime": "2019-09-05T00:00:00.000",
+        "value": "27.2",
+        "qualifiers": ["A"]
+      }
+    ]
+  },
+  {
+    "siteNumber": "01646500",
+    "parameterCd": "00010",
+    "unitCode": "deg C",
+    "statCd": "00003",
+    "statName": "Mean",
+    "methodDescription": "4.1 ft from riverbed (middle), [Discontinued]",
+    "values": [
+      {
+        "dateTime": "2019-09-01T00:00:00.000",
+        "value": "26.7",
+        "qualifiers": ["A"]
+      },
+      {
+        "dateTime": "2019-09-02T00:00:00.000",
+        "value": "27.0",
+        "qualifiers": ["A"]
+      },
+      {
+        "dateTime": "2019-09-03T00:00:00.000",
+        "value": "27.0",
+        "qualifiers": ["A"]
+      },
+      {
+        "dateTime": "2019-09-04T00:00:00.000",
+        "value": "27.7",
+        "qualifiers": ["A"]
+      },
+      {
+        "dateTime": "2019-09-05T00:00:00.000",
+        "value": "27.7",
+        "qualifiers": ["A"]
+      }
+    ]
+  },
+  {
+    "siteNumber": "01646500",
+    "parameterCd": "00010",
+    "unitCode": "deg C",
+    "statCd": "00003",
+    "statName": "Mean",
+    "methodDescription": "1.0 ft from riverbed (bottom), [Discontinued]",
+    "values": [
+      {
+        "dateTime": "2019-09-01T00:00:00.000",
+        "value": "26.6",
+        "qualifiers": ["A"]
+      },
+      {
+        "dateTime": "2019-09-02T00:00:00.000",
+        "value": "26.7",
+        "qualifiers": ["A"]
+      },
+      {
+        "dateTime": "2019-09-03T00:00:00.000",
+        "value": "26.8",
+        "qualifiers": ["A"]
+      },
+      {
+        "dateTime": "2019-09-04T00:00:00.000",
+        "value": "27.2",
+        "qualifiers": ["A"]
+      },
+      {
+        "dateTime": "2019-09-05T00:00:00.000",
+        "value": "27.6",
+        "qualifiers": ["A"]
+      }
+    ]
+  },
+  {
+    "siteNumber": "01646500",
+    "parameterCd": "00010",
+    "unitCode": "deg C",
+    "statCd": "00003",
+    "statName": "Mean",
+    "methodDescription": "7.1 ft from riverbed (top), [Discontinued]",
+    "values": [
+      {
+        "dateTime": "2019-09-01T00:00:00.000",
+        "value": "26.5",
+        "qualifiers": ["A"]
+      },
+      {
+        "dateTime": "2019-09-02T00:00:00.000",
+        "value": "26.6",
+        "qualifiers": ["A"]
+      },
+      {
+        "dateTime": "2019-09-03T00:00:00.000",
+        "value": "26.6",
+        "qualifiers": ["A"]
+      },
+      {
+        "dateTime": "2019-09-04T00:00:00.000",
+        "value": "27.1",
+        "qualifiers": ["A"]
+      },
+      {
+        "dateTime": "2019-09-05T00:00:00.000",
+        "value": "27.5",
+        "qualifiers": ["A"]
+      }
+    ]
+  },
+  {
+    "siteNumber": "01646500",
+    "parameterCd": "00010",
+    "unitCode": "deg C",
+    "statCd": "00003",
+    "statName": "Mean",
+    "methodDescription": "From multiparameter sonde, [Discontinued]",
+    "values": []
+  },
+  {
+    "siteNumber": "01646500",
+    "parameterCd": "00010",
+    "unitCode": "deg C",
+    "statCd": "00003",
+    "statName": "Mean",
+    "methodDescription": "From multiparameter sonde",
+    "values": [
+      {
+        "dateTime": "2019-09-01T00:00:00.000",
+        "value": "26.6",
+        "qualifiers": ["A"]
+      },
+      {
+        "dateTime": "2019-09-02T00:00:00.000",
+        "value": "26.9",
+        "qualifiers": ["A"]
+      },
+      {
+        "dateTime": "2019-09-03T00:00:00.000",
+        "value": "26.9",
+        "qualifiers": ["A"]
+      },
+      {
+        "dateTime": "2019-09-04T00:00:00.000",
+        "value": "27.6",
+        "qualifiers": ["A"]
+      },
+      {
+        "dateTime": "2019-09-05T00:00:00.000",
+        "value": "27.6",
+        "qualifiers": ["A"]
+      }
+    ]
+  }
+]

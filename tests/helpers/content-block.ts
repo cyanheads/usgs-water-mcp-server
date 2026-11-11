@@ -13,3 +13,8 @@ export function textContent(block: ContentBlock | undefined): string {
 
   return block.text;
 }
+
+/** The text of every text block in a tool result's `content[]`, joined. */
+export function allText(content: readonly { type: string; text?: string }[]): string {
+  return content.map((block) => (block.type === 'text' ? (block.text ?? '') : '')).join('\n');
+}

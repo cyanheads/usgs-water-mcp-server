@@ -1,0 +1,51 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-77.12763889, 38.94977778]
+      },
+      "properties": {
+        "monitoring_location_id": "USGS-01646500",
+        "monitoring_location_name": "POTOMAC RIVER NEAR WASH, DC LITTLE FALLS PUMP STA",
+        "site_type": "Stream",
+        "site_type_code": "ST",
+        "country_code": "US",
+        "state_code": "24",
+        "county_code": "031",
+        "data": [
+          {
+            "parameter_code": "00060",
+            "unit_of_measure": "ft^3/s",
+            "parent_time_series_id": "2cf409b0d9694c01828f5d4ff14586a5",
+            "parent_statistic_id": "00003",
+            "parent_statistic_name": "Mean",
+            "values": [
+              {
+                "time_of_year": "02-29",
+                "time_of_year_type": "day_of_year",
+                "values": [
+                  "3967.5",
+                  "6145.0",
+                  "9655.0",
+                  "14000.0",
+                  "29500.0",
+                  "53350.0",
+                  "102750.0"
+                ],
+                "percentiles": ["5", "10", "25", "50", "75", "90", "95"],
+                "sample_count": 24,
+                "approval_status": "approved",
+                "computation_id": "c1afcd73-bfa0-49f1-a294-33664280cc6c",
+                "computation": "percentile"
+              }
+            ]
+          }
+        ]
+      }
+    }
+  ],
+  "next": null
+}

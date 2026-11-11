@@ -6,17 +6,19 @@
  */
 
 import { type Context, z } from '@cyanheads/mcp-ts-core';
-import { serviceUnavailable } from '@cyanheads/mcp-ts-core/errors';
-import { fetchWithTimeout } from '@cyanheads/mcp-ts-core/utils';
-import { getServerConfig } from '@/config/server-config.js';
+import { JsonRpcErrorCode, McpError, serviceUnavailable } from '@cyanheads/mcp-ts-core/errors';
 import { CURATED_PARAMETERS, type CuratedParameter } from './curated-parameters.js';
+import { startDeadline } from './request-deadline.js';
+import { fetchOgcItems } from './water-data-client.js';
 
 /**
- * First page of the catalog. `limit` exceeds the collection size, so one page normally holds
- * every record; `properties` trims each record to the three fields the search reads.
+ * The catalog query. `limit` exceeds the collection size, so one page normally holds every record;
+ * `properties` trims each record to the three fields the search reads.
  */
-const CATALOG_URL =
-  'https://api.waterdata.usgs.gov/ogcapi/v1/collections/parameter-codes/items?f=json&limit=50000&properties=parameter_name,unit_of_measure,parameter_description';
+const CATALOG_QUERY = new URLSearchParams({
+  limit: '50000',
+  properties: 'parameter_name,unit_of_measure,parameter_description',
+});
 
 /** How long a fetched catalog is served before the next read refetches — upstream's `max-age`. */
 const CACHE_TTL_MS = 24 * 60 * 60 * 1000;
@@ -38,19 +40,14 @@ export type ParameterEntry =
   | (CuratedParameter & { source: 'curated' })
   | (CatalogParameter & { source: 'usgs-catalog' });
 
-/** The fields of one catalog page this reader relies on. */
-const CatalogPageSchema = z.object({
-  features: z.array(
-    z.object({
-      id: z.string(),
-      properties: z.object({
-        parameter_name: z.string().nullish(),
-        unit_of_measure: z.string().nullish(),
-        parameter_description: z.string().nullish(),
-      }),
-    }),
-  ),
-  links: z.array(z.object({ rel: z.string(), href: z.string() })).optional(),
+/** The fields of one catalog record this reader relies on. */
+const CatalogFeatureSchema = z.object({
+  id: z.string(),
+  properties: z.object({
+    parameter_name: z.string().nullish(),
+    unit_of_measure: z.string().nullish(),
+    parameter_description: z.string().nullish(),
+  }),
 });
 
 let cache: { catalog: readonly CatalogParameter[]; fetchedAt: number } | undefined;
@@ -61,7 +58,9 @@ let inFlight: Promise<readonly CatalogParameter[]> | undefined;
  * younger than 24 hours; otherwise fetched, with concurrent callers sharing one fetch. A failed
  * fetch is never cached, so the next call tries again.
  *
- * @throws {McpError} `ServiceUnavailable` when any page fails, times out, or is not a catalog page.
+ * @throws {McpError} `ServiceUnavailable` when any page fails, runs out of its 45-second budget,
+ * or is not a catalog page; a rate limit (`RateLimited`) and a rejected `USGS_API_KEY`
+ * (`ConfigurationError`) pass through unchanged.
  */
 export function getParameterCatalog(ctx: Context): Promise<readonly CatalogParameter[]> {
   if (cache && Date.now() - cache.fetchedAt < CACHE_TTL_MS) return Promise.resolve(cache.catalog);
@@ -85,38 +84,40 @@ function decodeAngleBrackets(text: string): string {
 }
 
 /**
- * Read every catalog page, following `next` links. The shared fetch carries no caller's abort
- * signal — one caller cancelling must not fail the others waiting on it — so the configured
- * timeout alone bounds each page.
+ * Read every catalog page, following `next` links, under a budget of its own. The shared fetch
+ * carries no caller's abort signal — one caller cancelling must not fail the others waiting on it.
  */
 async function fetchCatalog(ctx: Context): Promise<CatalogParameter[]> {
-  const cfg = getServerConfig();
-  const records: CatalogParameter[] = [];
-  let url: string | undefined = CATALOG_URL;
+  let features: z.infer<typeof CatalogFeatureSchema>[];
   try {
-    while (url) {
-      const response = await fetchWithTimeout(url, cfg.requestTimeoutMs, ctx, {
-        headers: { 'User-Agent': cfg.userAgent, Accept: 'application/json' },
-      });
-      const page = CatalogPageSchema.parse(await response.json());
-      for (const { id, properties: p } of page.features) {
-        records.push({
-          code: id,
-          name: decodeAngleBrackets(p.parameter_name ?? ''),
-          unit: decodeAngleBrackets(p.unit_of_measure ?? ''),
-          description: decodeAngleBrackets(p.parameter_description ?? ''),
-        });
-      }
-      url = page.links?.find((link) => link.rel === 'next')?.href;
-    }
+    features = await fetchOgcItems('parameter-codes', CATALOG_QUERY, CatalogFeatureSchema, {
+      ctx,
+      deadline: startDeadline(),
+      operation: 'getParameterCatalog',
+      signal: undefined,
+    });
   } catch (err: unknown) {
+    // The rate-limit wait and the key fix are the caller's to act on — keep them as raised.
+    if (
+      err instanceof McpError &&
+      (err.code === JsonRpcErrorCode.RateLimited ||
+        err.code === JsonRpcErrorCode.ConfigurationError)
+    ) {
+      throw err;
+    }
     const detail = err instanceof Error ? err.message : String(err);
     throw serviceUnavailable(
       `The USGS parameter-code catalog could not be read: ${detail}`,
-      { url },
+      undefined,
       { cause: err },
     );
   }
+  const records = features.map(({ id, properties: p }) => ({
+    code: id,
+    name: decodeAngleBrackets(p.parameter_name ?? ''),
+    unit: decodeAngleBrackets(p.unit_of_measure ?? ''),
+    description: decodeAngleBrackets(p.parameter_description ?? ''),
+  }));
   ctx.log.debug('Parameter-code catalog fetched', { records: records.length });
   return records.sort((a, b) => a.code.localeCompare(b.code));
 }

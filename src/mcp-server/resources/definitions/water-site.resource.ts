@@ -1,18 +1,21 @@
 /**
- * @fileoverview Resource definition for a single USGS monitoring site by site number.
- * Stable URI for site metadata including name, coordinates, type, HUC, state, county, and altitude.
+ * @fileoverview Resource definition for a single USGS monitoring site by site number, whichever
+ * agency holds it. Stable URI for site metadata including name, coordinates, type, HUC, state,
+ * county, and altitude.
  * @module mcp-server/resources/definitions/water-site.resource
  */
 
 import { resource, z } from '@cyanheads/mcp-ts-core';
 import { JsonRpcErrorCode } from '@cyanheads/mcp-ts-core/errors';
-import { SiteNumberSchema } from '@/services/nwis/input-schemas.js';
-import { classifyNwisFailure, getSiteInfo } from '@/services/nwis/nwis-service.js';
+import { SiteNumberSchema } from '@/services/waterdata/input-schemas.js';
+import { getSite } from '@/services/waterdata/site-discovery.js';
+import { startRequest } from '@/services/waterdata/water-data-client.js';
+import { classifyWaterDataFailure } from '@/services/waterdata/water-data-errors.js';
 
 export const waterSiteResource = resource('usgs-water://site/{siteId}', {
   name: 'usgs-water-site',
   description:
-    'Site metadata for a USGS monitoring site: name, coordinates, type, HUC watershed code, state, county, drainage area, and altitude. Use water_find_sites to discover site numbers.',
+    'Site metadata for a USGS monitoring site, any agency: name, coordinates, type, HUC watershed code, state, county, drainage area, and altitude. Use water_find_sites to discover site numbers.',
   mimeType: 'application/json',
   params: z.object({
     siteId: SiteNumberSchema.describe('USGS site number (8–15 digits, e.g. "01646500").'),
@@ -22,29 +25,31 @@ export const waterSiteResource = resource('usgs-water://site/{siteId}', {
     {
       reason: 'not_found',
       code: JsonRpcErrorCode.NotFound,
-      when: 'No USGS site exists for the given (well-formed) site number.',
-      recovery: 'Verify the site number with water_find_sites.',
+      when: 'No monitoring location, under any agency, has the given (well-formed) site number.',
+      recovery:
+        'Check the site number with water_get_site_data_catalog — its not_found is authoritative for every agency, and its series show what the site measured.',
     },
     {
       reason: 'invalid_request',
       code: JsonRpcErrorCode.ValidationError,
-      when: 'NWIS rejected the site number. The 8–15 digit format is validated at the resource edge, so this surfaces a well-formed value NWIS still refused.',
+      when: 'The USGS Water Data API refused the query. The 8–15 digit format is validated at the resource edge, so this surfaces a well-formed value the API still refused.',
       recovery:
-        'Read the NWIS message in this error, or verify the site number with water_find_sites.',
+        "Read the API's message in this error, then check the site number with water_get_site_data_catalog.",
       thrownBy: 'service',
     },
     {
       reason: 'upstream_error',
       code: JsonRpcErrorCode.ServiceUnavailable,
-      when: 'NWIS returned a 5xx error.',
-      recovery: 'The USGS service is temporarily unavailable. Retry after a short backoff.',
+      when: 'The USGS Water Data API failed after retries or sent a response this server could not read.',
+      recovery:
+        'A server error usually clears: retry after a short backoff. An error marked not retryable means the upstream sent a response this server cannot read, and the same request will fail again.',
       retryable: true,
       thrownBy: 'service',
     },
     {
       reason: 'upstream_timeout',
       code: JsonRpcErrorCode.Timeout,
-      when: 'The NWIS site request exceeded its deadline.',
+      when: 'The site lookup ran past its 45-second budget.',
       recovery: 'Retry after a short backoff to retrieve the site metadata.',
       retryable: true,
       thrownBy: 'service',
@@ -54,24 +59,21 @@ export const waterSiteResource = resource('usgs-water://site/{siteId}', {
   async handler(params, ctx) {
     ctx.log.info('Fetching site metadata', { siteId: params.siteId });
 
-    let site: Awaited<ReturnType<typeof getSiteInfo>>;
+    let site: Awaited<ReturnType<typeof getSite>>;
     try {
-      site = await getSiteInfo(params.siteId, ctx);
-    } catch (err: unknown) {
-      const failure = classifyNwisFailure(err);
-      if (failure)
-        throw ctx.fail(
-          failure.reason,
-          failure.message,
-          {
-            ...failure.data,
-            ...ctx.recoveryFor(failure.reason),
-          },
-          {
-            cause: err,
-          },
-        );
-      throw err;
+      site = await getSite(params.siteId, startRequest(ctx, 'getSite'));
+    } catch (error: unknown) {
+      if (ctx.signal?.aborted) throw error;
+      // Rate limits and a rejected USGS_API_KEY classify to null and pass through with their own
+      // recovery hints.
+      const failure = classifyWaterDataFailure(error);
+      if (!failure) throw error;
+      throw ctx.fail(
+        failure.reason,
+        failure.message,
+        { ...failure.data, ...ctx.recoveryFor(failure.reason) },
+        { cause: error },
+      );
     }
 
     if (!site) {

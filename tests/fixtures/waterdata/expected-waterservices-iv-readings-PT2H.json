@@ -1,0 +1,2538 @@
+[
+  {
+    "siteNumber": "01115170",
+    "parameterCd": "00010",
+    "unitCode": "deg C",
+    "statCd": "00000",
+    "statName": null,
+    "methodDescription": null,
+    "values": [
+      {
+        "dateTime": "2026-11-11T03:10:00.000-05:00",
+        "value": "12.5",
+        "qualifiers": ["P"]
+      },
+      {
+        "dateTime": "2026-11-11T03:20:00.000-05:00",
+        "value": "12.5",
+        "qualifiers": ["P"]
+      },
+      {
+        "dateTime": "2026-11-11T03:30:00.000-05:00",
+        "value": "12.5",
+        "qualifiers": ["P"]
+      },
+      {
+        "dateTime": "2026-11-11T03:40:00.000-05:00",
+        "value": "12.5",
+        "qualifiers": ["P"]
+      },
+      {
+        "dateTime": "2026-11-11T03:50:00.000-05:00",
+        "value": "12.4",
+        "qualifiers": ["P"]
+      },
+      {
+        "dateTime": "2026-11-11T04:00:00.000-05:00",
+        "value": "12.4",
+        "qualifiers": ["P"]
+      },
+      {
+        "dateTime": "2026-11-11T04:10:00.000-05:00",
+        "value": "12.4",
+        "qualifiers": ["P"]
+      },
+      {
+        "dateTime": "2026-11-11T04:20:00.000-05:00",
+        "value": "12.4",
+        "qualifiers": ["P"]
+      }
+    ]
+  },
+  {
+    "siteNumber": "01115170",
+    "parameterCd": "00020",
+    "unitCode": "deg C",
+    "statCd": "00000",
+    "statName": null,
+    "methodDescription": "Met station",
+    "values": [
+      {
+        "dateTime": "2026-11-11T03:10:00.000-05:00",
+        "value": "8.6",
+        "qualifiers": ["P"]
+      },
+      {
+        "dateTime": "2026-11-11T03:20:00.000-05:00",
+        "value": "8.5",
+        "qualifiers": ["P"]
+      },
+      {
+        "dateTime": "2026-11-11T03:30:00.000-05:00",
+        "value": "8.2",
+        "qualifiers": ["P"]
+      },
+      {
+        "dateTime": "2026-11-11T03:40:00.000-05:00",
+        "value": "7.9",
+        "qualifiers": ["P"]
+      },
+      {
+        "dateTime": "2026-11-11T03:50:00.000-05:00",
+        "value": "7.7",
+        "qualifiers": ["P"]
+      },
+      {
+        "dateTime": "2026-11-11T04:00:00.000-05:00",
+        "value": "7.2",
+        "qualifiers": ["P"]
+      },
+      {
+        "dateTime": "2026-11-11T04:10:00.000-05:00",
+        "value": "7.1",
+        "qualifiers": ["P"]
+      },
+      {
+        "dateTime": "2026-11-11T04:20:00.000-05:00",
+        "value": "6.9",
+        "qualifiers": ["P"]
+      }
+    ]
+  },
+  {
+    "siteNumber": "01115170",
+    "parameterCd": "00045",
+    "unitCode": "in",
+    "statCd": "00000",
+    "statName": null,
+    "methodDescription": "Met station",
+    "values": [
+      {
+        "dateTime": "2026-11-11T03:10:00.000-05:00",
+        "value": "0.00",
+        "qualifiers": ["P"]
+      },
+      {
+        "dateTime": "2026-11-11T03:20:00.000-05:00",
+        "value": "0.00",
+        "qualifiers": ["P"]
+      },
+      {
+        "dateTime": "2026-11-11T03:30:00.000-05:00",
+        "value": "0.00",
+        "qualifiers": ["P"]
+      },
+      {
+        "dateTime": "2026-11-11T03:40:00.000-05:00",
+        "value": "0.00",
+        "qualifiers": ["P"]
+      },
+      {
+        "dateTime": "2026-11-11T03:50:00.000-05:00",
+        "value": "0.00",
+        "qualifiers": ["P"]
+      },
+      {
+        "dateTime": "2026-11-11T04:00:00.000-05:00",
+        "value": "0.00",
+        "qualifiers": ["P"]
+      },
+      {
+        "dateTime": "2026-11-11T04:10:00.000-05:00",
+        "value": "0.00",
+        "qualifiers": ["P"]
+      },
+      {
+        "dateTime": "2026-11-11T04:20:00.000-05:00",
+        "value": "0.00",
+        "qualifiers": ["P"]
+      }
+    ]
+  },
+  {
+    "siteNumber": "01115170",
+    "parameterCd": "00060",
+    "unitCode": "ft3/s",
+    "statCd": "00000",
+    "statName": null,
+    "methodDescription": null,
+    "values": [
+      {
+        "dateTime": "2026-11-11T03:10:00.000-05:00",
+        "value": "8.30",
+        "qualifiers": ["P"]
+      },
+      {
+        "dateTime": "2026-11-11T03:20:00.000-05:00",
+        "value": "8.25",
+        "qualifiers": ["P"]
+      },
+      {
+        "dateTime": "2026-11-11T03:30:00.000-05:00",
+        "value": "8.21",
+        "qualifiers": ["P"]
+      },
+      {
+        "dateTime": "2026-11-11T03:40:00.000-05:00",
+        "value": "8.14",
+        "qualifiers": ["P"]
+      },
+      {
+        "dateTime": "2026-11-11T03:50:00.000-05:00",
+        "value": "8.21",
+        "qualifiers": ["P"]
+      },
+      {
+        "dateTime": "2026-11-11T04:00:00.000-05:00",
+        "value": "8.14",
+        "qualifiers": ["P"]
+      },
+      {
+        "dateTime": "2026-11-11T04:10:00.000-05:00",
+        "value": "7.99",
+        "qualifiers": ["P"]
+      },
+      {
+        "dateTime": "2026-11-11T04:20:00.000-05:00",
+        "value": "8.10",
+        "qualifiers": ["P"]
+      }
+    ]
+  },
+  {
+    "siteNumber": "01115170",
+    "parameterCd": "00065",
+    "unitCode": "ft",
+    "statCd": "00000",
+    "statName": null,
+    "methodDescription": null,
+    "values": [
+      {
+        "dateTime": "2026-11-11T03:10:00.000-05:00",
+        "value": "0.91",
+        "qualifiers": ["P"]
+      },
+      {
+        "dateTime": "2026-11-11T03:20:00.000-05:00",
+        "value": "0.90",
+        "qualifiers": ["P"]
+      },
+      {
+        "dateTime": "2026-11-11T03:30:00.000-05:00",
+        "value": "0.90",
+        "qualifiers": ["P"]
+      },
+      {
+        "dateTime": "2026-11-11T03:40:00.000-05:00",
+        "value": "0.90",
+        "qualifiers": ["P"]
+      },
+      {
+        "dateTime": "2026-11-11T03:50:00.000-05:00",
+        "value": "0.90",
+        "qualifiers": ["P"]
+      },
+      {
+        "dateTime": "2026-11-11T04:00:00.000-05:00",
+        "value": "0.90",
+        "qualifiers": ["P"]
+      },
+      {
+        "dateTime": "2026-11-11T04:10:00.000-05:00",
+        "value": "0.89",
+        "qualifiers": ["P"]
+      },
+      {
+        "dateTime": "2026-11-11T04:20:00.000-05:00",
+        "value": "0.90",
+        "qualifiers": ["P"]
+      }
+    ]
+  },
+  {
+    "siteNumber": "01115170",
+    "parameterCd": "00095",
+    "unitCode": "uS/cm @25C",
+    "statCd": "00000",
+    "statName": null,
+    "methodDescription": null,
+    "values": [
+      {
+        "dateTime": "2026-11-11T03:10:00.000-05:00",
+        "value": "219",
+        "qualifiers": ["P"]
+      },
+      {
+        "dateTime": "2026-11-11T03:20:00.000-05:00",
+        "value": "219",
+        "qualifiers": ["P"]
+      },
+      {
+        "dateTime": "2026-11-11T03:30:00.000-05:00",
+        "value": "219",
+        "qualifiers": ["P"]
+      },
+      {
+        "dateTime": "2026-11-11T03:40:00.000-05:00",
+        "value": "219",
+        "qualifiers": ["P"]
+      },
+      {
+        "dateTime": "2026-11-11T03:50:00.000-05:00",
+        "value": "219",
+        "qualifiers": ["P"]
+      },
+      {
+        "dateTime": "2026-11-11T04:00:00.000-05:00",
+        "value": "219",
+        "qualifiers": ["P"]
+      },
+      {
+        "dateTime": "2026-11-11T04:10:00.000-05:00",
+        "value": "220",
+        "qualifiers": ["P"]
+      },
+      {
+        "dateTime": "2026-11-11T04:20:00.000-05:00",
+        "value": "219",
+        "qualifiers": ["P"]
+      }
+    ]
+  },
+  {
+    "siteNumber": "01115170",
+    "parameterCd": "72198",
+    "unitCode": "ft",
+    "statCd": "00000",
+    "statName": null,
+    "methodDescription": "Met station",
+    "values": [
+      {
+        "dateTime": "2026-11-11T03:10:00.000-05:00",
+        "value": "0.010",
+        "qualifiers": ["P", "<"]
+      },
+      {
+        "dateTime": "2026-11-11T03:20:00.000-05:00",
+        "value": "0.010",
+        "qualifiers": ["P", "<"]
+      },
+      {
+        "dateTime": "2026-11-11T03:30:00.000-05:00",
+        "value": "0.010",
+        "qualifiers": ["P", "<"]
+      },
+      {
+        "dateTime": "2026-11-11T03:40:00.000-05:00",
+        "value": "0.010",
+        "qualifiers": ["P", "<"]
+      },
+      {
+        "dateTime": "2026-11-11T03:50:00.000-05:00",
+        "value": "0.010",
+        "qualifiers": ["P", "<"]
+      },
+      {
+        "dateTime": "2026-11-11T04:00:00.000-05:00",
+        "value": "0.010",
+        "qualifiers": ["P", "<"]
+      },
+      {
+        "dateTime": "2026-11-11T04:10:00.000-05:00",
+        "value": "0.010",
+        "qualifiers": ["P", "<"]
+      },
+      {
+        "dateTime": "2026-11-11T04:20:00.000-05:00",
+        "value": "0.010",
+        "qualifiers": ["P", "<"]
+      }
+    ]
+  },
+  {
+    "siteNumber": "01115170",
+    "parameterCd": "74207",
+    "unitCode": "%",
+    "statCd": "00000",
+    "statName": null,
+    "methodDescription": "Met station, [4 in below ground surface A]",
+    "values": []
+  },
+  {
+    "siteNumber": "01646500",
+    "parameterCd": "00010",
+    "unitCode": "deg C",
+    "statCd": "00000",
+    "statName": null,
+    "methodDescription": "4.1 ft from riverbed (middle), [Discontinued]",
+    "values": []
+  },
+  {
+    "siteNumber": "01646500",
+    "parameterCd": "00010",
+    "unitCode": "deg C",
+    "statCd": "00000",
+    "statName": null,
+    "methodDescription": "1.0 ft from riverbed (bottom), [Discontinued]",
+    "values": []
+  },
+  {
+    "siteNumber": "01646500",
+    "parameterCd": "00010",
+    "unitCode": "deg C",
+    "statCd": "00000",
+    "statName": null,
+    "methodDescription": "7.1 ft from riverbed (top), [Discontinued]",
+    "values": []
+  },
+  {
+    "siteNumber": "01646500",
+    "parameterCd": "00010",
+    "unitCode": "deg C",
+    "statCd": "00000",
+    "statName": null,
+    "methodDescription": "From multiparameter sonde, [Discontinued]",
+    "values": []
+  },
+  {
+    "siteNumber": "01646500",
+    "parameterCd": "00010",
+    "unitCode": "deg C",
+    "statCd": "00000",
+    "statName": null,
+    "methodDescription": "From multiparameter sonde",
+    "values": [
+      {
+        "dateTime": "2026-11-11T03:10:00.000-05:00",
+        "value": "13.6",
+        "qualifiers": ["P"]
+      },
+      {
+        "dateTime": "2026-11-11T03:15:00.000-05:00",
+        "value": "13.4",
+        "qualifiers": ["P"]
+      },
+      {
+        "dateTime": "2026-11-11T03:20:00.000-05:00",
+        "value": "13.6",
+        "qualifiers": ["P"]
+      },
+      {
+        "dateTime": "2026-11-11T03:25:00.000-05:00",
+        "value": "13.4",
+        "qualifiers": ["P"]
+      },
+      {
+        "dateTime": "2026-11-11T03:30:00.000-05:00",
+        "value": "13.4",
+        "qualifiers": ["P"]
+      },
+      {
+        "dateTime": "2026-11-11T03:35:00.000-05:00",
+        "value": "13.4",
+        "qualifiers": ["P"]
+      },
+      {
+        "dateTime": "2026-11-11T03:40:00.000-05:00",
+        "value": "13.5",
+        "qualifiers": ["P"]
+      },
+      {
+        "dateTime": "2026-11-11T03:45:00.000-05:00",
+        "value": "13.5",
+        "qualifiers": ["P"]
+      },
+      {
+        "dateTime": "2026-11-11T03:50:00.000-05:00",
+        "value": "13.5",
+        "qualifiers": ["P"]
+      },
+      {
+        "dateTime": "2026-11-11T03:55:00.000-05:00",
+        "value": "13.4",
+        "qualifiers": ["P"]
+      },
+      {
+        "dateTime": "2026-11-11T04:00:00.000-05:00",
+        "value": "13.5",
+        "qualifiers": ["P"]
+      },
+      {
+        "dateTime": "2026-11-11T04:05:00.000-05:00",
+        "value": "13.5",
+        "qualifiers": ["P"]
+      },
+      {
+        "dateTime": "2026-11-11T04:10:00.000-05:00",
+        "value": "13.4",
+        "qualifiers": ["P"]
+      },
+      {
+        "dateTime": "2026-11-11T04:15:00.000-05:00",
+        "value": "13.4",
+        "qualifiers": ["P"]
+      },
+      {
+        "dateTime": "2026-11-11T04:20:00.000-05:00",
+        "value": "13.4",
+        "qualifiers": ["P"]
+      },
+      {
+        "dateTime": "2026-11-11T04:25:00.000-05:00",
+        "value": "13.4",
+        "qualifiers": ["P"]
+      },
+      {
+        "dateTime": "2026-11-11T04:30:00.000-05:00",
+        "value": "13.4",
+        "qualifiers": ["P"]
+      },
+      {
+        "dateTime": "2026-11-11T04:35:00.000-05:00",
+        "value": "13.5",
+        "qualifiers": ["P"]
+      },
+      {
+        "dateTime": "2026-11-11T04:40:00.000-05:00",
+        "value": "13.3",
+        "qualifiers": ["P"]
+      },
+      {
+        "dateTime": "2026-11-11T04:45:00.000-05:00",
+        "value": "13.3",
+        "qualifiers": ["P"]
+      },
+      {
+        "dateTime": "2026-11-11T04:50:00.000-05:00",
+        "value": "13.4",
+        "qualifiers": ["P"]
+      }
+    ]
+  },
+  {
+    "siteNumber": "01646500",
+    "parameterCd": "00060",
+    "unitCode": "ft3/s",
+    "statCd": "00000",
+    "statName": null,
+    "methodDescription": null,
+    "values": [
+      {
+        "dateTime": "2026-11-11T03:10:00.000-05:00",
+        "value": "1890",
+        "qualifiers": ["P"]
+      },
+      {
+        "dateTime": "2026-11-11T03:15:00.000-05:00",
+        "value": "1940",
+        "qualifiers": ["P"]
+      },
+      {
+        "dateTime": "2026-11-11T03:20:00.000-05:00",
+        "value": "1940",
+        "qualifiers": ["P"]
+      },
+      {
+        "dateTime": "2026-11-11T03:25:00.000-05:00",
+        "value": "1890",
+        "qualifiers": ["P"]
+      },
+      {
+        "dateTime": "2026-11-11T03:30:00.000-05:00",
+        "value": "1890",
+        "qualifiers": ["P"]
+      },
+      {
+        "dateTime": "2026-11-11T03:35:00.000-05:00",
+        "value": "1890",
+        "qualifiers": ["P"]
+      },
+      {
+        "dateTime": "2026-11-11T03:40:00.000-05:00",
+        "value": "1890",
+        "qualifiers": ["P"]
+      },
+      {
+        "dateTime": "2026-11-11T03:45:00.000-05:00",
+        "value": "1890",
+        "qualifiers": ["P"]
+      },
+      {
+        "dateTime": "2026-11-11T03:50:00.000-05:00",
+        "value": "1890",
+        "qualifiers": ["P"]
+      },
+      {
+        "dateTime": "2026-11-11T03:55:00.000-05:00",
+        "value": "1890",
+        "qualifiers": ["P"]
+      },
+      {
+        "dateTime": "2026-11-11T04:00:00.000-05:00",
+        "value": "1890",
+        "qualifiers": ["P"]
+      },
+      {
+        "dateTime": "2026-11-11T04:05:00.000-05:00",
+        "value": "1940",
+        "qualifiers": ["P"]
+      },
+      {
+        "dateTime": "2026-11-11T04:10:00.000-05:00",
+        "value": "1890",
+        "qualifiers": ["P"]
+      },
+      {
+        "dateTime": "2026-11-11T04:15:00.000-05:00",
+        "value": "1940",
+        "qualifiers": ["P"]
+      },
+      {
+        "dateTime": "2026-11-11T04:20:00.000-05:00",
+        "value": "1890",
+        "qualifiers": ["P"]
+      },
+      {
+        "dateTime": "2026-11-11T04:25:00.000-05:00",
+        "value": "1940",
+        "qualifiers": ["P"]
+      },
+      {
+        "dateTime": "2026-11-11T04:30:00.000-05:00",
+        "value": "1890",
+        "qualifiers": ["P"]
+      },
+      {
+        "dateTime": "2026-11-11T04:35:00.000-05:00",
+        "value": "1890",
+        "qualifiers": ["P"]
+      },
+      {
+        "dateTime": "2026-11-11T04:40:00.000-05:00",
+        "value": "1890",
+        "qualifiers": ["P"]
+      },
+      {
+        "dateTime": "2026-11-11T04:45:00.000-05:00",
+        "value": "1940",
+        "qualifiers": ["P"]
+      },
+      {
+        "dateTime": "2026-11-11T04:50:00.000-05:00",
+        "value": "1940",
+        "qualifiers": ["P"]
+      }
+    ]
+  },
+  {
+    "siteNumber": "01646500",
+    "parameterCd": "00065",
+    "unitCode": "ft",
+    "statCd": "00000",
+    "statName": null,
+    "methodDescription": null,
+    "values": [
+      {
+        "dateTime": "2026-11-11T03:10:00.000-05:00",
+        "value": "2.80",
+        "qualifiers": ["P"]
+      },
+      {
+        "dateTime": "2026-11-11T03:15:00.000-05:00",
+        "value": "2.81",
+        "qualifiers": ["P"]
+      },
+      {
+        "dateTime": "2026-11-11T03:20:00.000-05:00",
+        "value": "2.81",
+        "qualifiers": ["P"]
+      },
+      {
+        "dateTime": "2026-11-11T03:25:00.000-05:00",
+        "value": "2.80",
+        "qualifiers": ["P"]
+      },
+      {
+        "dateTime": "2026-11-11T03:30:00.000-05:00",
+        "value": "2.80",
+        "qualifiers": ["P"]
+      },
+      {
+        "dateTime": "2026-11-11T03:35:00.000-05:00",
+        "value": "2.80",
+        "qualifiers": ["P"]
+      },
+      {
+        "dateTime": "2026-11-11T03:40:00.000-05:00",
+        "value": "2.80",
+        "qualifiers": ["P"]
+      },
+      {
+        "dateTime": "2026-11-11T03:45:00.000-05:00",
+        "value": "2.80",
+        "qualifiers": ["P"]
+      },
+      {
+        "dateTime": "2026-11-11T03:50:00.000-05:00",
+        "value": "2.80",
+        "qualifiers": ["P"]
+      },
+      {
+        "dateTime": "2026-11-11T03:55:00.000-05:00",
+        "value": "2.80",
+        "qualifiers": ["P"]
+      },
+      {
+        "dateTime": "2026-11-11T04:00:00.000-05:00",
+        "value": "2.80",
+        "qualifiers": ["P"]
+      },
+      {
+        "dateTime": "2026-11-11T04:05:00.000-05:00",
+        "value": "2.81",
+        "qualifiers": ["P"]
+      },
+      {
+        "dateTime": "2026-11-11T04:10:00.000-05:00",
+        "value": "2.80",
+        "qualifiers": ["P"]
+      },
+      {
+        "dateTime": "2026-11-11T04:15:00.000-05:00",
+        "value": "2.81",
+        "qualifiers": ["P"]
+      },
+      {
+        "dateTime": "2026-11-11T04:20:00.000-05:00",
+        "value": "2.80",
+        "qualifiers": ["P"]
+      },
+      {
+        "dateTime": "2026-11-11T04:25:00.000-05:00",
+        "value": "2.81",
+        "qualifiers": ["P"]
+      },
+      {
+        "dateTime": "2026-11-11T04:30:00.000-05:00",
+        "value": "2.80",
+        "qualifiers": ["P"]
+      },
+      {
+        "dateTime": "2026-11-11T04:35:00.000-05:00",
+        "value": "2.80",
+        "qualifiers": ["P"]
+      },
+      {
+        "dateTime": "2026-11-11T04:40:00.000-05:00",
+        "value": "2.80",
+        "qualifiers": ["P"]
+      },
+      {
+        "dateTime": "2026-11-11T04:45:00.000-05:00",
+        "value": "2.81",
+        "qualifiers": ["P"]
+      },
+      {
+        "dateTime": "2026-11-11T04:50:00.000-05:00",
+        "value": "2.81",
+        "qualifiers": ["P"]
+      }
+    ]
+  },
+  {
+    "siteNumber": "01646500",
+    "parameterCd": "00095",
+    "unitCode": "uS/cm @25C",
+    "statCd": "00000",
+    "statName": null,
+    "methodDescription": "7.1 ft from riverbed (top), [Discontinued]",
+    "values": []
+  },
+  {
+    "siteNumber": "01646500",
+    "parameterCd": "00095",
+    "unitCode": "uS/cm @25C",
+    "statCd": "00000",
+    "statName": null,
+    "methodDescription": "From multiparameter sonde, [Discontinued]",
+    "values": []
+  },
+  {
+    "siteNumber": "01646500",
+    "parameterCd": "00095",
+    "unitCode": "uS/cm @25C",
+    "statCd": "00000",
+    "statName": null,
+    "methodDescription": "From multiparameter sonde",
+    "values": [
+      {
+        "dateTime": "2026-11-11T03:10:00.000-05:00",
+        "value": "383",
+        "qualifiers": ["P"]
+      },
+      {
+        "dateTime": "2026-11-11T03:15:00.000-05:00",
+        "value": "384",
+        "qualifiers": ["P"]
+      },
+      {
+        "dateTime": "2026-11-11T03:20:00.000-05:00",
+        "value": "383",
+        "qualifiers": ["P"]
+      },
+      {
+        "dateTime": "2026-11-11T03:25:00.000-05:00",
+        "value": "384",
+        "qualifiers": ["P"]
+      },
+      {
+        "dateTime": "2026-11-11T03:30:00.000-05:00",
+        "value": "384",
+        "qualifiers": ["P"]
+      },
+      {
+        "dateTime": "2026-11-11T03:35:00.000-05:00",
+        "value": "384",
+        "qualifiers": ["P"]
+      },
+      {
+        "dateTime": "2026-11-11T03:40:00.000-05:00",
+        "value": "383",
+        "qualifiers": ["P"]
+      },
+      {
+        "dateTime": "2026-11-11T03:45:00.000-05:00",
+        "value": "384",
+        "qualifiers": ["P"]
+      },
+      {
+        "dateTime": "2026-11-11T03:50:00.000-05:00",
+        "value": "384",
+        "qualifiers": ["P"]
+      },
+      {
+        "dateTime": "2026-11-11T03:55:00.000-05:00",
+        "value": "384",
+        "qualifiers": ["P"]
+      },
+      {
+        "dateTime": "2026-11-11T04:00:00.000-05:00",
+        "value": "383",
+        "qualifiers": ["P"]
+      },
+      {
+        "dateTime": "2026-11-11T04:05:00.000-05:00",
+        "value": "384",
+        "qualifiers": ["P"]
+      },
+      {
+        "dateTime": "2026-11-11T04:10:00.000-05:00",
+        "value": "384",
+        "qualifiers": ["P"]
+      },
+      {
+        "dateTime": "2026-11-11T04:15:00.000-05:00",
+        "value": "384",
+        "qualifiers": ["P"]
+      },
+      {
+        "dateTime": "2026-11-11T04:20:00.000-05:00",
+        "value": "384",
+        "qualifiers": ["P"]
+      },
+      {
+        "dateTime": "2026-11-11T04:25:00.000-05:00",
+        "value": "384",
+        "qualifiers": ["P"]
+      },
+      {
+        "dateTime": "2026-11-11T04:30:00.000-05:00",
+        "value": "384",
+        "qualifiers": ["P"]
+      },
+      {
+        "dateTime": "2026-11-11T04:35:00.000-05:00",
+        "value": "384",
+        "qualifiers": ["P"]
+      },
+      {
+        "dateTime": "2026-11-11T04:40:00.000-05:00",
+        "value": "385",
+        "qualifiers": ["P"]
+      },
+      {
+        "dateTime": "2026-11-11T04:45:00.000-05:00",
+        "value": "385",
+        "qualifiers": ["P"]
+      },
+      {
+        "dateTime": "2026-11-11T04:50:00.000-05:00",
+        "value": "384",
+        "qualifiers": ["P"]
+      }
+    ]
+  },
+  {
+    "siteNumber": "01646500",
+    "parameterCd": "00300",
+    "unitCode": "mg/l",
+    "statCd": "00000",
+    "statName": null,
+    "methodDescription": "From multiparameter sonde, [Discontinued]",
+    "values": []
+  },
+  {
+    "siteNumber": "01646500",
+    "parameterCd": "00300",
+    "unitCode": "mg/l",
+    "statCd": "00000",
+    "statName": null,
+    "methodDescription": "From multiparameter sonde",
+    "values": [
+      {
+        "dateTime": "2026-11-11T03:10:00.000-05:00",
+        "value": "10.1",
+        "qualifiers": ["P"]
+      },
+      {
+        "dateTime": "2026-11-11T03:15:00.000-05:00",
+        "value": "10.2",
+        "qualifiers": ["P"]
+      },
+      {
+        "dateTime": "2026-11-11T03:20:00.000-05:00",
+        "value": "10.0",
+        "qualifiers": ["P"]
+      },
+      {
+        "dateTime": "2026-11-11T03:25:00.000-05:00",
+        "value": "10.2",
+        "qualifiers": ["P"]
+      },
+      {
+        "dateTime": "2026-11-11T03:30:00.000-05:00",
+        "value": "10.1",
+        "qualifiers": ["P"]
+      },
+      {
+        "dateTime": "2026-11-11T03:35:00.000-05:00",
+        "value": "10.1",
+        "qualifiers": ["P"]
+      },
+      {
+        "dateTime": "2026-11-11T03:40:00.000-05:00",
+        "value": "10.0",
+        "qualifiers": ["P"]
+      },
+      {
+        "dateTime": "2026-11-11T03:45:00.000-05:00",
+        "value": "10.1",
+        "qualifiers": ["P"]
+      },
+      {
+        "dateTime": "2026-11-11T03:50:00.000-05:00",
+        "value": "10.0",
+        "qualifiers": ["P"]
+      },
+      {
+        "dateTime": "2026-11-11T03:55:00.000-05:00",
+        "value": "10.1",
+        "qualifiers": ["P"]
+      },
+      {
+        "dateTime": "2026-11-11T04:00:00.000-05:00",
+        "value": "10.0",
+        "qualifiers": ["P"]
+      },
+      {
+        "dateTime": "2026-11-11T04:05:00.000-05:00",
+        "value": "10.0",
+        "qualifiers": ["P"]
+      },
+      {
+        "dateTime": "2026-11-11T04:10:00.000-05:00",
+        "value": "10.1",
+        "qualifiers": ["P"]
+      },
+      {
+        "dateTime": "2026-11-11T04:15:00.000-05:00",
+        "value": "10.0",
+        "qualifiers": ["P"]
+      },
+      {
+        "dateTime": "2026-11-11T04:20:00.000-05:00",
+        "value": "10.1",
+        "qualifiers": ["P"]
+      },
+      {
+        "dateTime": "2026-11-11T04:25:00.000-05:00",
+        "value": "10.0",
+        "qualifiers": ["P"]
+      },
+      {
+        "dateTime": "2026-11-11T04:30:00.000-05:00",
+        "value": "10.0",
+        "qualifiers": ["P"]
+      },
+      {
+        "dateTime": "2026-11-11T04:35:00.000-05:00",
+        "value": "10.0",
+        "qualifiers": ["P"]
+      },
+      {
+        "dateTime": "2026-11-11T04:40:00.000-05:00",
+        "value": "10.0",
+        "qualifiers": ["P"]
+      },
+      {
+        "dateTime": "2026-11-11T04:45:00.000-05:00",
+        "value": "10.0",
+        "qualifiers": ["P"]
+      },
+      {
+        "dateTime": "2026-11-11T04:50:00.000-05:00",
+        "value": "10.0",
+        "qualifiers": ["P"]
+      }
+    ]
+  },
+  {
+    "siteNumber": "01646500",
+    "parameterCd": "00400",
+    "unitCode": "std units",
+    "statCd": "00000",
+    "statName": null,
+    "methodDescription": "From multiparameter sonde, [Discontinued]",
+    "values": []
+  },
+  {
+    "siteNumber": "01646500",
+    "parameterCd": "00400",
+    "unitCode": "std units",
+    "statCd": "00000",
+    "statName": null,
+    "methodDescription": "From multiparameter sonde",
+    "values": [
+      {
+        "dateTime": "2026-11-11T03:10:00.000-05:00",
+        "value": "8.4",
+        "qualifiers": ["P"]
+      },
+      {
+        "dateTime": "2026-11-11T03:15:00.000-05:00",
+        "value": "8.4",
+        "qualifiers": ["P"]
+      },
+      {
+        "dateTime": "2026-11-11T03:20:00.000-05:00",
+        "value": "8.4",
+        "qualifiers": ["P"]
+      },
+      {
+        "dateTime": "2026-11-11T03:25:00.000-05:00",
+        "value": "8.4",
+        "qualifiers": ["P"]
+      },
+      {
+        "dateTime": "2026-11-11T03:30:00.000-05:00",
+        "value": "8.4",
+        "qualifiers": ["P"]
+      },
+      {
+        "dateTime": "2026-11-11T03:35:00.000-05:00",
+        "value": "8.4",
+        "qualifiers": ["P"]
+      },
+      {
+        "dateTime": "2026-11-11T03:40:00.000-05:00",
+        "value": "8.4",
+        "qualifiers": ["P"]
+      },
+      {
+        "dateTime": "2026-11-11T03:45:00.000-05:00",
+        "value": "8.4",
+        "qualifiers": ["P"]
+      },
+      {
+        "dateTime": "2026-11-11T03:50:00.000-05:00",
+        "value": "8.4",
+        "qualifiers": ["P"]
+      },
+      {
+        "dateTime": "2026-11-11T03:55:00.000-05:00",
+        "value": "8.4",
+        "qualifiers": ["P"]
+      },
+      {
+        "dateTime": "2026-11-11T04:00:00.000-05:00",
+        "value": "8.4",
+        "qualifiers": ["P"]
+      },
+      {
+        "dateTime": "2026-11-11T04:05:00.000-05:00",
+        "value": "8.4",
+        "qualifiers": ["P"]
+      },
+      {
+        "dateTime": "2026-11-11T04:10:00.000-05:00",
+        "value": "8.4",
+        "qualifiers": ["P"]
+      },
+      {
+        "dateTime": "2026-11-11T04:15:00.000-05:00",
+        "value": "8.4",
+        "qualifiers": ["P"]
+      },
+      {
+        "dateTime": "2026-11-11T04:20:00.000-05:00",
+        "value": "8.4",
+        "qualifiers": ["P"]
+      },
+      {
+        "dateTime": "2026-11-11T04:25:00.000-05:00",
+        "value": "8.4",
+        "qualifiers": ["P"]
+      },
+      {
+        "dateTime": "2026-11-11T04:30:00.000-05:00",
+        "value": "8.4",
+        "qualifiers": ["P"]
+      },
+      {
+        "dateTime": "2026-11-11T04:35:00.000-05:00",
+        "value": "8.4",
+        "qualifiers": ["P"]
+      },
+      {
+        "dateTime": "2026-11-11T04:40:00.000-05:00",
+        "value": "8.3",
+        "qualifiers": ["P"]
+      },
+      {
+        "dateTime": "2026-11-11T04:45:00.000-05:00",
+        "value": "8.3",
+        "qualifiers": ["P"]
+      },
+      {
+        "dateTime": "2026-11-11T04:50:00.000-05:00",
+        "value": "8.3",
+        "qualifiers": ["P"]
+      }
+    ]
+  },
+  {
+    "siteNumber": "01646500",
+    "parameterCd": "63160",
+    "unitCode": "ft",
+    "statCd": "00000",
+    "statName": null,
+    "methodDescription": null,
+    "values": [
+      {
+        "dateTime": "2026-11-11T03:10:00.000-05:00",
+        "value": "39.84",
+        "qualifiers": ["P"]
+      },
+      {
+        "dateTime": "2026-11-11T03:15:00.000-05:00",
+        "value": "39.85",
+        "qualifiers": ["P"]
+      },
+      {
+        "dateTime": "2026-11-11T03:20:00.000-05:00",
+        "value": "39.85",
+        "qualifiers": ["P"]
+      },
+      {
+        "dateTime": "2026-11-11T03:25:00.000-05:00",
+        "value": "39.84",
+        "qualifiers": ["P"]
+      },
+      {
+        "dateTime": "2026-11-11T03:30:00.000-05:00",
+        "value": "39.84",
+        "qualifiers": ["P"]
+      },
+      {
+        "dateTime": "2026-11-11T03:35:00.000-05:00",
+        "value": "39.84",
+        "qualifiers": ["P"]
+      },
+      {
+        "dateTime": "2026-11-11T03:40:00.000-05:00",
+        "value": "39.84",
+        "qualifiers": ["P"]
+      },
+      {
+        "dateTime": "2026-11-11T03:45:00.000-05:00",
+        "value": "39.84",
+        "qualifiers": ["P"]
+      },
+      {
+        "dateTime": "2026-11-11T03:50:00.000-05:00",
+        "value": "39.84",
+        "qualifiers": ["P"]
+      },
+      {
+        "dateTime": "2026-11-11T03:55:00.000-05:00",
+        "value": "39.84",
+        "qualifiers": ["P"]
+      },
+      {
+        "dateTime": "2026-11-11T04:00:00.000-05:00",
+        "value": "39.84",
+        "qualifiers": ["P"]
+      },
+      {
+        "dateTime": "2026-11-11T04:05:00.000-05:00",
+        "value": "39.85",
+        "qualifiers": ["P"]
+      },
+      {
+        "dateTime": "2026-11-11T04:10:00.000-05:00",
+        "value": "39.84",
+        "qualifiers": ["P"]
+      },
+      {
+        "dateTime": "2026-11-11T04:15:00.000-05:00",
+        "value": "39.85",
+        "qualifiers": ["P"]
+      },
+      {
+        "dateTime": "2026-11-11T04:20:00.000-05:00",
+        "value": "39.84",
+        "qualifiers": ["P"]
+      },
+      {
+        "dateTime": "2026-11-11T04:25:00.000-05:00",
+        "value": "39.85",
+        "qualifiers": ["P"]
+      },
+      {
+        "dateTime": "2026-11-11T04:30:00.000-05:00",
+        "value": "39.84",
+        "qualifiers": ["P"]
+      },
+      {
+        "dateTime": "2026-11-11T04:35:00.000-05:00",
+        "value": "39.84",
+        "qualifiers": ["P"]
+      },
+      {
+        "dateTime": "2026-11-11T04:40:00.000-05:00",
+        "value": "39.84",
+        "qualifiers": ["P"]
+      },
+      {
+        "dateTime": "2026-11-11T04:45:00.000-05:00",
+        "value": "39.85",
+        "qualifiers": ["P"]
+      },
+      {
+        "dateTime": "2026-11-11T04:50:00.000-05:00",
+        "value": "39.85",
+        "qualifiers": ["P"]
+      }
+    ]
+  },
+  {
+    "siteNumber": "01646500",
+    "parameterCd": "63680",
+    "unitCode": "FNU",
+    "statCd": "00000",
+    "statName": null,
+    "methodDescription": "From multiparameter sonde, [Discontinued]",
+    "values": []
+  },
+  {
+    "siteNumber": "01646500",
+    "parameterCd": "63680",
+    "unitCode": "FNU",
+    "statCd": "00000",
+    "statName": null,
+    "methodDescription": "From multiparameter sonde, [(2)]",
+    "values": [
+      {
+        "dateTime": "2026-11-11T03:10:00.000-05:00",
+        "value": "1.8",
+        "qualifiers": ["P"]
+      },
+      {
+        "dateTime": "2026-11-11T03:15:00.000-05:00",
+        "value": "2.2",
+        "qualifiers": ["P"]
+      },
+      {
+        "dateTime": "2026-11-11T03:20:00.000-05:00",
+        "value": "1.7",
+        "qualifiers": ["P"]
+      },
+      {
+        "dateTime": "2026-11-11T03:25:00.000-05:00",
+        "value": "2.0",
+        "qualifiers": ["P"]
+      },
+      {
+        "dateTime": "2026-11-11T03:30:00.000-05:00",
+        "value": "1.8",
+        "qualifiers": ["P"]
+      },
+      {
+        "dateTime": "2026-11-11T03:35:00.000-05:00",
+        "value": "1.8",
+        "qualifiers": ["P"]
+      },
+      {
+        "dateTime": "2026-11-11T03:40:00.000-05:00",
+        "value": "2.0",
+        "qualifiers": ["P"]
+      },
+      {
+        "dateTime": "2026-11-11T03:45:00.000-05:00",
+        "value": "2.0",
+        "qualifiers": ["P"]
+      },
+      {
+        "dateTime": "2026-11-11T03:50:00.000-05:00",
+        "value": "1.5",
+        "qualifiers": ["P"]
+      },
+      {
+        "dateTime": "2026-11-11T03:55:00.000-05:00",
+        "value": "2.0",
+        "qualifiers": ["P"]
+      },
+      {
+        "dateTime": "2026-11-11T04:00:00.000-05:00",
+        "value": "2.3",
+        "qualifiers": ["P"]
+      },
+      {
+        "dateTime": "2026-11-11T04:05:00.000-05:00",
+        "value": "2.1",
+        "qualifiers": ["P"]
+      },
+      {
+        "dateTime": "2026-11-11T04:10:00.000-05:00",
+        "value": "1.7",
+        "qualifiers": ["P"]
+      },
+      {
+        "dateTime": "2026-11-11T04:15:00.000-05:00",
+        "value": "1.8",
+        "qualifiers": ["P"]
+      },
+      {
+        "dateTime": "2026-11-11T04:20:00.000-05:00",
+        "value": "1.9",
+        "qualifiers": ["P"]
+      },
+      {
+        "dateTime": "2026-11-11T04:25:00.000-05:00",
+        "value": "2.0",
+        "qualifiers": ["P"]
+      },
+      {
+        "dateTime": "2026-11-11T04:30:00.000-05:00",
+        "value": "1.7",
+        "qualifiers": ["P"]
+      },
+      {
+        "dateTime": "2026-11-11T04:35:00.000-05:00",
+        "value": "1.8",
+        "qualifiers": ["P"]
+      },
+      {
+        "dateTime": "2026-11-11T04:40:00.000-05:00",
+        "value": "1.9",
+        "qualifiers": ["P"]
+      },
+      {
+        "dateTime": "2026-11-11T04:45:00.000-05:00",
+        "value": "1.9",
+        "qualifiers": ["P"]
+      },
+      {
+        "dateTime": "2026-11-11T04:50:00.000-05:00",
+        "value": "1.8",
+        "qualifiers": ["P"]
+      }
+    ]
+  },
+  {
+    "siteNumber": "01646500",
+    "parameterCd": "99133",
+    "unitCode": "mg/l as N",
+    "statCd": "00000",
+    "statName": null,
+    "methodDescription": "SUNA, [Discontinued]",
+    "values": []
+  },
+  {
+    "siteNumber": "01646500",
+    "parameterCd": "99133",
+    "unitCode": "mg/l as N",
+    "statCd": "00000",
+    "statName": null,
+    "methodDescription": "SUNA",
+    "values": [
+      {
+        "dateTime": "2026-11-11T03:15:00.000-05:00",
+        "value": "0.50",
+        "qualifiers": ["P"]
+      },
+      {
+        "dateTime": "2026-11-11T03:30:00.000-05:00",
+        "value": "0.50",
+        "qualifiers": ["P"]
+      },
+      {
+        "dateTime": "2026-11-11T03:45:00.000-05:00",
+        "value": "0.50",
+        "qualifiers": ["P"]
+      },
+      {
+        "dateTime": "2026-11-11T04:00:00.000-05:00",
+        "value": "0.50",
+        "qualifiers": ["P"]
+      },
+      {
+        "dateTime": "2026-11-11T04:15:00.000-05:00",
+        "value": "0.50",
+        "qualifiers": ["P"]
+      },
+      {
+        "dateTime": "2026-11-11T04:30:00.000-05:00",
+        "value": "0.50",
+        "qualifiers": ["P"]
+      }
+    ]
+  },
+  {
+    "siteNumber": "06819550",
+    "parameterCd": "00010",
+    "unitCode": "deg C",
+    "statCd": "00000",
+    "statName": null,
+    "methodDescription": null,
+    "values": []
+  },
+  {
+    "siteNumber": "06819550",
+    "parameterCd": "00060",
+    "unitCode": "ft3/s",
+    "statCd": "00000",
+    "statName": null,
+    "methodDescription": null,
+    "values": [
+      {
+        "dateTime": "2026-11-11T02:15:00.000-06:00",
+        "value": "0.81",
+        "qualifiers": ["P"]
+      },
+      {
+        "dateTime": "2026-11-11T02:30:00.000-06:00",
+        "value": "0.81",
+        "qualifiers": ["P"]
+      },
+      {
+        "dateTime": "2026-11-11T02:45:00.000-06:00",
+        "value": "0.81",
+        "qualifiers": ["P"]
+      },
+      {
+        "dateTime": "2026-11-11T03:00:00.000-06:00",
+        "value": "0.81",
+        "qualifiers": ["P"]
+      },
+      {
+        "dateTime": "2026-11-11T03:15:00.000-06:00",
+        "value": "0.81",
+        "qualifiers": ["P"]
+      }
+    ]
+  },
+  {
+    "siteNumber": "06819550",
+    "parameterCd": "00065",
+    "unitCode": "ft",
+    "statCd": "00000",
+    "statName": null,
+    "methodDescription": "[Radar]",
+    "values": [
+      {
+        "dateTime": "2026-11-11T02:15:00.000-06:00",
+        "value": "12.83",
+        "qualifiers": ["P"]
+      },
+      {
+        "dateTime": "2026-11-11T02:30:00.000-06:00",
+        "value": "12.83",
+        "qualifiers": ["P"]
+      },
+      {
+        "dateTime": "2026-11-11T02:45:00.000-06:00",
+        "value": "12.83",
+        "qualifiers": ["P"]
+      },
+      {
+        "dateTime": "2026-11-11T03:00:00.000-06:00",
+        "value": "12.83",
+        "qualifiers": ["P"]
+      },
+      {
+        "dateTime": "2026-11-11T03:15:00.000-06:00",
+        "value": "12.83",
+        "qualifiers": ["P"]
+      }
+    ]
+  },
+  {
+    "siteNumber": "06819550",
+    "parameterCd": "00095",
+    "unitCode": "uS/cm @25C",
+    "statCd": "00000",
+    "statName": null,
+    "methodDescription": null,
+    "values": [
+      {
+        "dateTime": "2026-11-11T02:15:00.000-06:00",
+        "value": "",
+        "qualifiers": ["P", "Dis"]
+      },
+      {
+        "dateTime": "2026-11-11T02:30:00.000-06:00",
+        "value": "",
+        "qualifiers": ["P", "Dis"]
+      },
+      {
+        "dateTime": "2026-11-11T02:45:00.000-06:00",
+        "value": "",
+        "qualifiers": ["P", "Dis"]
+      },
+      {
+        "dateTime": "2026-11-11T03:00:00.000-06:00",
+        "value": "",
+        "qualifiers": ["P", "Dis"]
+      },
+      {
+        "dateTime": "2026-11-11T03:15:00.000-06:00",
+        "value": "",
+        "qualifiers": ["P", "Dis"]
+      }
+    ]
+  },
+  {
+    "siteNumber": "06819550",
+    "parameterCd": "00300",
+    "unitCode": "mg/l",
+    "statCd": "00000",
+    "statName": null,
+    "methodDescription": null,
+    "values": [
+      {
+        "dateTime": "2026-11-11T02:15:00.000-06:00",
+        "value": "",
+        "qualifiers": ["P", "Dis"]
+      },
+      {
+        "dateTime": "2026-11-11T02:30:00.000-06:00",
+        "value": "",
+        "qualifiers": ["P", "Dis"]
+      },
+      {
+        "dateTime": "2026-11-11T02:45:00.000-06:00",
+        "value": "",
+        "qualifiers": ["P", "Dis"]
+      },
+      {
+        "dateTime": "2026-11-11T03:00:00.000-06:00",
+        "value": "",
+        "qualifiers": ["P", "Dis"]
+      },
+      {
+        "dateTime": "2026-11-11T03:15:00.000-06:00",
+        "value": "",
+        "qualifiers": ["P", "Dis"]
+      }
+    ]
+  },
+  {
+    "siteNumber": "06819550",
+    "parameterCd": "63680",
+    "unitCode": "FNU",
+    "statCd": "00000",
+    "statName": null,
+    "methodDescription": null,
+    "values": [
+      {
+        "dateTime": "2026-11-11T02:15:00.000-06:00",
+        "value": "8.4",
+        "qualifiers": ["P"]
+      },
+      {
+        "dateTime": "2026-11-11T02:30:00.000-06:00",
+        "value": "8.1",
+        "qualifiers": ["P"]
+      },
+      {
+        "dateTime": "2026-11-11T02:45:00.000-06:00",
+        "value": "8.1",
+        "qualifiers": ["P"]
+      },
+      {
+        "dateTime": "2026-11-11T03:00:00.000-06:00",
+        "value": "8.2",
+        "qualifiers": ["P"]
+      },
+      {
+        "dateTime": "2026-11-11T03:15:00.000-06:00",
+        "value": "9.3",
+        "qualifiers": ["P"]
+      }
+    ]
+  },
+  {
+    "siteNumber": "06819550",
+    "parameterCd": "99133",
+    "unitCode": "mg/l as N",
+    "statCd": "00000",
+    "statName": null,
+    "methodDescription": null,
+    "values": [
+      {
+        "dateTime": "2026-11-11T02:15:00.000-06:00",
+        "value": "3.43",
+        "qualifiers": ["P"]
+      },
+      {
+        "dateTime": "2026-11-11T02:30:00.000-06:00",
+        "value": "3.43",
+        "qualifiers": ["P"]
+      },
+      {
+        "dateTime": "2026-11-11T02:45:00.000-06:00",
+        "value": "3.43",
+        "qualifiers": ["P"]
+      },
+      {
+        "dateTime": "2026-11-11T03:00:00.000-06:00",
+        "value": "3.43",
+        "qualifiers": ["P"]
+      },
+      {
+        "dateTime": "2026-11-11T03:15:00.000-06:00",
+        "value": "3.43",
+        "qualifiers": ["P"]
+      }
+    ]
+  },
+  {
+    "siteNumber": "08131400",
+    "parameterCd": "00045",
+    "unitCode": "in",
+    "statCd": "00000",
+    "statName": null,
+    "methodDescription": null,
+    "values": [
+      {
+        "dateTime": "2026-11-11T02:10:00.000-06:00",
+        "value": "",
+        "qualifiers": ["P", "Eqp"]
+      },
+      {
+        "dateTime": "2026-11-11T02:15:00.000-06:00",
+        "value": "",
+        "qualifiers": ["P", "Eqp"]
+      },
+      {
+        "dateTime": "2026-11-11T02:20:00.000-06:00",
+        "value": "",
+        "qualifiers": ["P", "Eqp"]
+      },
+      {
+        "dateTime": "2026-11-11T02:25:00.000-06:00",
+        "value": "",
+        "qualifiers": ["P", "Eqp"]
+      },
+      {
+        "dateTime": "2026-11-11T02:30:00.000-06:00",
+        "value": "",
+        "qualifiers": ["P", "Eqp"]
+      },
+      {
+        "dateTime": "2026-11-11T02:35:00.000-06:00",
+        "value": "",
+        "qualifiers": ["P", "Eqp"]
+      },
+      {
+        "dateTime": "2026-11-11T02:40:00.000-06:00",
+        "value": "",
+        "qualifiers": ["P", "Eqp"]
+      },
+      {
+        "dateTime": "2026-11-11T02:45:00.000-06:00",
+        "value": "",
+        "qualifiers": ["P", "Eqp"]
+      },
+      {
+        "dateTime": "2026-11-11T02:50:00.000-06:00",
+        "value": "",
+        "qualifiers": ["P", "Eqp"]
+      },
+      {
+        "dateTime": "2026-11-11T02:55:00.000-06:00",
+        "value": "",
+        "qualifiers": ["P", "Eqp"]
+      },
+      {
+        "dateTime": "2026-11-11T03:00:00.000-06:00",
+        "value": "",
+        "qualifiers": ["P", "Eqp"]
+      },
+      {
+        "dateTime": "2026-11-11T03:05:00.000-06:00",
+        "value": "",
+        "qualifiers": ["P", "Eqp"]
+      },
+      {
+        "dateTime": "2026-11-11T03:10:00.000-06:00",
+        "value": "",
+        "qualifiers": ["P", "Eqp"]
+      },
+      {
+        "dateTime": "2026-11-11T03:15:00.000-06:00",
+        "value": "",
+        "qualifiers": ["P", "Eqp"]
+      },
+      {
+        "dateTime": "2026-11-11T03:20:00.000-06:00",
+        "value": "",
+        "qualifiers": ["P", "Eqp"]
+      },
+      {
+        "dateTime": "2026-11-11T03:25:00.000-06:00",
+        "value": "",
+        "qualifiers": ["P", "Eqp"]
+      },
+      {
+        "dateTime": "2026-11-11T03:30:00.000-06:00",
+        "value": "",
+        "qualifiers": ["P", "Eqp"]
+      },
+      {
+        "dateTime": "2026-11-11T03:35:00.000-06:00",
+        "value": "",
+        "qualifiers": ["P", "Eqp"]
+      },
+      {
+        "dateTime": "2026-11-11T03:40:00.000-06:00",
+        "value": "",
+        "qualifiers": ["P", "Eqp"]
+      },
+      {
+        "dateTime": "2026-11-11T03:45:00.000-06:00",
+        "value": "",
+        "qualifiers": ["P", "Eqp"]
+      },
+      {
+        "dateTime": "2026-11-11T03:50:00.000-06:00",
+        "value": "",
+        "qualifiers": ["P", "Eqp"]
+      }
+    ]
+  },
+  {
+    "siteNumber": "08131400",
+    "parameterCd": "00060",
+    "unitCode": "ft3/s",
+    "statCd": "00000",
+    "statName": null,
+    "methodDescription": "[15-Minute Updates]",
+    "values": [
+      {
+        "dateTime": "2026-11-11T02:10:00.000-06:00",
+        "value": "0.00",
+        "qualifiers": ["P", "<"]
+      },
+      {
+        "dateTime": "2026-11-11T02:15:00.000-06:00",
+        "value": "0.00",
+        "qualifiers": ["P", "<"]
+      },
+      {
+        "dateTime": "2026-11-11T02:20:00.000-06:00",
+        "value": "0.00",
+        "qualifiers": ["P", "<"]
+      },
+      {
+        "dateTime": "2026-11-11T02:25:00.000-06:00",
+        "value": "0.00",
+        "qualifiers": ["P", "<"]
+      },
+      {
+        "dateTime": "2026-11-11T02:30:00.000-06:00",
+        "value": "0.00",
+        "qualifiers": ["P", "<"]
+      },
+      {
+        "dateTime": "2026-11-11T02:35:00.000-06:00",
+        "value": "0.00",
+        "qualifiers": ["P", "<"]
+      },
+      {
+        "dateTime": "2026-11-11T02:40:00.000-06:00",
+        "value": "0.00",
+        "qualifiers": ["P", "<"]
+      },
+      {
+        "dateTime": "2026-11-11T02:45:00.000-06:00",
+        "value": "0.00",
+        "qualifiers": ["P", "<"]
+      },
+      {
+        "dateTime": "2026-11-11T02:50:00.000-06:00",
+        "value": "0.00",
+        "qualifiers": ["P", "<"]
+      },
+      {
+        "dateTime": "2026-11-11T02:55:00.000-06:00",
+        "value": "0.00",
+        "qualifiers": ["P", "<"]
+      },
+      {
+        "dateTime": "2026-11-11T03:00:00.000-06:00",
+        "value": "0.00",
+        "qualifiers": ["P", "<"]
+      },
+      {
+        "dateTime": "2026-11-11T03:05:00.000-06:00",
+        "value": "0.00",
+        "qualifiers": ["P", "<"]
+      },
+      {
+        "dateTime": "2026-11-11T03:10:00.000-06:00",
+        "value": "0.00",
+        "qualifiers": ["P", "<"]
+      },
+      {
+        "dateTime": "2026-11-11T03:15:00.000-06:00",
+        "value": "0.00",
+        "qualifiers": ["P", "<"]
+      },
+      {
+        "dateTime": "2026-11-11T03:20:00.000-06:00",
+        "value": "0.00",
+        "qualifiers": ["P", "<"]
+      },
+      {
+        "dateTime": "2026-11-11T03:25:00.000-06:00",
+        "value": "0.00",
+        "qualifiers": ["P", "<"]
+      },
+      {
+        "dateTime": "2026-11-11T03:30:00.000-06:00",
+        "value": "0.00",
+        "qualifiers": ["P", "<"]
+      },
+      {
+        "dateTime": "2026-11-11T03:35:00.000-06:00",
+        "value": "0.00",
+        "qualifiers": ["P", "<"]
+      },
+      {
+        "dateTime": "2026-11-11T03:40:00.000-06:00",
+        "value": "0.00",
+        "qualifiers": ["P", "<"]
+      },
+      {
+        "dateTime": "2026-11-11T03:45:00.000-06:00",
+        "value": "0.00",
+        "qualifiers": ["P", "<"]
+      },
+      {
+        "dateTime": "2026-11-11T03:50:00.000-06:00",
+        "value": "0.00",
+        "qualifiers": ["P", "<"]
+      }
+    ]
+  },
+  {
+    "siteNumber": "08131400",
+    "parameterCd": "00065",
+    "unitCode": "ft",
+    "statCd": "00000",
+    "statName": null,
+    "methodDescription": "[15-Minute Updates]",
+    "values": [
+      {
+        "dateTime": "2026-11-11T02:10:00.000-06:00",
+        "value": "-0.04",
+        "qualifiers": ["P", "<"]
+      },
+      {
+        "dateTime": "2026-11-11T02:15:00.000-06:00",
+        "value": "-0.04",
+        "qualifiers": ["P", "<"]
+      },
+      {
+        "dateTime": "2026-11-11T02:20:00.000-06:00",
+        "value": "-0.04",
+        "qualifiers": ["P", "<"]
+      },
+      {
+        "dateTime": "2026-11-11T02:25:00.000-06:00",
+        "value": "-0.04",
+        "qualifiers": ["P", "<"]
+      },
+      {
+        "dateTime": "2026-11-11T02:30:00.000-06:00",
+        "value": "-0.04",
+        "qualifiers": ["P", "<"]
+      },
+      {
+        "dateTime": "2026-11-11T02:35:00.000-06:00",
+        "value": "-0.04",
+        "qualifiers": ["P", "<"]
+      },
+      {
+        "dateTime": "2026-11-11T02:40:00.000-06:00",
+        "value": "-0.04",
+        "qualifiers": ["P", "<"]
+      },
+      {
+        "dateTime": "2026-11-11T02:45:00.000-06:00",
+        "value": "-0.04",
+        "qualifiers": ["P", "<"]
+      },
+      {
+        "dateTime": "2026-11-11T02:50:00.000-06:00",
+        "value": "-0.04",
+        "qualifiers": ["P", "<"]
+      },
+      {
+        "dateTime": "2026-11-11T02:55:00.000-06:00",
+        "value": "-0.04",
+        "qualifiers": ["P", "<"]
+      },
+      {
+        "dateTime": "2026-11-11T03:00:00.000-06:00",
+        "value": "-0.04",
+        "qualifiers": ["P", "<"]
+      },
+      {
+        "dateTime": "2026-11-11T03:05:00.000-06:00",
+        "value": "-0.04",
+        "qualifiers": ["P", "<"]
+      },
+      {
+        "dateTime": "2026-11-11T03:10:00.000-06:00",
+        "value": "-0.04",
+        "qualifiers": ["P", "<"]
+      },
+      {
+        "dateTime": "2026-11-11T03:15:00.000-06:00",
+        "value": "-0.04",
+        "qualifiers": ["P", "<"]
+      },
+      {
+        "dateTime": "2026-11-11T03:20:00.000-06:00",
+        "value": "-0.04",
+        "qualifiers": ["P", "<"]
+      },
+      {
+        "dateTime": "2026-11-11T03:25:00.000-06:00",
+        "value": "-0.05",
+        "qualifiers": ["P", "<"]
+      },
+      {
+        "dateTime": "2026-11-11T03:30:00.000-06:00",
+        "value": "-0.04",
+        "qualifiers": ["P", "<"]
+      },
+      {
+        "dateTime": "2026-11-11T03:35:00.000-06:00",
+        "value": "-0.04",
+        "qualifiers": ["P", "<"]
+      },
+      {
+        "dateTime": "2026-11-11T03:40:00.000-06:00",
+        "value": "-0.04",
+        "qualifiers": ["P", "<"]
+      },
+      {
+        "dateTime": "2026-11-11T03:45:00.000-06:00",
+        "value": "-0.04",
+        "qualifiers": ["P", "<"]
+      },
+      {
+        "dateTime": "2026-11-11T03:50:00.000-06:00",
+        "value": "-0.04",
+        "qualifiers": ["P", "<"]
+      }
+    ]
+  },
+  {
+    "siteNumber": "09497830",
+    "parameterCd": "00010",
+    "unitCode": "deg C",
+    "statCd": "00000",
+    "statName": null,
+    "methodDescription": null,
+    "values": [
+      {
+        "dateTime": "2026-11-11T01:15:00.000-07:00",
+        "value": "8.0",
+        "qualifiers": ["P"]
+      },
+      {
+        "dateTime": "2026-11-11T01:30:00.000-07:00",
+        "value": "8.0",
+        "qualifiers": ["P"]
+      },
+      {
+        "dateTime": "2026-11-11T01:45:00.000-07:00",
+        "value": "7.9",
+        "qualifiers": ["P"]
+      },
+      {
+        "dateTime": "2026-11-11T02:00:00.000-07:00",
+        "value": "7.8",
+        "qualifiers": ["P"]
+      },
+      {
+        "dateTime": "2026-11-11T02:15:00.000-07:00",
+        "value": "7.8",
+        "qualifiers": ["P"]
+      },
+      {
+        "dateTime": "2026-11-11T02:30:00.000-07:00",
+        "value": "7.7",
+        "qualifiers": ["P"]
+      },
+      {
+        "dateTime": "2026-11-11T02:45:00.000-07:00",
+        "value": "7.6",
+        "qualifiers": ["P"]
+      }
+    ]
+  },
+  {
+    "siteNumber": "09497830",
+    "parameterCd": "00065",
+    "unitCode": "ft",
+    "statCd": "00000",
+    "statName": null,
+    "methodDescription": null,
+    "values": [
+      {
+        "dateTime": "2026-11-11T01:15:00.000-07:00",
+        "value": "2.23",
+        "qualifiers": ["P"]
+      },
+      {
+        "dateTime": "2026-11-11T01:30:00.000-07:00",
+        "value": "2.22",
+        "qualifiers": ["P"]
+      },
+      {
+        "dateTime": "2026-11-11T01:45:00.000-07:00",
+        "value": "2.23",
+        "qualifiers": ["P"]
+      },
+      {
+        "dateTime": "2026-11-11T02:00:00.000-07:00",
+        "value": "2.22",
+        "qualifiers": ["P"]
+      },
+      {
+        "dateTime": "2026-11-11T02:15:00.000-07:00",
+        "value": "2.22",
+        "qualifiers": ["P"]
+      },
+      {
+        "dateTime": "2026-11-11T02:30:00.000-07:00",
+        "value": "2.22",
+        "qualifiers": ["P"]
+      },
+      {
+        "dateTime": "2026-11-11T02:45:00.000-07:00",
+        "value": "2.23",
+        "qualifiers": ["P"]
+      }
+    ]
+  },
+  {
+    "siteNumber": "09497830",
+    "parameterCd": "00065",
+    "unitCode": "ft",
+    "statCd": "00000",
+    "statName": null,
+    "methodDescription": "[From WQ-Probe (Backup)]",
+    "values": [
+      {
+        "dateTime": "2026-11-11T01:15:00.000-07:00",
+        "value": "3.19",
+        "qualifiers": ["P"]
+      },
+      {
+        "dateTime": "2026-11-11T01:30:00.000-07:00",
+        "value": "3.20",
+        "qualifiers": ["P"]
+      },
+      {
+        "dateTime": "2026-11-11T01:45:00.000-07:00",
+        "value": "3.23",
+        "qualifiers": ["P"]
+      },
+      {
+        "dateTime": "2026-11-11T02:00:00.000-07:00",
+        "value": "3.25",
+        "qualifiers": ["P"]
+      },
+      {
+        "dateTime": "2026-11-11T02:15:00.000-07:00",
+        "value": "3.28",
+        "qualifiers": ["P"]
+      },
+      {
+        "dateTime": "2026-11-11T02:30:00.000-07:00",
+        "value": "3.31",
+        "qualifiers": ["P"]
+      },
+      {
+        "dateTime": "2026-11-11T02:45:00.000-07:00",
+        "value": "3.33",
+        "qualifiers": ["P"]
+      }
+    ]
+  },
+  {
+    "siteNumber": "09497830",
+    "parameterCd": "00095",
+    "unitCode": "uS/cm @25C",
+    "statCd": "00000",
+    "statName": null,
+    "methodDescription": null,
+    "values": [
+      {
+        "dateTime": "2026-11-11T01:15:00.000-07:00",
+        "value": "179",
+        "qualifiers": ["P"]
+      },
+      {
+        "dateTime": "2026-11-11T01:30:00.000-07:00",
+        "value": "179",
+        "qualifiers": ["P"]
+      },
+      {
+        "dateTime": "2026-11-11T01:45:00.000-07:00",
+        "value": "180",
+        "qualifiers": ["P"]
+      },
+      {
+        "dateTime": "2026-11-11T02:00:00.000-07:00",
+        "value": "180",
+        "qualifiers": ["P"]
+      },
+      {
+        "dateTime": "2026-11-11T02:15:00.000-07:00",
+        "value": "180",
+        "qualifiers": ["P"]
+      },
+      {
+        "dateTime": "2026-11-11T02:30:00.000-07:00",
+        "value": "180",
+        "qualifiers": ["P"]
+      },
+      {
+        "dateTime": "2026-11-11T02:45:00.000-07:00",
+        "value": "180",
+        "qualifiers": ["P"]
+      }
+    ]
+  },
+  {
+    "siteNumber": "09497830",
+    "parameterCd": "00300",
+    "unitCode": "mg/l",
+    "statCd": "00000",
+    "statName": null,
+    "methodDescription": null,
+    "values": [
+      {
+        "dateTime": "2026-11-11T01:15:00.000-07:00",
+        "value": "9.7",
+        "qualifiers": ["P"]
+      },
+      {
+        "dateTime": "2026-11-11T01:30:00.000-07:00",
+        "value": "9.8",
+        "qualifiers": ["P"]
+      },
+      {
+        "dateTime": "2026-11-11T01:45:00.000-07:00",
+        "value": "9.8",
+        "qualifiers": ["P"]
+      },
+      {
+        "dateTime": "2026-11-11T02:00:00.000-07:00",
+        "value": "9.8",
+        "qualifiers": ["P"]
+      },
+      {
+        "dateTime": "2026-11-11T02:15:00.000-07:00",
+        "value": "9.8",
+        "qualifiers": ["P"]
+      },
+      {
+        "dateTime": "2026-11-11T02:30:00.000-07:00",
+        "value": "9.8",
+        "qualifiers": ["P"]
+      },
+      {
+        "dateTime": "2026-11-11T02:45:00.000-07:00",
+        "value": "9.8",
+        "qualifiers": ["P"]
+      }
+    ]
+  },
+  {
+    "siteNumber": "09497830",
+    "parameterCd": "00400",
+    "unitCode": "std units",
+    "statCd": "00000",
+    "statName": null,
+    "methodDescription": null,
+    "values": [
+      {
+        "dateTime": "2026-11-11T01:15:00.000-07:00",
+        "value": "",
+        "qualifiers": ["P", "Eqp"]
+      },
+      {
+        "dateTime": "2026-11-11T01:30:00.000-07:00",
+        "value": "",
+        "qualifiers": ["P", "Eqp"]
+      },
+      {
+        "dateTime": "2026-11-11T01:45:00.000-07:00",
+        "value": "",
+        "qualifiers": ["P", "Eqp"]
+      },
+      {
+        "dateTime": "2026-11-11T02:00:00.000-07:00",
+        "value": "",
+        "qualifiers": ["P", "Eqp"]
+      },
+      {
+        "dateTime": "2026-11-11T02:15:00.000-07:00",
+        "value": "",
+        "qualifiers": ["P", "Eqp"]
+      },
+      {
+        "dateTime": "2026-11-11T02:30:00.000-07:00",
+        "value": "",
+        "qualifiers": ["P", "Eqp"]
+      },
+      {
+        "dateTime": "2026-11-11T02:45:00.000-07:00",
+        "value": "",
+        "qualifiers": ["P", "Eqp"]
+      }
+    ]
+  },
+  {
+    "siteNumber": "09497830",
+    "parameterCd": "63675",
+    "unitCode": "NTU",
+    "statCd": "00000",
+    "statName": null,
+    "methodDescription": null,
+    "values": [
+      {
+        "dateTime": "2026-11-11T01:15:00.000-07:00",
+        "value": "0.0",
+        "qualifiers": ["P"]
+      },
+      {
+        "dateTime": "2026-11-11T01:30:00.000-07:00",
+        "value": "0.0",
+        "qualifiers": ["P"]
+      },
+      {
+        "dateTime": "2026-11-11T01:45:00.000-07:00",
+        "value": "0.0",
+        "qualifiers": ["P"]
+      },
+      {
+        "dateTime": "2026-11-11T02:00:00.000-07:00",
+        "value": "0.0",
+        "qualifiers": ["P"]
+      },
+      {
+        "dateTime": "2026-11-11T02:15:00.000-07:00",
+        "value": "0.0",
+        "qualifiers": ["P"]
+      },
+      {
+        "dateTime": "2026-11-11T02:30:00.000-07:00",
+        "value": "0.0",
+        "qualifiers": ["P"]
+      },
+      {
+        "dateTime": "2026-11-11T02:45:00.000-07:00",
+        "value": "0.0",
+        "qualifiers": ["P"]
+      }
+    ]
+  },
+  {
+    "siteNumber": "09497830",
+    "parameterCd": "70969",
+    "unitCode": "volts",
+    "statCd": "00000",
+    "statName": null,
+    "methodDescription": null,
+    "values": [
+      {
+        "dateTime": "2026-11-11T02:00:00.000-07:00",
+        "value": "12.2",
+        "qualifiers": ["P"]
+      }
+    ]
+  },
+  {
+    "siteNumber": "09497830",
+    "parameterCd": "72203",
+    "unitCode": "psi",
+    "statCd": "00000",
+    "statName": null,
+    "methodDescription": "[Bubbler Purge Pressure]",
+    "values": []
+  },
+  {
+    "siteNumber": "11176400",
+    "parameterCd": "00060",
+    "unitCode": "ft3/s",
+    "statCd": "00000",
+    "statName": null,
+    "methodDescription": null,
+    "values": [
+      {
+        "dateTime": "2026-11-11T00:15:00.000-08:00",
+        "value": "",
+        "qualifiers": ["P", "ZFL"]
+      },
+      {
+        "dateTime": "2026-11-11T00:30:00.000-08:00",
+        "value": "",
+        "qualifiers": ["P", "ZFL"]
+      },
+      {
+        "dateTime": "2026-11-11T00:45:00.000-08:00",
+        "value": "",
+        "qualifiers": ["P", "ZFL"]
+      },
+      {
+        "dateTime": "2026-11-11T01:00:00.000-08:00",
+        "value": "",
+        "qualifiers": ["P", "ZFL"]
+      },
+      {
+        "dateTime": "2026-11-11T01:15:00.000-08:00",
+        "value": "",
+        "qualifiers": ["P", "ZFL"]
+      },
+      {
+        "dateTime": "2026-11-11T01:30:00.000-08:00",
+        "value": "",
+        "qualifiers": ["P", "ZFL"]
+      },
+      {
+        "dateTime": "2026-11-11T01:45:00.000-08:00",
+        "value": "",
+        "qualifiers": ["P", "ZFL"]
+      }
+    ]
+  },
+  {
+    "siteNumber": "11176400",
+    "parameterCd": "00065",
+    "unitCode": "ft",
+    "statCd": "00000",
+    "statName": null,
+    "methodDescription": null,
+    "values": [
+      {
+        "dateTime": "2026-11-11T00:15:00.000-08:00",
+        "value": "",
+        "qualifiers": ["P", "ZFL"]
+      },
+      {
+        "dateTime": "2026-11-11T00:30:00.000-08:00",
+        "value": "",
+        "qualifiers": ["P", "ZFL"]
+      },
+      {
+        "dateTime": "2026-11-11T00:45:00.000-08:00",
+        "value": "",
+        "qualifiers": ["P", "ZFL"]
+      },
+      {
+        "dateTime": "2026-11-11T01:00:00.000-08:00",
+        "value": "",
+        "qualifiers": ["P", "ZFL"]
+      },
+      {
+        "dateTime": "2026-11-11T01:15:00.000-08:00",
+        "value": "",
+        "qualifiers": ["P", "ZFL"]
+      },
+      {
+        "dateTime": "2026-11-11T01:30:00.000-08:00",
+        "value": "",
+        "qualifiers": ["P", "ZFL"]
+      },
+      {
+        "dateTime": "2026-11-11T01:45:00.000-08:00",
+        "value": "",
+        "qualifiers": ["P", "ZFL"]
+      }
+    ]
+  },
+  {
+    "siteNumber": "11176400",
+    "parameterCd": "63160",
+    "unitCode": "ft",
+    "statCd": "00000",
+    "statName": null,
+    "methodDescription": null,
+    "values": [
+      {
+        "dateTime": "2026-11-11T00:15:00.000-08:00",
+        "value": "",
+        "qualifiers": ["P", "ZFL"]
+      },
+      {
+        "dateTime": "2026-11-11T00:30:00.000-08:00",
+        "value": "",
+        "qualifiers": ["P", "ZFL"]
+      },
+      {
+        "dateTime": "2026-11-11T00:45:00.000-08:00",
+        "value": "",
+        "qualifiers": ["P", "ZFL"]
+      },
+      {
+        "dateTime": "2026-11-11T01:00:00.000-08:00",
+        "value": "",
+        "qualifiers": ["P", "ZFL"]
+      },
+      {
+        "dateTime": "2026-11-11T01:15:00.000-08:00",
+        "value": "",
+        "qualifiers": ["P", "ZFL"]
+      },
+      {
+        "dateTime": "2026-11-11T01:30:00.000-08:00",
+        "value": "",
+        "qualifiers": ["P", "ZFL"]
+      },
+      {
+        "dateTime": "2026-11-11T01:45:00.000-08:00",
+        "value": "",
+        "qualifiers": ["P", "ZFL"]
+      }
+    ]
+  },
+  {
+    "siteNumber": "14233500",
+    "parameterCd": "00060",
+    "unitCode": "ft3/s",
+    "statCd": "00000",
+    "statName": null,
+    "methodDescription": "[(2)]",
+    "values": [
+      {
+        "dateTime": "2026-11-11T00:15:00.000-08:00",
+        "value": "2000",
+        "qualifiers": ["P"]
+      },
+      {
+        "dateTime": "2026-11-11T00:30:00.000-08:00",
+        "value": "2010",
+        "qualifiers": ["P"]
+      },
+      {
+        "dateTime": "2026-11-11T00:45:00.000-08:00",
+        "value": "2020",
+        "qualifiers": ["P"]
+      },
+      {
+        "dateTime": "2026-11-11T01:00:00.000-08:00",
+        "value": "2010",
+        "qualifiers": ["P"]
+      },
+      {
+        "dateTime": "2026-11-11T01:15:00.000-08:00",
+        "value": "2020",
+        "qualifiers": ["P"]
+      },
+      {
+        "dateTime": "2026-11-11T01:30:00.000-08:00",
+        "value": "2000",
+        "qualifiers": ["P"]
+      }
+    ]
+  },
+  {
+    "siteNumber": "14233500",
+    "parameterCd": "00060",
+    "unitCode": "ft3/s",
+    "statCd": "00000",
+    "statName": null,
+    "methodDescription": null,
+    "values": []
+  },
+  {
+    "siteNumber": "364643089212301",
+    "parameterCd": "62611",
+    "unitCode": "ft",
+    "statCd": "00000",
+    "statName": null,
+    "methodDescription": null,
+    "values": [
+      {
+        "dateTime": "2026-11-11T02:30:00.000-06:00",
+        "value": "295.25",
+        "qualifiers": ["P"]
+      },
+      {
+        "dateTime": "2026-11-11T03:00:00.000-06:00",
+        "value": "295.25",
+        "qualifiers": ["P"]
+      }
+    ]
+  },
+  {
+    "siteNumber": "364643089212301",
+    "parameterCd": "72019",
+    "unitCode": "ft",
+    "statCd": "00000",
+    "statName": null,
+    "methodDescription": null,
+    "values": [
+      {
+        "dateTime": "2026-11-11T02:30:00.000-06:00",
+        "value": "10.52",
+        "qualifiers": ["P"]
+      },
+      {
+        "dateTime": "2026-11-11T03:00:00.000-06:00",
+        "value": "10.52",
+        "qualifiers": ["P"]
+      }
+    ]
+  }
+]

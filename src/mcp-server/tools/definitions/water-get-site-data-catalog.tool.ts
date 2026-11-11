@@ -5,7 +5,7 @@
 import { tool, z } from '@cyanheads/mcp-ts-core';
 import { JsonRpcErrorCode } from '@cyanheads/mcp-ts-core/errors';
 import { escapeHtml } from '@cyanheads/mcp-ts-core/utils';
-import { ParameterCdSchema, SiteNumberSchema } from '@/services/nwis/input-schemas.js';
+import { ParameterCdSchema, SiteNumberSchema } from '@/services/waterdata/input-schemas.js';
 import { getSiteDataCatalog } from '@/services/waterdata/site-data-catalog.js';
 
 /** Escape Markdown syntax without changing values; entities preserve embedded line breaks. */
@@ -22,7 +22,7 @@ function scalar(value: string | null): string {
 /** Per-site series metadata for planning a subsequent water_get_series call. */
 export const waterGetSiteDataCatalog = tool('water_get_site_data_catalog', {
   description:
-    'Discover a USGS site’s parameters, sensors, statistics, and UTC record bounds before calling water_get_series. Find site numbers with water_find_sites. Each row is a distinct series; metadata bounds may contain gaps and lag observations. For water_get_series, take YYYY-MM-DD from beginDate/endDate, pass statCd only for daily rows, and obtain methodId from a water_get_series response; timeSeriesId is an OGC identifier, never an NWIS methodId. Rows with null seriesType are other computations and cannot be requested with water_get_series. Follow nextCursor with the same filters and limit until null.',
+    'Discover a USGS site’s parameters, sensors, statistics, and UTC record bounds before calling water_get_series. Find site numbers with water_find_sites. Each row is a distinct series; metadata bounds may contain gaps and lag observations. For water_get_series, take YYYY-MM-DD from beginDate/endDate, pass statCd only for daily rows, and pass a row’s timeSeriesId as methodId to request that exact series (water_get_readings and water_get_series report the same ID as methodId). Rows with null seriesType are other computations and cannot be requested with water_get_series. Follow nextCursor with the same filters and limit until null.',
   annotations: { readOnlyHint: true, idempotentHint: true, openWorldHint: true },
   input: z.object({
     site: SiteNumberSchema.describe(
@@ -65,7 +65,9 @@ export const waterGetSiteDataCatalog = tool('water_get_site_data_catalog', {
           .object({
             timeSeriesId: z
               .string()
-              .describe('Distinct OGC time-series identifier; not an NWIS methodId.'),
+              .describe(
+                'Distinct OGC time-series identifier; pass it as the water_get_series methodId, with this row’s seriesType.',
+              ),
             parameterCd: z.string().describe('USGS parameter code for this series.'),
             parameterName: z.string().nullable().describe('Upstream parameter name, or null.'),
             unit: z.string().nullable().describe('Upstream unit of measure, or null.'),
@@ -146,7 +148,8 @@ export const waterGetSiteDataCatalog = tool('water_get_site_data_catalog', {
       reason: 'upstream_error',
       code: JsonRpcErrorCode.ServiceUnavailable,
       when: 'The OGC API failed or returned malformed location or metadata.',
-      recovery: 'The USGS Water Data API is unavailable. Retry after a short backoff.',
+      recovery:
+        'A server error usually clears: retry after a short backoff. An error marked not retryable means the upstream sent a response this server cannot read, and the same request will fail again.',
       retryable: true,
       thrownBy: 'service',
     },

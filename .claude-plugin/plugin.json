@@ -31,12 +31,22 @@
     "real-time-data",
     "environmental-data"
   ],
+  "userConfig": {
+    "USGS_API_KEY": {
+      "type": "string",
+      "title": "USGS API key",
+      "description": "Optional api.data.gov key for the USGS Water Data APIs. Without one, requests share the anonymous per-IP hourly limit. Free from https://api.waterdata.usgs.gov/signup/.",
+      "sensitive": true,
+      "default": ""
+    }
+  },
   "mcpServers": {
     "usgs-water-mcp-server": {
       "command": "npx",
       "args": ["-y", "@cyanheads/usgs-water-mcp-server"],
       "env": {
-        "MCP_TRANSPORT_TYPE": "stdio"
+        "MCP_TRANSPORT_TYPE": "stdio",
+        "USGS_API_KEY": "${user_config.USGS_API_KEY}"
       }
     }
   }

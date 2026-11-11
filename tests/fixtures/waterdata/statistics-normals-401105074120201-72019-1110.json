@@ -1,0 +1,105 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-74.20014337, 40.18483529]
+      },
+      "properties": {
+        "monitoring_location_id": "USGS-401105074120201",
+        "monitoring_location_name": "250635-- Howell Twp 1 Obs",
+        "site_type": "Well",
+        "site_type_code": "GW",
+        "country_code": "US",
+        "state_code": "34",
+        "county_code": "025",
+        "data": [
+          {
+            "parameter_code": "72019",
+            "unit_of_measure": "ft",
+            "parent_time_series_id": "eeddb1ac4eef4092b6aa37839e012402",
+            "parent_statistic_id": "00001",
+            "parent_statistic_name": "Max",
+            "values": [
+              {
+                "time_of_year": "11-10",
+                "time_of_year_type": "day_of_year",
+                "values": [
+                  "144.54",
+                  "142.026",
+                  "138.335",
+                  "135.46",
+                  "132.228",
+                  "128.691",
+                  "127.084"
+                ],
+                "percentiles": ["5", "10", "25", "50", "75", "90", "95"],
+                "sample_count": 38,
+                "approval_status": "approved",
+                "computation_id": "e6ee0828-405f-4d0b-91cb-f5e434e9d4ed",
+                "computation": "percentile"
+              }
+            ]
+          },
+          {
+            "parameter_code": "72019",
+            "unit_of_measure": "ft",
+            "parent_time_series_id": "ef4df5f138444f23bc58729959c31f0b",
+            "parent_statistic_id": "00003",
+            "parent_statistic_name": "Mean",
+            "values": [
+              {
+                "time_of_year": "11-10",
+                "time_of_year_type": "day_of_year",
+                "values": [
+                  "144.428",
+                  "141.877",
+                  "138.285",
+                  "135.295",
+                  "132.132",
+                  "128.649",
+                  "127.045"
+                ],
+                "percentiles": ["5", "10", "25", "50", "75", "90", "95"],
+                "sample_count": 38,
+                "approval_status": "approved",
+                "computation_id": "d0e74e81-1296-475a-a6bf-f62f6a944295",
+                "computation": "percentile"
+              }
+            ]
+          },
+          {
+            "parameter_code": "72019",
+            "unit_of_measure": "ft",
+            "parent_time_series_id": "3c8ef22a14c6443caef1bdf33dd460c9",
+            "parent_statistic_id": "00002",
+            "parent_statistic_name": "Min",
+            "values": [
+              {
+                "time_of_year": "11-10",
+                "time_of_year_type": "day_of_year",
+                "values": [
+                  "144.384",
+                  "141.675",
+                  "138.245",
+                  "135.14",
+                  "132.067",
+                  "128.6",
+                  "126.996"
+                ],
+                "percentiles": ["5", "10", "25", "50", "75", "90", "95"],
+                "sample_count": 38,
+                "approval_status": "approved",
+                "computation_id": "2f670a35-e382-46a4-9cdd-93066b3d365f",
+                "computation": "percentile"
+              }
+            ]
+          }
+        ]
+      }
+    }
+  ],
+  "next": null
+}

@@ -1,34 +1,36 @@
 /**
  * @fileoverview Tests for water_get_series tool — time series with DataCanvas spillover.
- * Mocks nwis-service and canvas-accessor to avoid live API/DuckDB calls.
+ * Mocks the observations service's readers and canvas-accessor to avoid live API/DuckDB calls;
+ * the failure classifier and `carriesValues` stay real, and a Water Data fake rejects any request
+ * that leaks past the mock.
  * @module tests/tools/water-get-series.tool.test
  */
 
 import {
+  configurationError,
   JsonRpcErrorCode,
   McpError,
   notFound,
+  rateLimited,
   serviceUnavailable,
+  timeout,
   validationError,
 } from '@cyanheads/mcp-ts-core/errors';
 import { createMockContext, getEnrichment, runToolContract } from '@cyanheads/mcp-ts-core/testing';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { waterGetSeries } from '@/mcp-server/tools/definitions/water-get-series.tool.js';
-import type { NwisTimeSeries } from '@/services/nwis/types.js';
+import type { NwisTimeSeries } from '@/services/waterdata/types.js';
 import { textContent } from '../helpers/content-block.js';
 import { captureError, contractError, declaredRecovery } from '../helpers/error-contract.js';
+import { createWaterDataFake, type WaterDataFake } from '../helpers/water-data-fake.js';
 
 const recovery = (reason: string) => declaredRecovery(waterGetSeries.errors, reason);
 
-// Stub the network calls; keep the real classifyNwisFailure — it is pure, and it is the mapping
-// under test here.
-vi.mock('@/services/nwis/nwis-service.js', async (importOriginal) => ({
-  ...(await importOriginal<typeof import('@/services/nwis/nwis-service.js')>()),
+// Stub the network readers; keep the real carriesValues — series selection ranks with it.
+vi.mock('@/services/waterdata/observations.js', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('@/services/waterdata/observations.js')>()),
   getSeries: vi.fn(),
   getReadings: vi.fn(),
-  getStats: vi.fn(),
-  findSites: vi.fn(),
-  getSiteInfo: vi.fn(),
 }));
 
 // Canvas mock — undefined (disabled) by default; overridden per test
@@ -47,19 +49,33 @@ import { CANVAS_IDENTIFIER_REGEX, spillover } from '@cyanheads/mcp-ts-core/canva
 
 const mockSpillover = vi.mocked(spillover);
 
-import { getSeries } from '@/services/nwis/nwis-service.js';
+import { getSeries } from '@/services/waterdata/observations.js';
 
 const mockGetSeries = vi.mocked(getSeries);
+
+let water: WaterDataFake;
+
+beforeEach(() => {
+  water = createWaterDataFake();
+  water.install();
+});
+
+afterEach(() => {
+  water.restore();
+});
+
+/** The daily-mean discharge series of 01646500 (its OGC time_series_id). */
+const DISCHARGE_MEAN_ID = '2cf409b0d9694c01828f5d4ff14586a5';
 
 /** Build a mock time series with N chronological value records, oldest first. */
 function makeSeries(count: number, overrides: Partial<NwisTimeSeries> = {}): NwisTimeSeries {
   return {
     siteNumber: '01646500',
-    siteName: 'POTOMAC RIVER AT LITTLE FALLS',
+    siteName: 'POTOMAC RIVER NEAR WASH, DC LITTLE FALLS PUMP STA',
     parameterCd: '00060',
-    parameterName: 'Streamflow, ft³/s',
+    parameterName: 'Discharge, cubic feet per second',
     unitCode: 'ft3/s',
-    methodId: '68478',
+    methodId: DISCHARGE_MEAN_ID,
     methodDescription: null,
     statCd: '00003',
     statName: 'Mean',
@@ -87,14 +103,14 @@ function formatResult(
 ) {
   return {
     siteNumber: '01646500',
-    siteName: 'POTOMAC RIVER',
+    siteName: 'POTOMAC RIVER NEAR WASH, DC LITTLE FALLS PUMP STA',
     parameterCd: '00060',
-    parameterName: 'Streamflow, ft³/s',
+    parameterName: 'Discharge, cubic feet per second',
     unitCode: 'ft3/s',
     seriesType: 'daily' as const,
     statCd: '00003',
     statName: 'Mean',
-    methodId: '68478',
+    methodId: DISCHARGE_MEAN_ID,
     methodDescription: null,
     values: overrides.values ?? makeSeries(5).values,
     totalRecords: overrides.totalRecords ?? 5,
@@ -316,8 +332,8 @@ describe('waterGetSeries', () => {
   });
 
   it('throws no_data_for_range when service returns empty array', async () => {
-    // NWIS returns timeSeries:[] for both unknown sites and out-of-range dates;
-    // no_data_for_range is the more actionable error (callers can retry with a narrower range).
+    // An unknown site and an out-of-range window both return no series; no_data_for_range is the
+    // more actionable error (callers can retry inside the site's record bounds).
     mockGetSeries.mockResolvedValue([]);
     const input = {
       site: '99999999',
@@ -345,13 +361,30 @@ describe('waterGetSeries', () => {
     });
   });
 
-  it('maps an NWIS rejection to invalid_request, not invalid_date_range', async () => {
-    // The dates here are valid — NWIS is complaining about the parameter code. Reporting this as
-    // a date-range problem sends the caller after the wrong field.
+  it('points no_data_for_range recovery at the catalog record bounds, never water_find_sites (#52)', async () => {
+    mockGetSeries.mockResolvedValue([]);
+    const result = await runToolContract(waterGetSeries, {
+      site: '99999999',
+      parameterCd: '00060',
+      startDate: '2024-01-01',
+      endDate: '2024-12-31',
+    });
+    const { hint } = recovery('no_data_for_range');
+    expect(hint).toContain('water_get_site_data_catalog');
+    expect(hint).toContain('beginDate/endDate');
+    expect(hint).not.toContain('water_find_sites');
+    const text = textContent(result.content[0]);
+    expect(text).toContain(hint);
+    expect(text).not.toContain('water_find_sites');
+  });
+
+  it('maps an upstream rejection to invalid_request, not invalid_date_range', async () => {
+    // The dates here are valid — the upstream is complaining about another value. Reporting this
+    // as a date-range problem sends the caller after the wrong field.
     mockGetSeries.mockRejectedValue(
       validationError(
-        'NWIS rejected the request: HTTP Status 400 - ParameterCd: length must be no less than 5 characters',
-        { httpStatus: 400 },
+        'USGS Water Data OGC API rejected the request: ParameterCd: length must be no less than 5 characters',
+        { reason: 'invalid_request', upstreamStatus: 400 },
       ),
     );
     const input = {
@@ -369,7 +402,7 @@ describe('waterGetSeries', () => {
 
   it('still reports the handler-owned date checks as invalid_date_range', async () => {
     // invalid_date_range survives for the case it actually describes: this tool's own
-    // calendar/order validation, which never reaches NWIS.
+    // calendar/order validation, which never reaches the upstream.
     const input = {
       site: '01646500',
       parameterCd: '00060',
@@ -382,9 +415,12 @@ describe('waterGetSeries', () => {
     expect(mockGetSeries).not.toHaveBeenCalled();
   });
 
-  it('maps 5xx/timeout to upstream_error', async () => {
+  it('maps an upstream fault to upstream_error', async () => {
     mockGetSeries.mockRejectedValue(
-      serviceUnavailable('NWIS returned HTTP 503: Service Unavailable', { status: 503 }),
+      serviceUnavailable('USGS Water Data OGC API answered HTTP 503 (failed after 4 attempts)', {
+        reason: 'upstream_error',
+        upstreamStatus: 503,
+      }),
     );
     const input = {
       site: '01646500',
@@ -398,7 +434,371 @@ describe('waterGetSeries', () => {
     });
   });
 
-  it('rejects a malformed parameterCd at Zod parse level, before any NWIS call', () => {
+  describe('Water Data request and failure wiring', () => {
+    const INPUT = {
+      site: '01646500',
+      parameterCd: '00060',
+      startDate: '2024-01-01',
+      endDate: '2024-12-31',
+    } as const;
+
+    it('sends one request descriptor per call: its own 45 s budget, the caller signal, the tool name', async () => {
+      mockGetSeries.mockResolvedValue([makeSeries(3, { statCd: '00001', statName: 'Maximum' })]);
+      const controller = new AbortController();
+      const ctx = createMockContext({ errors: waterGetSeries.errors, signal: controller.signal });
+      await waterGetSeries.handler(
+        waterGetSeries.input.parse({ ...INPUT, seriesType: 'daily', statCd: '00001' }),
+        ctx,
+      );
+      expect(mockGetSeries).toHaveBeenCalledTimes(1);
+      const [params, request] = mockGetSeries.mock.calls[0]!;
+      expect(params).toEqual({ ...INPUT, seriesType: 'daily', statCd: '00001' });
+      expect(request).toMatchObject({
+        ctx,
+        operation: 'water_get_series',
+        signal: controller.signal,
+      });
+      expect(request.deadline.budgetMs).toBe(45_000);
+      expect(request.deadline.remainingMs()).toBeGreaterThan(0);
+    });
+
+    it('maps a spent call budget to upstream_timeout, keeping its deadline diagnostics', async () => {
+      const message =
+        'water_get_series ran out of the 45000 ms budget for this call after 3 attempts.';
+      mockGetSeries.mockRejectedValue(
+        timeout(message, {
+          reason: 'retry_deadline_exceeded',
+          deadlineMs: 45_000,
+          elapsedMs: 45_002,
+          retryAttempts: 3,
+          operation: 'water_get_series',
+        }),
+      );
+      const result = await runToolContract(waterGetSeries, INPUT);
+      expect(result.structuredContent).toMatchObject({
+        error: {
+          code: JsonRpcErrorCode.Timeout,
+          message,
+          data: {
+            reason: 'upstream_timeout',
+            recovery: recovery('upstream_timeout'),
+            deadlineMs: 45_000,
+            retryAttempts: 3,
+            operation: 'water_get_series',
+          },
+        },
+      });
+      expect(textContent(result.content[0])).toContain(recovery('upstream_timeout').hint);
+    });
+
+    it.each([
+      [
+        'a rate limit',
+        rateLimited(
+          'USGS Water Data OGC API rate limit reached (OVER_RATE_LIMIT). Retry after 120 s.',
+          {
+            reason: 'rate_limited',
+            retryAfter: 120,
+            recovery: { hint: 'Wait the retryAfter interval before calling again.' },
+          },
+        ),
+        JsonRpcErrorCode.RateLimited,
+        'rate_limited',
+      ],
+      [
+        'a rejected API key',
+        configurationError(
+          'USGS Water Data OGC API rejected the configured USGS_API_KEY (API_KEY_INVALID).',
+          {
+            reason: 'api_key_rejected',
+            recovery: { hint: 'The server operator must replace USGS_API_KEY.' },
+          },
+        ),
+        JsonRpcErrorCode.ConfigurationError,
+        'api_key_rejected',
+      ],
+    ])('passes %s through unchanged', async (_case, error, code, reason) => {
+      mockGetSeries.mockRejectedValue(error);
+      await expect(contractError(waterGetSeries, INPUT)).resolves.toMatchObject({
+        code,
+        message: error.message,
+        data: { reason, recovery: error.data?.['recovery'] },
+      });
+    });
+
+    it("rethrows a failure unclassified once the caller's signal has aborted", async () => {
+      const controller = new AbortController();
+      controller.abort(new DOMException('Caller cancelled the request', 'AbortError'));
+      const raised = timeout(
+        'water_get_series ran out of the 45000 ms budget for this call after 1 attempt.',
+        {
+          reason: 'retry_deadline_exceeded',
+        },
+      );
+      mockGetSeries.mockRejectedValue(raised);
+      const ctx = createMockContext({ errors: waterGetSeries.errors, signal: controller.signal });
+      await expect(waterGetSeries.handler(waterGetSeries.input.parse(INPUT), ctx)).rejects.toBe(
+        raised,
+      );
+    });
+
+    it('rethrows an unclassified error rather than guessing a reason', async () => {
+      mockGetSeries.mockRejectedValue(new TypeError('fetch failed'));
+      const ctx = createMockContext({ errors: waterGetSeries.errors });
+      await expect(waterGetSeries.handler(waterGetSeries.input.parse(INPUT), ctx)).rejects.toThrow(
+        'fetch failed',
+      );
+    });
+  });
+
+  describe('methodId carries the OGC time-series ID (#32)', () => {
+    const MEAN_ID = '063be3d188fc43859c6436f021a9a31f';
+    const MAX_ID = '7f2a9c1e5b3d4a6f8e0c2b4d6f8a0c2e';
+    const SONDE_ID = 'dcc1a8a32dc84a149b49c29bc18bd45a';
+    const INPUT = {
+      site: '01646500',
+      parameterCd: '00010',
+      startDate: '2024-01-01',
+      endDate: '2024-01-31',
+    } as const;
+    const offered = () => [
+      makeSeries(31, { statCd: '00003', statName: 'Mean', methodId: MEAN_ID }),
+      makeSeries(31, { statCd: '00001', statName: 'Maximum', methodId: MAX_ID }),
+      makeSeries(20, {
+        statCd: '00003',
+        statName: 'Mean',
+        methodId: SONDE_ID,
+        methodDescription: 'From multiparameter sonde',
+      }),
+    ];
+
+    it('accepts a timeSeriesId from water_get_site_data_catalog as methodId', async () => {
+      mockGetSeries.mockResolvedValue(offered());
+      const result = await runToolContract(waterGetSeries, { ...INPUT, methodId: SONDE_ID });
+      expect(result.isError).toBeFalsy();
+      expect(result.structuredContent).toMatchObject({
+        statCd: '00003',
+        methodId: SONDE_ID,
+        methodDescription: 'From multiparameter sonde',
+        totalRecords: 20,
+      });
+      expect(textContent(result.content[0])).toContain(`**Method ID:** ${SONDE_ID}`);
+    });
+
+    it('fails a legacy numeric methodId as method_not_found, listing the current IDs on both surfaces', async () => {
+      mockGetSeries.mockResolvedValue(offered());
+      const result = await runToolContract(waterGetSeries, { ...INPUT, methodId: '68478' });
+
+      expect(result.isError).toBe(true);
+      const error = (
+        result.structuredContent as {
+          error: {
+            code: number;
+            message: string;
+            data: { reason: string; recovery: { hint: string } };
+          };
+        }
+      ).error;
+      expect(error.code).toBe(JsonRpcErrorCode.NotFound);
+      expect(error.data.reason).toBe('method_not_found');
+      expect(error.message).toBe(
+        'No series with methodId "68478" was returned for site 01646500 parameter 00010 (daily) over 2024-01-01 to 2024-01-31. Numeric NWIS method IDs match no series: methodId takes a 32-character time-series ID, such as the ones this error lists.',
+      );
+      for (const id of [MEAN_ID, MAX_ID, SONDE_ID]) expect(error.data.recovery.hint).toContain(id);
+      const text = textContent(result.content[0]);
+      for (const id of [MEAN_ID, MAX_ID, SONDE_ID]) expect(text).toContain(id);
+      expect(text).toContain('(reason method_not_found');
+    });
+
+    it('omits the numeric note for an unknown time-series ID, listing only the requested statistic', async () => {
+      mockGetSeries.mockResolvedValue(offered());
+      const unknown = 'ffffffffffffffffffffffffffffffff';
+      const error = await contractError(waterGetSeries, {
+        ...INPUT,
+        statCd: '00003',
+        methodId: unknown,
+      });
+      expect(error.message).toBe(
+        `No series with methodId "${unknown}" and statCd 00003 was returned for site 01646500 parameter 00010 (daily) over 2024-01-01 to 2024-01-31.`,
+      );
+      const hint = (error.data['recovery'] as { hint: string }).hint;
+      expect(hint).toContain(MEAN_ID);
+      expect(hint).toContain(SONDE_ID);
+      expect(hint).not.toContain(MAX_ID);
+    });
+
+    it('describes methodId as the catalog timeSeriesId on input and output', () => {
+      const input = waterGetSeries.input.shape.methodId.description ?? '';
+      const output = waterGetSeries.output.shape.methodId.description ?? '';
+      expect(input).toContain('timeSeriesId from water_get_site_data_catalog');
+      expect(output).toContain('timeSeriesId');
+      expect(`${input} ${output}`).not.toMatch(/NWIS method ID of/);
+    });
+
+    it('has water_get_site_data_catalog hand its timeSeriesId to methodId', async () => {
+      const { waterGetSiteDataCatalog } = await import(
+        '@/mcp-server/tools/definitions/water-get-site-data-catalog.tool.js'
+      );
+      const field = waterGetSiteDataCatalog.output.shape.series.element.shape.timeSeriesId;
+      expect(waterGetSiteDataCatalog.description).toContain('timeSeriesId as methodId');
+      expect(waterGetSiteDataCatalog.description).not.toContain('never an NWIS methodId');
+      expect(field.description).toContain('water_get_series methodId');
+      expect(field.description).not.toContain('not an NWIS methodId');
+    });
+  });
+
+  it('refuses a daily statCd on an instantaneous series before any upstream request', async () => {
+    const result = await runToolContract(waterGetSeries, {
+      site: '01646500',
+      parameterCd: '00060',
+      startDate: '2024-01-01',
+      endDate: '2024-01-03',
+      seriesType: 'instantaneous',
+      statCd: '00003',
+    });
+    expect(result.structuredContent).toMatchObject({
+      error: {
+        code: JsonRpcErrorCode.ValidationError,
+        data: {
+          reason: 'stat_cd_for_instantaneous',
+          recovery: recovery('stat_cd_for_instantaneous'),
+        },
+      },
+    });
+    expect(mockGetSeries).not.toHaveBeenCalled();
+    expect(water.requests).toHaveLength(0);
+  });
+
+  it('describes series selection without WaterServices wording', () => {
+    const surface = JSON.stringify({
+      description: waterGetSeries.description,
+      errors: waterGetSeries.errors,
+      input: Object.fromEntries(
+        Object.entries(waterGetSeries.input.shape).map(([k, v]) => [k, v.description]),
+      ),
+    });
+    for (const term of ['WaterML', 'IV service', 'DV service', 'NWIS rejected', 'NWIS returned']) {
+      expect(surface).not.toContain(term);
+    }
+  });
+
+  describe('definition language matches what the observations service emits (#32)', () => {
+    const output = waterGetSeries.output.shape;
+
+    it('gives parameterName, unitCode, and methodDescription examples the service produces', () => {
+      expect(output.parameterName.description).toContain('"Discharge, cubic feet per second"');
+      expect(output.unitCode.description).toContain('"deg C"');
+      expect(output.methodDescription.description).toContain(
+        '"From multiparameter sonde, [Discontinued]"',
+      );
+      const fields = JSON.stringify(
+        Object.fromEntries(Object.entries(output).map(([key, field]) => [key, field.description])),
+      );
+      for (const stale of ['Streamflow', 'ft³/s', 'AUXILIARY GAGE']) {
+        expect(fields).not.toContain(stale);
+      }
+    });
+
+    it('says a qualifier word with no code passes through as written', () => {
+      const qualifier = output.values.element.shape.qualifiers.element;
+      expect(qualifier.description).toContain('"OTHERAGENCY"');
+    });
+
+    it('says otherSeries lists series with no records in the range, in the service order', () => {
+      const description = output.otherSeries.description ?? '';
+      expect(description).toContain('recordCount 0');
+      expect(description).toContain('ordered by statistic code');
+    });
+
+    it('names the tie rule behind the default method and statistic picks', () => {
+      expect(waterGetSeries.input.shape.methodId.description).toContain(
+        'ties going to the site’s default sensor (methodDescription null) over a labeled one such as an auxiliary gage, then to the series that began first',
+      );
+      expect(waterGetSeries.input.shape.statCd.description).toContain(
+        'the lowest-numbered statistic that has values',
+      );
+    });
+  });
+
+  describe('the catalog’s instantaneous statistic code', () => {
+    it('reads statCd "00011" (as water_get_site_data_catalog lists instantaneous rows) as the instantaneous series', async () => {
+      mockGetSeries.mockResolvedValue([makeSeries(5, { statCd: '00000', statName: null })]);
+      const ctx = createMockContext({ errors: waterGetSeries.errors });
+      const input = waterGetSeries.input.parse({
+        site: '01646500',
+        parameterCd: '00060',
+        startDate: '2024-01-01',
+        endDate: '2024-01-05',
+        seriesType: 'instantaneous',
+        statCd: '00011',
+      });
+      const result = await waterGetSeries.handler(input, ctx);
+      expect(result.statCd).toBe('00000');
+      expect(result.totalRecords).toBe(5);
+    });
+
+    it('says in the statCd description that "00011" reads as the instantaneous statistic', () => {
+      expect(waterGetSeries.input.shape.statCd.description).toContain('"00011"');
+    });
+  });
+
+  describe('default sensor on a record-count tie (base and auxiliary gage)', () => {
+    /** 12396500 gage height: both gages report every 15 minutes, so their record counts tie. */
+    const AUXILIARY_ID = '1c9d1f64a6cd4093913ab88ec7c41991';
+    const BASE_ID = 'dea67e89fcc54472ae9db8e097a637fb';
+    const gageSeries = (methodId: string, methodDescription: string | null) =>
+      makeSeries(8, {
+        siteNumber: '12396500',
+        parameterCd: '00065',
+        parameterName: 'Gage height, feet',
+        unitCode: 'ft',
+        statCd: '00000',
+        statName: null,
+        methodId,
+        methodDescription,
+      });
+    const input = () =>
+      waterGetSeries.input.parse({
+        site: '12396500',
+        parameterCd: '00065',
+        startDate: '2024-01-01',
+        endDate: '2024-01-08',
+        seriesType: 'instantaneous',
+      });
+
+    it('returns the unlabeled default sensor even when the labeled one comes first', async () => {
+      mockGetSeries.mockResolvedValue([
+        gageSeries(AUXILIARY_ID, 'AUXILIARY GAGE'),
+        gageSeries(BASE_ID, null),
+      ]);
+      const ctx = createMockContext({ errors: waterGetSeries.errors });
+      const result = await waterGetSeries.handler(input(), ctx);
+      expect(result.methodId).toBe(BASE_ID);
+      expect(result.otherSeries.map((s) => s.methodId)).toEqual([AUXILIARY_ID]);
+    });
+
+    it('keeps the service order between two labeled sensors', async () => {
+      mockGetSeries.mockResolvedValue([
+        gageSeries(AUXILIARY_ID, 'AUXILIARY GAGE'),
+        gageSeries(BASE_ID, 'RIGHT BANK'),
+      ]);
+      const ctx = createMockContext({ errors: waterGetSeries.errors });
+      const result = await waterGetSeries.handler(input(), ctx);
+      expect(result.methodId).toBe(AUXILIARY_ID);
+    });
+
+    it('still prefers the sensor with more records over the unlabeled one', async () => {
+      mockGetSeries.mockResolvedValue([
+        { ...gageSeries(AUXILIARY_ID, 'AUXILIARY GAGE'), values: makeSeries(9).values },
+        gageSeries(BASE_ID, null),
+      ]);
+      const ctx = createMockContext({ errors: waterGetSeries.errors });
+      const result = await waterGetSeries.handler(input(), ctx);
+      expect(result.methodId).toBe(AUXILIARY_ID);
+    });
+  });
+
+  it('rejects a malformed parameterCd at Zod parse level, before any upstream call', () => {
     expect(() =>
       waterGetSeries.input.parse({
         site: '01646500',
@@ -437,7 +837,7 @@ describe('waterGetSeries', () => {
     const text = textContent(blocks[0]);
     expect(text).toContain('01646500');
     expect(text).toContain('00060');
-    expect(text).toContain('Streamflow');
+    expect(text).toContain('Discharge, cubic feet per second');
     expect(text).toContain('5');
   });
 
@@ -476,7 +876,7 @@ describe('waterGetSeries', () => {
   });
 
   describe('missing records on the canvas (#45)', () => {
-    it('stages a record NWIS reported as no data with a null value, keeping its qualifiers', async () => {
+    it('stages a record the upstream reported as no data with a null value, keeping its qualifiers', async () => {
       const series = makeSeries(600);
       series.values[0] = { dateTime: '2024-01-01T00:00:00', value: '', qualifiers: ['P', 'Ice'] };
       mockGetSeries.mockResolvedValue([series]);
@@ -687,7 +1087,7 @@ describe('waterGetSeries', () => {
       expect((await stage({})).name).toBe((await stage({ statCd: '00003', methodId: '31' })).name);
     });
 
-    it('suffixes a filtered request even when NWIS returned one series', async () => {
+    it('suffixes a filtered request even when the service returned one series', async () => {
       const bare = await stage({}, [makeSeries(600)]);
       const filtered = await stage({ statCd: '00003' }, [makeSeries(600)]);
 
@@ -834,7 +1234,7 @@ describe('waterGetSeries', () => {
   });
 
   describe('supplied canvas_id resolution (#40)', () => {
-    it('resolves a supplied canvas_id before the NWIS request', async () => {
+    it('resolves a supplied canvas_id before the upstream request', async () => {
       const acquire = vi
         .fn()
         .mockRejectedValue(
