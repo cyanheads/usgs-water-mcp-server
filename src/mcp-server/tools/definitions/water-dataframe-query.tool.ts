@@ -16,33 +16,26 @@ import { acquireCanvas } from '@/services/canvas/acquire-canvas.js';
 import { getCanvas } from '@/services/canvas/canvas-accessor.js';
 
 /**
- * Canvas rejections this tool maps onto its `invalid_sql` contract entry, with guidance scoped to
- * what an MCP caller controls. A `null` value keeps the engine's own message — it names the
- * offending column or function and is directly actionable. Reasons absent from this map are
+ * Canvas rejections of the submitted SQL that this tool reports under its `invalid_sql` contract
+ * entry: the gate's own refusals, and the engine-side ones the DuckDB provider raises past it — a
+ * statement the engine could not parse, a write or file read it refused, a cast that failed on the
+ * staged rows. Each keeps the canvas message and `data.recovery`. Both are written for an MCP
+ * caller, and the hint follows the rejection's class (a PIVOT without an IN list, a syntax error,
+ * an unknown function, a failed conversion) where the contract's one recovery line cannot; the
+ * framework fills that line only when the canvas sends no hint. Reasons absent from this set are
  * handled by their own branch in the catch, or re-thrown untouched.
- *
- * The rewritten entries exist because the engine wording addresses a direct `CanvasInstance`
- * consumer, not an MCP caller: the non-SELECT rejection points at `registerTable`/`drop`/`clear`,
- * which is not reachable through this tool — it exposes read-only SELECT and nothing else.
  */
-const SQL_GATE_MESSAGES: Record<string, string | null> = {
-  [SQL_GATE_REASONS.nonSelectStatement]:
-    'This tool runs read-only SELECT statements only; the submitted statement is not a SELECT.',
-  [SQL_GATE_REASONS.multiStatement]: 'Submit exactly one SELECT statement per call.',
-  [SQL_GATE_REASONS.invalidSql]: null,
-  [SQL_GATE_REASONS.deniedFunction]: null,
-  [SQL_GATE_REASONS.deniedFunctionInPlan]: null,
-  [SQL_GATE_REASONS.planOperatorNotAllowed]: null,
-  /**
-   * Engine-side rejections, raised past the gate by the DuckDB provider rather than by it. All
-   * three are caller-side — a statement the engine could not parse, a write it refused, or a cast
-   * that failed on the staged rows — so they belong in the same `invalid_sql` funnel. Each keeps
-   * the engine's own message: it names the offending token, column, or value.
-   */
-  [DUCKDB_ERROR_REASONS.sqlParseError]: null,
-  [DUCKDB_ERROR_REASONS.sqlReadOnly]: null,
-  [DUCKDB_ERROR_REASONS.sqlExecutionError]: null,
-};
+const INVALID_SQL_REASONS: ReadonlySet<string> = new Set([
+  SQL_GATE_REASONS.nonSelectStatement,
+  SQL_GATE_REASONS.multiStatement,
+  SQL_GATE_REASONS.invalidSql,
+  SQL_GATE_REASONS.deniedFunction,
+  SQL_GATE_REASONS.deniedFunctionInPlan,
+  SQL_GATE_REASONS.planOperatorNotAllowed,
+  DUCKDB_ERROR_REASONS.sqlParseError,
+  DUCKDB_ERROR_REASONS.sqlReadOnly,
+  DUCKDB_ERROR_REASONS.sqlExecutionError,
+]);
 
 /**
  * Reason the canvas provider sets when a query names a table that is not staged. Not part of
@@ -161,16 +154,20 @@ export const waterDataframeQuery = tool('water_dataframe_query', {
           );
         }
         if (reason === SQL_GATE_REASONS.systemCatalogAccess) {
+          /**
+           * The canvas message names the catalog it matched, and a column alias or CTE spelled like
+           * an internal metadata view is refused too, so that name is what tells the caller which
+           * reference to change. The contract recovery names this server's describe tool.
+           */
+          throw ctx.fail('system_catalog_access', err.message, undefined, { cause: err });
+        }
+        if (typeof reason === 'string' && INVALID_SQL_REASONS.has(reason)) {
           throw ctx.fail(
-            'system_catalog_access',
-            'System catalog tables are not queryable here; only the tables staged on this canvas are.',
-            undefined,
+            'invalid_sql',
+            err.message,
+            { recovery: err.data?.['recovery'] },
             { cause: err },
           );
-        }
-        const scoped = typeof reason === 'string' ? SQL_GATE_MESSAGES[reason] : undefined;
-        if (scoped !== undefined) {
-          throw ctx.fail('invalid_sql', scoped ?? err.message, undefined, { cause: err });
         }
       }
       throw err;

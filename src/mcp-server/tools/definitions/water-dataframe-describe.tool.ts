@@ -84,14 +84,14 @@ export const waterDataframeDescribe = tool('water_dataframe_describe', {
 
     const instance = await acquireCanvas(canvas, input.canvas_id, ctx);
 
-    const tableInfos = await instance.describe();
+    const tableInfos = await instance.describe({ signal: ctx.signal });
     const tables = tableInfos.map((t) => ({
       name: t.name,
-      kind: t.kind as 'table' | 'view',
+      kind: t.kind,
       row_count: t.rowCount,
       columns: t.columns.map((c) => ({
         name: c.name,
-        type: String(c.type),
+        type: c.type,
         nullable: c.nullable ?? false,
       })),
     }));

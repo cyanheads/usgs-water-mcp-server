@@ -1,12 +1,14 @@
 /**
  * @fileoverview Tests for water_dataframe_describe tool — list DataCanvas tables.
- * Mocks the canvas-accessor to avoid live DuckDB.
+ * Mocks the canvas-accessor: most cases hand it a stub canvas, and the cancellation block hands it
+ * a real DuckDB-backed canvas.
  * @module tests/tools/water-dataframe-describe.tool.test
  */
 
+import { CanvasRegistry, DataCanvas, DuckdbProvider } from '@cyanheads/mcp-ts-core/canvas';
 import { JsonRpcErrorCode, notFound } from '@cyanheads/mcp-ts-core/errors';
-import { createMockContext } from '@cyanheads/mcp-ts-core/testing';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { createMockContext, runToolContract } from '@cyanheads/mcp-ts-core/testing';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { waterDataframeDescribe } from '@/mcp-server/tools/definitions/water-dataframe-describe.tool.js';
 import { textContent } from '../helpers/content-block.js';
 import { captureError, contractError, declaredRecovery } from '../helpers/error-contract.js';
@@ -179,5 +181,81 @@ describe('waterDataframeDescribe', () => {
     expect(text).toContain('600');
     expect(text).toContain('date_time');
     expect(text).toContain('VARCHAR');
+  });
+
+  describe('against a real DuckDB canvas', () => {
+    const SERIES_TABLE = 'water_series_01646500_00060_dv_20240101_20240102';
+    let canvas: DataCanvas;
+    let canvasId: string;
+
+    beforeEach(async () => {
+      const provider = new DuckdbProvider({
+        defaultRowLimit: 10_000,
+        exportRootPath: '.canvas-exports',
+        memoryLimitMb: 128,
+        schemaSniffRows: 100,
+      });
+      const registry = new CanvasRegistry(
+        provider,
+        { absoluteCapMs: 600_000, maxCanvasesPerTenant: 10, sweeperIntervalMs: 0, ttlMs: 60_000 },
+        () => 0,
+      );
+      canvas = new DataCanvas(provider, registry);
+      mockCanvasInstance = canvas;
+      const instance = await canvas.acquire(undefined, createMockContext());
+      canvasId = instance.canvasId;
+      await instance.registerTable(SERIES_TABLE, [
+        { date_time: '2024-01-01', value: '5000' },
+        { date_time: '2024-01-02', value: '5200' },
+      ]);
+    });
+
+    afterEach(async () => {
+      await canvas.shutdown(createMockContext());
+    });
+
+    it('describes the staged table on both surfaces', async () => {
+      const result = await runToolContract(waterDataframeDescribe, { canvas_id: canvasId });
+
+      expect(result.structuredContent).toEqual({
+        canvas_id: canvasId,
+        tables: [
+          {
+            name: SERIES_TABLE,
+            kind: 'table',
+            row_count: 2,
+            columns: [
+              { name: 'date_time', type: 'VARCHAR', nullable: true },
+              { name: 'value', type: 'VARCHAR', nullable: true },
+            ],
+          },
+        ],
+      });
+      const text = textContent(result.content?.[0]);
+      expect(text).toContain(`### ${SERIES_TABLE} (table, 2 rows)`);
+      expect(text).toContain('`value` — VARCHAR (nullable)');
+    });
+
+    it('stops the describe when the caller cancels, reporting the canvas cancellation', async () => {
+      const controller = new AbortController();
+      const pending = runToolContract(
+        waterDataframeDescribe,
+        { canvas_id: canvasId },
+        { context: { signal: controller.signal } },
+      );
+      // The handler has started — it is awaiting the canvas — and has not reached describe().
+      controller.abort(new DOMException('Caller cancelled the request', 'AbortError'));
+      const result = await pending;
+
+      expect(result.isError).toBe(true);
+      // The canvas's own cancellation message: only a describe() that saw the signal raises it.
+      expect(result.structuredContent).toMatchObject({
+        error: {
+          code: JsonRpcErrorCode.RequestCancelled,
+          message: 'Canvas describe was cancelled.',
+        },
+      });
+      expect(textContent(result.content?.[0])).toBe('Error: Canvas describe was cancelled.');
+    });
   });
 });

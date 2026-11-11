@@ -1,13 +1,27 @@
 /**
  * @fileoverview Tests for water_dataframe_query tool — SQL SELECT against canvas tables.
- * Mocks the canvas-accessor to avoid live DuckDB.
+ * Mocks the canvas-accessor: most cases hand it a stub canvas, and the refusal block hands it a
+ * real DuckDB-backed canvas, so the mapping is checked against what the installed canvas raises.
  * @module tests/tools/water-dataframe-query.tool.test
  */
 
-import { DUCKDB_ERROR_REASONS, type DuckdbErrorReason } from '@cyanheads/mcp-ts-core/canvas';
-import { JsonRpcErrorCode, notFound, validationError } from '@cyanheads/mcp-ts-core/errors';
-import { createMockContext } from '@cyanheads/mcp-ts-core/testing';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import {
+  type CanvasInstance,
+  CanvasRegistry,
+  DataCanvas,
+  DUCKDB_ERROR_REASONS,
+  type DuckdbErrorReason,
+  DuckdbProvider,
+} from '@cyanheads/mcp-ts-core/canvas';
+import {
+  JsonRpcErrorCode,
+  McpError,
+  notFound,
+  validationError,
+} from '@cyanheads/mcp-ts-core/errors';
+import { createMockContext, runToolContract } from '@cyanheads/mcp-ts-core/testing';
+import { escapeMarkdownInline } from '@cyanheads/mcp-ts-core/utils';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { waterDataframeQuery } from '@/mcp-server/tools/definitions/water-dataframe-query.tool.js';
 import { textContent } from '../helpers/content-block.js';
 import { captureError, contractError, declaredRecovery } from '../helpers/error-contract.js';
@@ -21,63 +35,98 @@ vi.mock('@/services/canvas/canvas-accessor.js', () => ({
 const recovery = (reason: string) => declaredRecovery(waterDataframeQuery.errors, reason);
 
 /**
+ * Recovery hints the canvas attaches to its rejections, copied from @cyanheads/mcp-ts-core
+ * (`sqlGate`, `DuckdbProvider`, `CanvasRegistry`). The tool carries each `invalid_sql` one through,
+ * so these are the hints a caller receives.
+ */
+const CANVAS_HINTS = {
+  nonSelect:
+    'Rewrite as a single SELECT — this surface is read-only and cannot create, alter, or drop tables.',
+  pivot:
+    'A PIVOT runs as one SELECT only when it lists its values, as ON column IN (value, ...): list them, or rewrite as a single SELECT — this surface is read-only and cannot create, alter, or drop tables.',
+  multiStatement:
+    'Send exactly one SELECT statement; split multi-statement SQL into separate calls.',
+  syntax:
+    'Fix the SQL syntax the message names and send a single read-only SELECT. Put AS before an alias that is a SQL keyword, or double-quote it.',
+  binder:
+    "Correct the column or function the message names; list the staged columns with this server's dataframe-describe tool.",
+  catalog:
+    "Correct the function, type, collation, or schema name the message reports missing — list the staged tables with this server's dataframe-describe tool.",
+  deniedFunction: 'Remove the function the message names — only the staged tables are queryable.',
+  bareCurrentSchema:
+    'Qualify a column named current_schema with its table (<table>.current_schema), or remove the reference — the current_schema() function is not available.',
+  conversion:
+    'Wrap the cast in TRY_CAST, or filter out the rows the message names before converting them.',
+  readOnly:
+    "Send a read-only SELECT over the staged tables — list them with this server's dataframe-describe tool. This surface reads no files and cannot create, alter, or drop anything.",
+  systemCatalog:
+    "Query only the staged dataframe tables; use this server's dataframe-describe tool to list them.",
+  missingTable:
+    "Re-run the tool that produced this table to stage it again, or list the currently staged tables with this server's dataframe-describe tool.",
+  canvasNotFound:
+    'Re-run the tool that produced this canvas_id to stage fresh data, or verify the id was copied correctly.',
+} as const;
+
+/**
  * Errors copied verbatim from @cyanheads/mcp-ts-core so these tests assert against what the canvas
- * actually raises. Every one is a structured `McpError` carrying `data.reason`:
- * `CanvasRegistry.canvasNotFound()` and the `DuckdbProvider.assertReadOnlySql` / `sqlGate` paths.
+ * actually raises — the real-canvas block checks each against the installed canvas. Every one is a
+ * structured `McpError` carrying `data.reason` and `data.recovery`: `CanvasRegistry.canvasNotFound()`
+ * and the `DuckdbProvider.assertReadOnlySql` / `sqlGate` paths.
  */
 const CANVAS_ERRORS = {
   canvasNotFound: (canvasId: string) =>
     notFound('Canvas not found or expired.', {
       reason: 'canvas_not_found',
       canvasId,
-      recovery: {
-        hint: 'Re-run the tool that produced this canvas_id to stage fresh data, or verify the id was copied correctly.',
-      },
+      recovery: { hint: CANVAS_HINTS.canvasNotFound },
     }),
-  /** `assertSelectOnly` — the mutation-statement rejection that names internal canvas methods (#25). */
-  nonSelect: (statementType: string) =>
-    validationError(
-      `Canvas query must be SELECT; got ${statementType}. Mutations must use registerTable, drop, or clear.`,
-      { reason: 'non_select_statement', statementType },
-    ),
+  /** A single statement that parses but is not a SELECT, refused before it is prepared. */
+  nonSelect: () =>
+    validationError('Canvas query must be SELECT.', {
+      reason: 'non_select_statement',
+      statementType: 'UNKNOWN',
+      recovery: { hint: CANVAS_HINTS.nonSelect },
+    }),
   /** `assertNoSystemCatalogs` — provoked by this tool's own `denySystemCatalogs: true`. */
   systemCatalog: (catalog: string) =>
     validationError(
-      `Canvas query references a system catalog: ${catalog}. System catalogs are not permitted when denySystemCatalogs is enabled.`,
-      { reason: 'system_catalog_access', catalog },
+      `Canvas query references a system catalog: ${catalog}. System catalogs are not permitted.`,
+      { reason: 'system_catalog_access', catalog, recovery: { hint: CANVAS_HINTS.systemCatalog } },
     ),
   /** Provider prepare step — a SELECT naming a table that is not staged. */
   missingTable: (tableName: string) =>
     notFound(
-      `Canvas table "${tableName}" does not exist. The table may have expired or been dropped — re-stage it or call describe() to inspect the canvas.`,
-      {
-        reason: 'missing_table',
-        tableName,
-        recovery: {
-          hint: 'Re-stage the table via registerTable() or call describe() to see what tables are currently available.',
-        },
-      },
+      `Canvas table "${tableName}" does not exist. The table may have expired, been dropped, or the name may be mistyped.`,
+      { reason: 'missing_table', tableName, recovery: { hint: CANVAS_HINTS.missingTable } },
     ),
-  /** Provider prepare step — a SELECT-shaped statement DuckDB's binder rejected. */
+  /** Provider prepare step — a SELECT naming a column DuckDB's binder could not resolve. */
   binderFailure: (binderMessage: string) =>
     validationError(`Canvas query failed to prepare: ${binderMessage}`, {
       reason: 'invalid_sql',
       statementType: 'UNKNOWN',
       binderMessage,
+      recovery: { hint: CANVAS_HINTS.binder },
     }),
   /** `assertNoDeniedFunctions` — file-reading table functions. */
   deniedFunction: (fn: string) =>
     validationError(
       `Canvas query references disallowed table function: ${fn}. File-reading and external-data functions are not permitted.`,
-      { reason: 'denied_function', function: fn },
+      { reason: 'denied_function', function: fn, recovery: { hint: CANVAS_HINTS.deniedFunction } },
     ),
   /**
-   * `classifyDuckdbError` — an engine-side rejection raised past the gate. All three classes are
-   * caller-side, so they belong in the same `invalid_sql` funnel as the gate's own rejections.
+   * `classifyDuckdbError` — an engine-side rejection raised past the gate, with the hint its class
+   * calls for. All three classes are caller-side, so they belong in the same `invalid_sql` funnel
+   * as the gate's own rejections.
    */
-  engineFailure: (reason: DuckdbErrorReason, message: string) =>
-    validationError(message, { reason }),
+  engineFailure: (reason: DuckdbErrorReason, message: string, hint: string) =>
+    validationError(message, { reason, recovery: { hint } }),
 };
+
+/** The code, message, and data of a canvas rejection — what reaches the wire. */
+function wireShape(error: unknown) {
+  if (!(error instanceof McpError)) throw new Error(`Expected an McpError, got ${String(error)}`);
+  return { code: error.code, message: error.message, data: error.data };
+}
 
 /** Canvas whose `query` rejects with `err`. */
 function canvasRejecting(err: unknown) {
@@ -194,7 +243,7 @@ describe('waterDataframeQuery', () => {
     expect(acquire).not.toHaveBeenCalled();
   });
 
-  it('throws invalid_sql when the binder rejects a SELECT, keeping the message that names the fault', async () => {
+  it('throws invalid_sql when the binder rejects a SELECT, keeping the message and hint that name the fault', async () => {
     mockCanvasInstance = canvasRejecting(
       CANVAS_ERRORS.binderFailure('Referenced column "valu" not found in FROM clause!'),
     );
@@ -204,7 +253,7 @@ describe('waterDataframeQuery', () => {
     });
     expect(error).toMatchObject({
       code: JsonRpcErrorCode.ValidationError,
-      data: { reason: 'invalid_sql', recovery: recovery('invalid_sql') },
+      data: { reason: 'invalid_sql', recovery: { hint: CANVAS_HINTS.binder } },
     });
     // The binder names the offending column — that is actionable, so it must survive the mapping.
     expect(error.message).toContain('valu');
@@ -220,29 +269,44 @@ describe('waterDataframeQuery', () => {
     const error = (await captureError(() => waterDataframeQuery.handler(input, ctx))) as Error;
     expect(error).toMatchObject({
       code: JsonRpcErrorCode.ValidationError,
-      data: { reason: 'invalid_sql' },
+      data: { reason: 'invalid_sql', recovery: { hint: CANVAS_HINTS.deniedFunction } },
     });
     expect(error.message).toContain('read_csv');
   });
 
-  it('rewords the non-SELECT rejection so it never names registerTable/drop/clear (regression: #25)', async () => {
-    mockCanvasInstance = canvasRejecting(CANVAS_ERRORS.nonSelect('DELETE'));
+  it('fills the contract recovery for a funneled rejection the canvas sent without a hint', async () => {
+    mockCanvasInstance = canvasRejecting(
+      validationError('Canvas query failed to prepare: Binder Error: x', { reason: 'invalid_sql' }),
+    );
+    await expect(
+      contractError(waterDataframeQuery, {
+        canvas_id: 'canvas0001',
+        sql: 'SELECT x FROM water_series_01646500_00060',
+      }),
+    ).resolves.toMatchObject({
+      code: JsonRpcErrorCode.ValidationError,
+      data: { reason: 'invalid_sql', recovery: recovery('invalid_sql') },
+    });
+  });
+
+  it('keeps the canvas non-SELECT rejection, which names no canvas method (regression: #25)', async () => {
+    mockCanvasInstance = canvasRejecting(CANVAS_ERRORS.nonSelect());
     const error = await contractError(waterDataframeQuery, {
       canvas_id: 'canvas0001',
       sql: 'DELETE FROM water_series_01646500_00060',
     });
     expect(error).toMatchObject({
       code: JsonRpcErrorCode.ValidationError,
-      data: { reason: 'invalid_sql', recovery: recovery('invalid_sql') },
+      message: 'Canvas query must be SELECT.',
+      data: { reason: 'invalid_sql', recovery: { hint: CANVAS_HINTS.nonSelect } },
     });
     // These are CanvasInstance methods; no MCP caller can invoke them.
     expect(error.message).not.toContain('registerTable');
     expect(error.message).not.toContain('drop');
     expect(error.message).not.toContain('clear');
-    expect(error.message).toContain('SELECT');
   });
 
-  it('rewords the system-catalog rejection so it never names denySystemCatalogs (regression: #25)', async () => {
+  it('keeps the catalog the system-catalog rejection names, never denySystemCatalogs (regression: #25)', async () => {
     mockCanvasInstance = canvasRejecting(CANVAS_ERRORS.systemCatalog('information_schema'));
     const error = await contractError(waterDataframeQuery, {
       canvas_id: 'canvas0001',
@@ -257,6 +321,8 @@ describe('waterDataframeQuery', () => {
         recovery: recovery('system_catalog_access'),
       },
     });
+    // The matched name tells the caller which reference to change.
+    expect(error.message).toContain('information_schema');
     // denySystemCatalogs is a QueryOptions field this handler sets; the caller cannot reach it.
     expect(error.message).not.toContain('denySystemCatalogs');
     // The route out of this failure — query the staged tables instead — reaches the caller.
@@ -282,26 +348,29 @@ describe('waterDataframeQuery', () => {
     [
       DUCKDB_ERROR_REASONS.sqlParseError,
       'Canvas SQL rejected: Parser Error: syntax error at or near "SELEC"',
+      CANVAS_HINTS.syntax,
     ],
     [
       DUCKDB_ERROR_REASONS.sqlReadOnly,
-      'Canvas SQL rejected: Cannot execute statement in read-only mode!',
+      'Canvas SQL rejected: Permission Error: File system operations are disabled by configuration',
+      CANVAS_HINTS.readOnly,
     ],
     [
       DUCKDB_ERROR_REASONS.sqlExecutionError,
       "Canvas query failed: Conversion Error: Could not convert string 'n/a' to DOUBLE",
+      CANVAS_HINTS.conversion,
     ],
   ])(
-    'maps the engine-side %s rejection to invalid_sql, keeping the engine message',
-    async (reason, message) => {
-      mockCanvasInstance = canvasRejecting(CANVAS_ERRORS.engineFailure(reason, message));
+    'maps the engine-side %s rejection to invalid_sql, keeping the engine message and hint',
+    async (reason, message, hint) => {
+      mockCanvasInstance = canvasRejecting(CANVAS_ERRORS.engineFailure(reason, message, hint));
       const error = await contractError(waterDataframeQuery, {
         canvas_id: 'canvas0001',
         sql: 'SELECT CAST(value AS DOUBLE) FROM water_series_01646500_00060',
       });
       expect(error).toMatchObject({
         code: JsonRpcErrorCode.ValidationError,
-        data: { reason: 'invalid_sql', recovery: recovery('invalid_sql') },
+        data: { reason: 'invalid_sql', recovery: { hint } },
       });
       // The engine names the offending token, column, or value — that detail must survive the mapping.
       expect(error.message).toBe(message);
@@ -453,5 +522,177 @@ describe('waterDataframeQuery', () => {
     const blocks = waterDataframeQuery.format!(result);
     const text = textContent(blocks[0]);
     expect(text).toContain('0 row(s)');
+  });
+
+  describe('refusals from a real DuckDB canvas', () => {
+    const SERIES_TABLE = 'water_series_01646500_00060_dv_20240101_20240102';
+    let canvas: DataCanvas;
+    let instance: CanvasInstance;
+
+    beforeEach(async () => {
+      const provider = new DuckdbProvider({
+        defaultRowLimit: 10_000,
+        exportRootPath: '.canvas-exports',
+        memoryLimitMb: 128,
+        schemaSniffRows: 100,
+      });
+      const registry = new CanvasRegistry(
+        provider,
+        { absoluteCapMs: 600_000, maxCanvasesPerTenant: 10, sweeperIntervalMs: 0, ttlMs: 60_000 },
+        () => 0,
+      );
+      canvas = new DataCanvas(provider, registry);
+      mockCanvasInstance = canvas;
+      instance = await canvas.acquire(undefined, createMockContext());
+      await instance.registerTable(SERIES_TABLE, [
+        { date_time: '2024-01-01', value: '5000', qualifiers: 'A' },
+        { date_time: '2024-01-02', value: 'n/a', qualifiers: 'P' },
+      ]);
+    });
+
+    afterEach(async () => {
+      await canvas.shutdown(createMockContext());
+    });
+
+    it.each([
+      [
+        'a PIVOT without an IN list',
+        `PIVOT ${SERIES_TABLE} ON qualifiers USING count(*)`,
+        'Canvas query must be SELECT.',
+        CANVAS_HINTS.pivot,
+      ],
+      [
+        'a statement that does not parse and opens like no read',
+        'SELEC 1',
+        'Canvas query must be SELECT; the statement could not be parsed or prepared.',
+        CANVAS_HINTS.nonSelect,
+      ],
+      [
+        'a read with a syntax error',
+        `SELECT date_time value FROM ${SERIES_TABLE} WHERE`,
+        'Parser Error: syntax error at or near "WHERE"',
+        CANVAS_HINTS.syntax,
+      ],
+      [
+        'a write',
+        `DELETE FROM ${SERIES_TABLE}`,
+        'Canvas query must be SELECT.',
+        CANVAS_HINTS.nonSelect,
+      ],
+      [
+        'two statements',
+        'SELECT 1; SELECT 2',
+        'Canvas query must contain exactly one SQL statement.',
+        CANVAS_HINTS.multiStatement,
+      ],
+      [
+        'an unknown column',
+        `SELECT valu FROM ${SERIES_TABLE}`,
+        'Referenced column "valu" not found',
+        CANVAS_HINTS.binder,
+      ],
+      [
+        'an unknown function',
+        `SELECT nosuchfn(value) FROM ${SERIES_TABLE}`,
+        'Scalar Function with name nosuchfn does not exist',
+        CANVAS_HINTS.catalog,
+      ],
+      [
+        'a file-reading function',
+        "SELECT * FROM read_csv('/etc/passwd')",
+        'Canvas query references disallowed table function: read_csv.',
+        CANVAS_HINTS.deniedFunction,
+      ],
+      [
+        'an unqualified current_schema',
+        `SELECT current_schema FROM ${SERIES_TABLE}`,
+        'Canvas query references current_schema unqualified.',
+        CANVAS_HINTS.bareCurrentSchema,
+      ],
+      [
+        'a file named as a table',
+        "SELECT * FROM '/etc/passwd'",
+        'Canvas SQL rejected: "/etc/passwd" names a file, not a staged table.',
+        CANVAS_HINTS.readOnly,
+      ],
+      [
+        'a cast the staged rows cannot take',
+        `SELECT CAST(value AS DOUBLE) FROM ${SERIES_TABLE}`,
+        "Conversion Error: Could not convert string 'n/a' to DOUBLE",
+        CANVAS_HINTS.conversion,
+      ],
+    ])(
+      'reports %s as invalid_sql with the canvas message and its recovery hint',
+      async (_label, sql, message, hint) => {
+        const result = await runToolContract(waterDataframeQuery, {
+          canvas_id: instance.canvasId,
+          sql,
+        });
+        expect(result.isError).toBe(true);
+        const { error } = result.structuredContent as {
+          error: { code: number; message: string; data: Record<string, unknown> };
+        };
+        expect(error).toMatchObject({
+          code: JsonRpcErrorCode.ValidationError,
+          data: { reason: 'invalid_sql', recovery: { hint } },
+        });
+        expect(error.message).toContain(message);
+        // content[]-only clients read the same hint.
+        const text = textContent(result.content?.[0]);
+        expect(text).toContain(`Recovery: ${escapeMarkdownInline(hint)}`);
+        expect(text).toContain('(reason invalid_sql)');
+      },
+    );
+
+    it('names the catalog a system-catalog refusal matched, under the contract recovery', async () => {
+      // A column alias spelled like an internal metadata view is refused too; the matched name is
+      // what tells the caller which reference to change.
+      await expect(
+        contractError(waterDataframeQuery, {
+          canvas_id: instance.canvasId,
+          sql: `SELECT value AS pg_class FROM ${SERIES_TABLE}`,
+        }),
+      ).resolves.toMatchObject({
+        code: JsonRpcErrorCode.ValidationError,
+        message:
+          'Canvas query references a system catalog: pg_class. System catalogs are not permitted.',
+        data: { reason: 'system_catalog_access', recovery: recovery('system_catalog_access') },
+      });
+    });
+
+    it('builds each CANVAS_ERRORS fixture exactly as the installed canvas raises it', async () => {
+      const raised = async (sql: string) =>
+        wireShape(await captureError(() => instance.query(sql, { denySystemCatalogs: true })));
+
+      expect(await raised(`DELETE FROM ${SERIES_TABLE}`)).toEqual(
+        wireShape(CANVAS_ERRORS.nonSelect()),
+      );
+      expect(await raised('SELECT * FROM information_schema.tables')).toEqual(
+        wireShape(CANVAS_ERRORS.systemCatalog('information_schema')),
+      );
+      expect(await raised('SELECT * FROM water_series_09380000_00060')).toEqual(
+        wireShape(CANVAS_ERRORS.missingTable('water_series_09380000_00060')),
+      );
+      expect(await raised("SELECT * FROM read_csv('/etc/passwd')")).toEqual(
+        wireShape(CANVAS_ERRORS.deniedFunction('read_csv')),
+      );
+      const binder = await raised(`SELECT valu FROM ${SERIES_TABLE}`);
+      expect(binder).toEqual(
+        wireShape(CANVAS_ERRORS.binderFailure(String(binder.data?.['binderMessage']))),
+      );
+      const conversion = await raised(`SELECT CAST(value AS DOUBLE) FROM ${SERIES_TABLE}`);
+      expect(conversion).toEqual(
+        wireShape(
+          CANVAS_ERRORS.engineFailure(
+            DUCKDB_ERROR_REASONS.sqlExecutionError,
+            conversion.message,
+            CANVAS_HINTS.conversion,
+          ),
+        ),
+      );
+      expect(
+        wireShape(await captureError(() => canvas.acquire('abcdefghij', createMockContext()))),
+      ).toEqual(wireShape(CANVAS_ERRORS.canvasNotFound('abcdefghij')));
+    });
   });
 });
