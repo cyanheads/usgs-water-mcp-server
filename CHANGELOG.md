@@ -4,7 +4,7 @@ All notable changes to this project. Each entry links to its full per-version fi
 
 ## [0.6.0](changelog/0.6.x/0.6.0.md) — 2026-11-11 · ⚠️ Breaking
 
-Ports every tool from the retired USGS WaterServices API to the USGS Water Data APIs, adds lastObservedAt and observedWithin to water_find_sites, ranks depth-to-water as a water level, and adopts mcp-ts-core 0.13.22. Three inputs that 0.5.0 answered are now rejected.
+Ports every tool from the retired USGS WaterServices API to the USGS Water Data APIs, adds lastObservedAt and observedWithin to water_find_sites, ranks depth-to-water as a water level, and adopts mcp-ts-core 0.13.22. Four inputs that 0.5.0 answered are now rejected.
 
 ## [0.5.0](changelog/0.5.x/0.5.0.md) — 2026-10-28
 
