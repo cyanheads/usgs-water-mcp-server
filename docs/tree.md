@@ -1,6 +1,6 @@
 # usgs-water-mcp-server - Directory Structure
 
-Generated on: 2026-11-11 12:16:35
+Generated on: 2026-11-23 16:05:51
 
 ```text
 usgs-water-mcp-server/
@@ -181,6 +181,7 @@ usgs-water-mcp-server/
 │   │       ├── observations.ts
 │   │       ├── parameter-catalog.ts
 │   │       ├── request-deadline.ts
+│   │       ├── site-batch.ts
 │   │       ├── site-data-catalog.ts
 │   │       ├── site-discovery.ts
 │   │       ├── site-local-time.ts
@@ -201,10 +202,12 @@ usgs-water-mcp-server/
 │   │       ├── conditions-upstream-continuous-261620081464402-62610-20261110T1505Z.json
 │   │       ├── conditions-upstream-continuous-322323106314701-72019-20261111T0705Z.json
 │   │       ├── conditions-upstream-continuous-404931073382101-62610-P1D.json
+│   │       ├── conditions-upstream-continuous-huc-02070008-00060-20261123T1550Z.json
 │   │       ├── conditions-upstream-points-12396500-00065.json
 │   │       ├── conditions-upstream-points-261620081464402-62610.json
 │   │       ├── conditions-upstream-points-322323106314701-72019.json
 │   │       ├── conditions-upstream-points-404931073382101-62610.json
+│   │       ├── conditions-upstream-points-huc-02070008-00060.json
 │   │       ├── error-400-invalid-parameter-value.json
 │   │       ├── error-403-api-key-invalid.json
 │   │       ├── error-429-over-rate-limit.json
@@ -212,8 +215,14 @@ usgs-water-mcp-server/
 │   │       ├── expected-waterservices-dv-01646500-00060-20240101-10.json
 │   │       ├── expected-waterservices-iv-01646500-00060-dst.json
 │   │       ├── expected-waterservices-iv-readings-PT2H.json
+│   │       ├── field-measurements-01646500-00065-2025.json
+│   │       ├── field-measurements-400954074302001.json
+│   │       ├── field-measurements-day-null.json
+│   │       ├── field-measurements-metadata-01646500.json
+│   │       ├── field-measurements-metadata-400954074302001.json
 │   │       ├── monitoring-locations-by-number.json
 │   │       ├── monitoring-locations-conditions-sites.json
+│   │       ├── monitoring-locations-huc-02070008.json
 │   │       ├── observations-continuous-01646500-00060-dst-fall.json
 │   │       ├── observations-continuous-01646500-00060-dst-spring.json
 │   │       ├── observations-continuous-parameter-in.json
@@ -229,6 +238,8 @@ usgs-water-mcp-server/
 │   │       ├── observations-tsm-readings-points.json
 │   │       ├── parameter-codes-page-1.json
 │   │       ├── parameter-codes-page-2.json
+│   │       ├── peaks-01646500-00060-wy2025.json
+│   │       ├── peaks-month-null.json
 │   │       ├── site-detail-01646500.json
 │   │       ├── site-detail-364643089212301.json
 │   │       ├── site-ogc-sparse.json
@@ -243,6 +254,7 @@ usgs-water-mcp-server/
 │   │       ├── sites-bbox-st-locations.json
 │   │       ├── sites-bbox-st-peaks-trimmed.json
 │   │       ├── sites-county-51013-51510-locations.json
+│   │       ├── sites-latest-field-measurements-400954074302001.json
 │   │       ├── sites-small-bbox-gw-levels.json
 │   │       ├── sites-small-bbox-locations.json
 │   │       ├── states-us.json
@@ -257,6 +269,7 @@ usgs-water-mcp-server/
 │   │       ├── statistics-intervals-401105074120201-72019-ef4df5f1.json
 │   │       ├── statistics-intervals-404931073382101-62610-f2b89f59.json
 │   │       ├── statistics-intervals-414429074052001-72019-346545fa.json
+│   │       ├── statistics-intervals-huc-02070008-00060-1123.json
 │   │       ├── statistics-normals-01646500-00010-1111.json
 │   │       ├── statistics-normals-01646500-00060-0229.json
 │   │       ├── statistics-normals-01646500-00060-1111.json
@@ -269,7 +282,10 @@ usgs-water-mcp-server/
 │   │       ├── statistics-normals-401105074120201-72019-1110.json
 │   │       ├── statistics-normals-404931073382101-62610-1110.json
 │   │       ├── statistics-normals-414429074052001-72019-1111.json
+│   │       ├── statistics-normals-huc-02070008-00060-1123.json
 │   │       ├── statistics-normals-page.json
+│   │       ├── time-series-metadata-01646500-00060.json
+│   │       ├── time-series-metadata-400954074302001.json
 │   │       ├── time-series-metadata-daily-mean-01646500-00010.json
 │   │       ├── time-series-metadata-daily-mean-01646500-00060.json
 │   │       ├── time-series-metadata-daily-mean-12396500-00065.json
@@ -280,7 +296,8 @@ usgs-water-mcp-server/
 │   │       ├── time-series-metadata-daily-mean-394829074053503-72019.json
 │   │       ├── time-series-metadata-daily-mean-401105074120201-72019.json
 │   │       ├── time-series-metadata-daily-mean-404931073382101-62610.json
-│   │       └── time-series-metadata-daily-mean-414429074052001-72019.json
+│   │       ├── time-series-metadata-daily-mean-414429074052001-72019.json
+│   │       └── time-series-metadata-daily-mean-huc-02070008-00060.json
 │   ├── helpers/
 │   │   ├── content-block.ts
 │   │   ├── error-contract.ts
@@ -300,6 +317,7 @@ usgs-water-mcp-server/
 │   │   ├── observation-series.test.ts
 │   │   ├── observations.test.ts
 │   │   ├── parameter-catalog.test.ts
+│   │   ├── site-batch.test.ts
 │   │   ├── site-data-catalog.test.ts
 │   │   ├── site-discovery.test.ts
 │   │   ├── site-local-time.test.ts
@@ -318,6 +336,7 @@ usgs-water-mcp-server/
 │       ├── water-get-readings.upstream.test.ts
 │       ├── water-get-series.tool.test.ts
 │       ├── water-get-series.upstream.test.ts
+│       ├── water-get-site-data-catalog.tool.test.ts
 │       └── water-list-parameters.tool.test.ts
 ├── .dockerignore
 ├── .env.example

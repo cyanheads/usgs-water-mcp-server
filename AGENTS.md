@@ -197,13 +197,14 @@ src/
     waterdata/
       cql2-text.ts                      # CQL2-text literals for OGC filter queries
       curated-parameters.ts             # Curated well-known parameter codes (shared by the tool and the resource) and the depth-below-surface code set
-      day-statistics.ts                 # Day-of-year percentiles and period of record from the Statistics API; daily-mean series pairing by time-series ID
+      day-statistics.ts                 # Day-of-year percentiles and period of record for many sites from the Statistics API, chunked under its URL limit; daily-mean series pairing by time-series ID
       input-schemas.ts                  # Shared Zod input schemas (site numbers, parameter codes, filters)
       observation-series.ts             # Assembles continuous/daily rows and series metadata into time series: labels, qualifier codes, local timestamps
-      observations.ts                   # getReadings/getSeries — continuous, daily, and time-series-metadata reads; 366-day instantaneous chunks
+      observations.ts                   # getReadings/getSeries — continuous, daily, field-measurement, peak, and time-series-metadata reads; 366-day instantaneous chunks
       parameter-catalog.ts              # USGS parameter-code catalog reader (OGC API, 24h cache, single-flight) + search
       request-deadline.ts               # One 45-second budget per tool call, shared by every request and retry
-      site-data-catalog.ts              # OGC monitoring-location and series metadata; filter-bound cursors, shared 45s deadline
+      site-batch.ts                     # Site-list rule for the multi-site tools: accept up to 500, read the first 100 distinct, return the rest as deferred sites
+      site-data-catalog.ts              # OGC monitoring-location, time-series, and field-measurement series metadata; filter-bound cursors, shared 45s deadline
       site-discovery.ts                 # monitoring-locations plus latest-* and peaks collections: site search, lastObservedAt, observedWithin
       site-local-time.ts                # Site-local timestamps and day windows from the time-zone-codes table
       site-resolver.ts                  # Bare site number → agency-prefixed monitoring location (any agency), TTL-cached
@@ -216,10 +217,10 @@ src/
     tools/definitions/
       water-list-parameters.tool.ts     # Curated parameter codes (no network), or a full-catalog query
       water-find-sites.tool.ts          # Site discovery via OGC monitoring-locations; lastObservedAt and observedWithin from the latest-* collections
-      water-get-readings.tool.ts        # Latest instantaneous values, up to 100 sites
-      water-get-series.tool.ts          # Historical daily or instantaneous time series with DataCanvas spillover
-      water-get-site-data-catalog.tool.ts # Site parameters, sensors, statistics, and UTC record bounds
-      water-get-conditions.tool.ts      # Current reading + percentile classification
+      water-get-readings.tool.ts        # Latest instantaneous values; up to 500 sites accepted, the first 100 distinct read
+      water-get-series.tool.ts          # Historical daily, instantaneous, field-measurement, or peak time series with DataCanvas spillover
+      water-get-site-data-catalog.tool.ts # Site parameters, sensors, statistics, field and peak series, and UTC record bounds
+      water-get-conditions.tool.ts      # Current readings + percentile classification; up to 500 sites accepted, the first 100 distinct ranked
       water-dataframe-describe.tool.ts  # List tables on a DataCanvas
       water-dataframe-query.tool.ts     # SQL SELECT against DataCanvas tables
       water-dataframe-drop.tool.ts      # Drop one DataCanvas table — disabledTool() unless WATER_DATAFRAME_DROP_ENABLED=true
@@ -256,7 +257,7 @@ Development skills are modular instructions. Read them directly when a task matc
 
 A published skill in root `skills/` reaches plugin installs and the `.mcpb` bundle as-is, ships in the npm package and the Docker image, and reaches MCP clients when the server opts in with `createApp({ skills: 'skills' })`. `lint:packaging` validates the tree.
 
-This server publishes `skills/usgs-water-guide/SKILL.md` and opts in, so MCP clients also read it as `skill://usgs-water-guide/SKILL.md`. It carries the gates tool descriptions and `instructions` can't: telling live gages from discontinued ones (`lastObservedAt` and `observedWithin` on `water_find_sites`, the catalog's `endDate`), the two-hour window of `water_get_conditions`, depth-to-water (72019) rankings read as water levels, choosing a site's parameter code, time zones and data lag, and casting the text columns of a staged series in SQL. When a tool's behavior changes, re-check the skill's claims against it; `field-test` verifies every gate and identifier claim live before a release.
+This server publishes `skills/usgs-water-guide/SKILL.md` and opts in, so MCP clients also read it as `skill://usgs-water-guide/SKILL.md`. It carries the gates tool descriptions and `instructions` can't: telling live gages from discontinued ones (`lastObservedAt` and `observedWithin` on `water_find_sites`, the catalog's `endDate`), the two-hour window of `water_get_conditions`, depth-to-water (72019) rankings read as water levels, choosing a site's parameter code, time zones and data lag, hand-measured well levels (`seriesType: "field"`), and SQL over a staged series (`time_utc` cast to TIMESTAMPTZ). When a tool's behavior changes, re-check the skill's claims against it; `field-test` verifies every gate and identifier claim live before a release.
 
 **Agent skill directory:** Copy `framework-skills/` into the directory your agent discovers (Claude Code: `.claude/skills/`, others: equivalent). Skills then load as context without referencing `framework-skills/` paths. After framework updates, run the `maintenance` skill — Phase B re-syncs the agent directory.
 

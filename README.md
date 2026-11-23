@@ -35,12 +35,12 @@ Real-time and historical water data from ~8,000 active USGS stream gages and gro
 
 | Tool | Description |
 |:-----|:------------|
-| `water_list_parameters` | List well-known USGS parameter codes with names, units, and domain (no network call), or search the full ~19,600-code USGS catalog by name or description. |
-| `water_find_sites` | Find USGS monitoring sites by bounding box, state, county, or HUC watershed. Filter by site type, parameter availability, and recency; each row reports when the site last reported. Large match sets spill to DataCanvas. |
-| `water_get_readings` | Get the latest instantaneous values (~15 min real-time) for up to 100 USGS sites. |
-| `water_get_series` | Get a time series of daily or instantaneous values for a site over a date range. Large ranges spill to DataCanvas. |
-| `water_get_site_data_catalog` | Discover a site's parameters, sensors, statistics, and full UTC record bounds, with cursor pagination. |
-| `water_get_conditions` | Get current hydrologic conditions ranked against the full period-of-record percentile statistics. |
+| `water_list_parameters` | List well-known USGS parameter codes with names, units, and domain (no network call), or search the full ~19,700-code USGS catalog by name or description, a page at a time. |
+| `water_find_sites` | Find USGS monitoring sites by bounding box, state, county, or HUC watershed. Filter by site type, parameter availability, and recency; each row reports when the site last reported. Match sets over 500 sites spill to DataCanvas. |
+| `water_get_readings` | Get the latest instantaneous values (~15 min real-time) for USGS sites: up to 500 numbers accepted, the first 100 distinct read, the rest returned to resubmit. |
+| `water_get_series` | Get a time series of daily, instantaneous, field-measurement (hand-measured), or annual-peak values for a site over a date range. Large ranges spill to DataCanvas. |
+| `water_get_site_data_catalog` | Discover a site's parameters, sensors, statistics, and full UTC record bounds, including its field-measurement and annual-peak series, with cursor pagination. |
+| `water_get_conditions` | Get current hydrologic conditions at up to 500 USGS sites (the first 100 distinct ranked), each reading ranked against the full period-of-record percentile statistics. |
 | `water_dataframe_describe` | List tables and columns staged on a DataCanvas by `water_get_series` or `water_find_sites`. |
 | `water_dataframe_query` | Run a read-only SQL SELECT against the time-series and site tables staged by `water_get_series` and `water_find_sites`. |
 | `water_dataframe_drop` | Drop one staged table from a DataCanvas, leaving the canvas and its other tables in place. Opt-in via `WATER_DATAFRAME_DROP_ENABLED`. |
@@ -67,7 +67,8 @@ Ships in `skills/` for plugin installs, the npm package, the Docker image, and t
 ### `water_list_parameters` <sub>tool</sub>
 
 - Without `query`: the curated, built-in list — no network call — of codes like `00060` (Discharge, ft³/s), `00065` (Gage height, ft), and `72019` (Depth to water level, ft), filtered by `group` (`streamflow`, `groundwater`, `temperature`, `meteorological`, `water-quality`, or `all`, the default)
-- With `query`: searches the full ~19,600-code USGS catalog by name or description (a bare 5-digit code returns that code) and returns at most 25 entries, each naming its `source` (`curated` or `usgs-catalog`), with `total` and `truncated` covering the full match set. `query` can't be combined with a `group` other than `all`
+- With `query`: searches the full ~19,700-code USGS catalog by name or description (a bare 5-digit code returns that code), each entry naming its `source` (`curated` or `usgs-catalog`). `query` can't be combined with a `group` other than `all`
+- `limit` (1–4,000, default 25) and `offset` window the matches, or the curated list when there is no `query`: `total` counts every match, and `truncated` with `nextOffset` appear while entries remain. An `offset` past the end returns an empty window with a note naming the valid range
 - The catalog is fetched on the first query and cached for 24 hours; a failed fetch fails as a retryable `upstream_error`
 
 ---
@@ -75,32 +76,34 @@ Ships in `skills/` for plugin installs, the npm package, the Docker image, and t
 ### `water_find_sites` <sub>tool</sub>
 
 - Exactly one geographic scope per call — `bbox` (`"west,south,east,north"`), 2-letter `stateCd`, up to 20 comma-separated 5-digit FIPS `countyCd` codes, or a 2- or 8-digit `huc` — narrowed by `siteType` (`ST`, `GW`, `LK`, `SP`, …), `parameterCd`, `hasDataTypeCd` (`iv` with aliases `uv` and `rt`, `dv`, `gw`, `pk`; no other code has a source), and `observedWithin` (an ISO 8601 duration). A `bbox` has no area cap. A missing or doubled scope fails as `missing_major_filter` / `conflicting_major_filters` before any request
-- Every row carries `lastObservedAt`, the UTC time of the site's newest observation among the series the filters select (null when it has none, or none with a recorded time), read from the latest-value collections without a request per site. `parameterCd` and `hasDataTypeCd` match sites that have ever reported, discontinued ones included, and never discrete water-quality samples; `observedWithin` keeps only sites whose `lastObservedAt` falls inside the window
-- `limit` (1–500, default 500) and `offset` page through the match set, with `truncated` and `upstreamTotal` describing what lies outside the window; `siteOutput: expanded` adds state and county FIPS codes, drainage area, and contributing area
-- With `CANVAS_PROVIDER_TYPE=duckdb`, a match set over 500 sites also stages in full to a canvas (`canvas_id` / `table_name`) for `water_dataframe_query`
+- Every row carries `lastObservedAt`, the UTC time of the site's newest observation among the series the filters select (null when it has none, or none with a recorded time; a field measurement or peak counts from its recorded time of day, else from 00:00 UTC on its date), read from the latest-value collections without a request per site. `parameterCd` and `hasDataTypeCd` match sites that have ever reported, discontinued ones included, and never discrete water-quality samples; `observedWithin` keeps only sites whose `lastObservedAt` falls inside the window (a site last observed by a field measurement or peak is kept by its date, so its `lastObservedAt` can fall up to a day before the window starts)
+- `limit` (1–500, default 25) and `offset` page through the match set, with `truncated` and `upstreamTotal` describing what lies outside the window; `siteOutput: expanded` adds state and county FIPS codes, drainage area, and contributing area
+- With `CANVAS_PROVIDER_TYPE=duckdb`, a match set over 500 sites also stages in full to a canvas (`canvas_id` / `table_name`) for `water_dataframe_query`; `latitude`, `longitude`, `drainage_area`, `altitude`, and `contributing_area` are `DOUBLE` columns, and `last_observed_at` is the UTC ISO 8601 text the inline rows carry
 
 ---
 
 ### `water_get_readings` <sub>tool</sub>
 
-- Up to 100 `sites` per call, an optional `parameterCd` filter, and a `period` lookback (ISO 8601, default `PT2H`, at most 1,100 days); returns one series per site, parameter, and sensor (`methodId` is the series' time-series ID, the `timeSeriesId` the site data catalog lists; `methodDescription` names the sensor), capped at 100 series per call (kept round-robin across sites) and the 10 most recent records per series, with `totalSeries`, `totalValues`, and `truncated` reporting what the caps held back
-- A sensor that reported nothing in the period still returns, with `totalValues: 0`, an all-dormant batch included; sites with no series at all are named in `missingSites`, and `no_data_for_parameter` fires only when no requested site returns a series
+- Up to 500 `sites` per call, an optional `parameterCd` filter, and a `period` lookback (ISO 8601, default `PT2H`, at most 1,100 days). The first 100 distinct site numbers are read, in input order; the rest return in `deferredSites` to pass as `sites` in another call. Returns one series per site, parameter, and sensor (`methodId` is the series' time-series ID, the `timeSeriesId` the site data catalog lists; `methodDescription` names the sensor), capped at 100 series per call (kept round-robin across sites) and the 10 most recent records per series, with `totalSeries`, `totalValues`, and `truncated` reporting what the caps held back
+- A sensor that reported nothing in the period still returns, with `totalValues: 0`, an all-dormant batch included; read sites with no series at all are named once in `missingSites`, and `no_data_for_parameter` fires only when no site read returns a series and none was deferred
 - Every value carries its qualifier codes (`P` provisional, `A` approved, plus codes such as `e`, `Ssn`, `Dis`; a qualifier with no code passes through as the upstream word, e.g. `OTHERAGENCY`). Timestamps are site-local with the UTC offset, or UTC (`+00:00`) for a site with no known time zone
 
 ---
 
 ### `water_get_series` <sub>tool</sub>
 
-- One `site` and `parameterCd` per call over a `startDate`–`endDate` range; `seriesType` is `daily` (one value per day, the default) or `instantaneous` (~15 min). The most recent 500 records return inline, with `totalRecords` and `truncated` reporting the rest
+- One `site` and `parameterCd` per call over a `startDate`–`endDate` range; `seriesType` is `daily` (one value per day, the default), `instantaneous` (~15 min), `field` (values measured by hand on a site visit, such as a well's groundwater level or a discharge measurement), or `peak` (annual peaks, one per water year). The most recent 500 records return inline, with `totalRecords` and `truncated` reporting the rest
 - Returns one named series — by default the daily mean and the sensor series with the most records, a tie going to the site's default sensor over a labeled one and then to the series that began first; `statCd` (`00003` mean, `00001` maximum, `00002` minimum; daily only) and `methodId` (a series' time-series ID, 32 hexadecimal characters) select another, and `otherSeries` lists every alternative, empty ones included, with its record count. An instantaneous range of any length is read in full up to today on the site's clock, in 366-day chunks; for a parameter the site lists no series of, only the last 366 days are read, in one request
-- With `CANVAS_PROVIDER_TYPE=duckdb`, a range over 500 records spills the complete series to a canvas (`canvas_id` / `table_name`); pass a prior `canvas_id` to add the table to an existing canvas
+- Field and peak series carry no statistic: `statCd` is null on them, and passing one fails as `stat_cd_for_field_or_peak`. A site can hold one field series per reading type, each with its own `methodId` (a hyphenated UUID), such as staff-gage readings beside the mean gage height of each discharge measurement. A record's `dateTime` is the instant on the site's clock when a time of day was recorded and a bare `YYYY-MM-DD` when not; `unknownDatePart` (`month` or `day`) marks a date USGS filled in to the 1st. Field records add `observingProcedure`, `measurementRated`, and `controlCondition`; peak records add `waterYear` and `peakSince`
+- With `CANVAS_PROVIDER_TYPE=duckdb`, a range over 500 records spills the complete series to a canvas (`canvas_id` / `table_name`); pass a prior `canvas_id` to add the table to an existing canvas. The table's column types are declared, not inferred: `value` is `DOUBLE` (NULL for a no-data record), `date_time` the site-local text, and every table but a daily one ends with `time_utc`, the UTC instant as fixed-width text ending in `Z`, so a window relative to now is `WHERE CAST(time_utc AS TIMESTAMPTZ) > now() - INTERVAL 6 HOUR`. Field and peak tables carry their extra record fields as columns, and table names mark the series type as `dv`, `iv`, `fm` (field), or `pk` (peak)
 
 ---
 
 ### `water_get_site_data_catalog` <sub>tool</sub>
 
 - One `site`, optional `parameterCd` and `seriesType`, and `limit` (1–1000; default 100). Reuse the same filters and limit with `nextCursor` until it is null. An unknown site fails as `not_found`; a known site with no matching metadata returns `series: []`
-- Each row preserves its OGC `timeSeriesId`, parameter name/unit, nullable statistic, sensor description, raw computation fields, and full UTC `beginDate`/`endDate`. `Daily` maps to `daily`; `Points` with `Instantaneous` maps to `instantaneous`; other computations have null `seriesType`
+- Each row preserves its OGC `timeSeriesId` (a hyphenated UUID on a field row), parameter name/unit, nullable statistic, sensor description, raw computation fields, and full UTC `beginDate`/`endDate`. `Daily` maps to `daily`; `Points` with `Instantaneous` maps to `instantaneous`; a field-measurement series maps to `field` and an annual-peak series (computation `Max At Event Time`) to `peak`; other computations, such as a water-year mean or maximum, have null `seriesType`
+- A field row also carries `readingType` (`ReferencePrimary` for staff-gage readings, `MeanGageHeight`, `Discharge`), one field series per type; `unit`, `computation`, and `computationPeriod` are null on it, and `readingType` is null on every other row. One cursor-paged list runs across both metadata collections
 - For `water_get_series`, take YYYY-MM-DD from the bounds, pass `statCd` only for daily rows, and pass a row's `timeSeriesId` as `methodId` to request that exact series. Bounds may contain gaps and lag observations; null bounds remain unknown
 - Site identity and metadata share a 45-second deadline including retries. Malformed or rejected continuation cursors fail as `invalid_cursor`; restart without cursor
 
@@ -108,9 +111,10 @@ Ships in `skills/` for plugin installs, the npm package, the Docker image, and t
 
 ### `water_get_conditions` <sub>tool</sub>
 
-- One `site` and `parameterCd`; ranks the current instantaneous reading against the period-of-record daily-mean percentiles for its calendar day as a `percentileClass` — `record-high` (≥p95), `above-normal`, `normal`, `below-normal`, `low`, `record-low` (<p05), or `unknown` for a no-data reading — with `percentileLabel` stating the threshold in plain language and `comparisonBasis` noting that the ranking is approximate, not a flood-stage or drought determination
+- Up to 500 `sites` and one `parameterCd` (a single `site` is accepted as an alias of `sites`). The first 100 distinct sites are ranked, in input order; the rest return in `deferredSites` to resubmit. Returns `conditions`, one row per site with a reading in the last two hours, and `missingSites` naming read sites with none; `no_data_for_parameter` fires only when no site read has a reading and none was deferred
+- Each row ranks the current instantaneous reading against the period-of-record daily-mean percentiles for its calendar day as a `percentileClass` — `record-high` (≥p95), `above-normal`, `normal`, `below-normal`, `low`, `record-low` (<p05), or `unknown` for a no-data reading — with `percentileLabel` stating the threshold in plain language and `comparisonBasis` noting that the ranking is approximate, not a flood-stage or drought determination
 - Depth-below-surface codes (`72019`, `30210`, `99019`, `72276`) rank as water levels: a shallower depth ranks higher, `p95` is the day's shallowest depth and `p05` the deepest, `currentValue` stays the depth as measured, and `percentileLabel` and `comparisonBasis` say so
-- The calendar day is the reading's own site-local date. When percentiles can't be applied, the reading still returns with `historicalContext: null` and a `historicalContextStatus` of `no_record` (no daily-mean percentiles for the day), `no_matching_day` (the reported sensor's series has an approved record but none for that day), `no_matching_method`, or `unavailable` (a Statistics API request failed); on a multi-sensor site, `methodId` and `methodMatched` name the sensor read and whether the percentiles came from its own daily-mean series, paired by time-series ID, an exact time tie between sensors going to the site's default sensor
+- The calendar day is the reading's own site-local date. When percentiles can't be applied, the reading still returns with `historicalContext: null` and a `historicalContextStatus` of `no_record` (no daily-mean percentiles for the day), `no_matching_day` (the reported sensor's series has an approved record but none for that day), `no_matching_method`, or `unavailable` (a Statistics API request failed; it marks only the rows it covered, and the readings still return); on a multi-sensor site, `methodId` and `methodMatched` name the sensor read and whether the percentiles came from its own daily-mean series, paired by time-series ID, an exact time tie between sensors going to the site's default sensor
 
 ---
 
@@ -124,7 +128,8 @@ Ships in `skills/` for plugin installs, the npm package, the Docker image, and t
 ### `water_dataframe_query` <sub>tool</sub>
 
 - A single read-only `SELECT` against the staged tables; other statements, system-catalog access (`information_schema`, `pg_catalog`, `duckdb_*`), engine-setting functions, dynamic SQL, and file references are rejected. `query()` accepts a single SQL string literal, checked under the same restrictions
-- Capped at 10,000 rows per query; `truncated: true` signals more matched — narrow with `WHERE`/`LIMIT`, or run `SELECT COUNT(*)` for the true total
+- Returns at most 5,000 rows per query, or the server's `CANVAS_DEFAULT_ROW_LIMIT` when that is lower; `truncated: true` signals more matched — narrow with `WHERE`/`LIMIT`, or run `SELECT COUNT(*)` for the true total
+- Every returned row appears in the text result as in `structuredContent`: cells are escaped (`|`, line breaks as `&#10;` / `&#13;`), lists and structs render as JSON, and a SQL NULL renders as `*null*`, distinct from an empty string
 
 ---
 
@@ -159,12 +164,12 @@ USGS Water-specific:
 - Upstream failures are read from the API's own JSON error body and mapped to a typed failure; a 429 returns as `rate_limited` carrying `retryAfter`, and a rejected key names `USGS_API_KEY`. Every tool call shares one 45-second deadline across its requests and retries
 - DataCanvas spillover: `water_get_series` (long date ranges) and `water_find_sites` (match sets past the 500-site cap) stage the full result as a DuckDB-backed table, queryable via `water_dataframe_query`; the spillover and the dataframe tools require `CANVAS_PROVIDER_TYPE=duckdb`, and `water_dataframe_drop` also needs `WATER_DATAFRAME_DROP_ENABLED=true`
 - No-data readings stay no-data: a reading USGS reports without a value (a seasonal, discontinued, dry, or malfunctioning gage) returns as an empty `value` with qualifiers naming why (`Ssn`, `Dis`, `Dry`, `Eqp`) — never as a magnitude — and stages as `NULL` on a canvas
-- Groundwater depth reads like any other parameter, through `72019`: only wells with a continuous sensor return values
+- Groundwater depth reads through `72019`: a well with a continuous sensor returns values like any other parameter, and `water_get_series` with `seriesType: "field"` reads the levels measured by hand on a site visit
 
 Agent-friendly output:
 
 - Percentile classification: `water_get_conditions` returns a `percentileClass` that describes the water level (a shallower depth ranks higher for depth-to-water codes), paired with a `percentileLabel` that states the threshold in plain language
-- Partial success over hard failure: `water_get_readings` returns the series it got and names the rest in `missingSites`; `water_get_conditions` separates an empty stat table (`no_record` / `no_matching_day`) from a failed stat call (`unavailable`, transient) instead of collapsing both into one error
+- Partial success over hard failure: `water_get_readings` and `water_get_conditions` return the sites they got, name the read sites with nothing in `missingSites`, and hand sites past the first 100 back in `deferredSites`; `water_get_conditions` separates an empty stat table (`no_record` / `no_matching_day`) from a failed stat call (`unavailable`, transient, marking only the rows it covered) instead of collapsing both into one error
 - Truncation signals: every capped response (`water_get_series`, `water_find_sites`, `water_get_readings`) reports its own count and a `truncated` flag, plus `canvas_id` / `table_name` when the rest is retrievable via SQL
 - Structured content and rendered text agree — every cap and count a tool applies appears identically in `structuredContent` and in the markdown
 
@@ -267,7 +272,7 @@ The image defaults to HTTP transport, stateless session mode, and logs to `/var/
 | `src/config` | Server-specific environment variable parsing and validation with Zod. |
 | `src/mcp-server/tools` | Tool definitions (`*.tool.ts`). |
 | `src/mcp-server/resources` | Resource definitions (`*.resource.ts`). |
-| `src/services/waterdata` | USGS Water Data client (OGC collections and Statistics API, one deadline per tool call), site discovery, observations, percentile statistics, site-series metadata, parameter-code catalog reader (24-hour cache), and curated parameter table. |
+| `src/services/waterdata` | USGS Water Data client (OGC collections and Statistics API, one deadline per tool call), site discovery, the shared site-list batching rule, observations (daily, instantaneous, field-measurement, and peak), percentile statistics, site-series metadata, parameter-code catalog reader (24-hour cache), and curated parameter table. |
 | `src/services/canvas` | DataCanvas accessor, caller-supplied `canvas_id` resolution, and deterministic table names for DuckDB-backed spillover. |
 | `tests/` | Unit and integration tests mirroring `src/`. |
 
