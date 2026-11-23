@@ -11,9 +11,46 @@ import {
   type QueryResult,
   SQL_GATE_REASONS,
 } from '@cyanheads/mcp-ts-core/canvas';
+import { config } from '@cyanheads/mcp-ts-core/config';
 import { JsonRpcErrorCode, McpError } from '@cyanheads/mcp-ts-core/errors';
+import { escapeMarkdownInline } from '@cyanheads/mcp-ts-core/utils';
 import { acquireCanvas } from '@/services/canvas/acquire-canvas.js';
 import { getCanvas } from '@/services/canvas/canvas-accessor.js';
+
+/**
+ * Rows a query returns at most. Every one renders into content[] beside structuredContent, and at
+ * this count a staged series table's eight columns stay near 1 MB on each surface. A deployment's
+ * canvas row limit (`CANVAS_DEFAULT_ROW_LIMIT`) below it lowers the cap, since the canvas refuses
+ * a larger `rowLimit`.
+ */
+const ROW_LIMIT = 5_000;
+const ROW_LIMIT_TEXT = ROW_LIMIT.toLocaleString('en-US');
+
+/** The cap as every description states it, true whichever of the two limits applies. */
+const ROW_CAP_TEXT = `${ROW_LIMIT_TEXT} rows, or this server instance's canvas row limit when that is lower`;
+
+/**
+ * The table cell a SQL NULL renders as. Emphasis no encoded value can produce, since the encoder
+ * escapes every `*` a value holds: a stored "*null*" renders as `\*null\*`, an empty string as an
+ * empty cell.
+ */
+const NULL_CELL = '*null*';
+
+/**
+ * One GFM table cell that a CommonMark parse reads back as `value`: a string as itself, anything
+ * else (number, boolean, list, struct, interval) as its JSON. Each line is encoded on its own, and
+ * each line break written as its numeric reference, since a table row ends at a literal one.
+ */
+function tableCell(value: unknown): string {
+  if (value === null) return NULL_CELL;
+  const text = typeof value === 'string' ? value : JSON.stringify(value);
+  return text
+    .split(/([\r\n])/)
+    .map((part, i) =>
+      i % 2 === 0 ? escapeMarkdownInline(part) : part === '\r' ? '&#13;' : '&#10;',
+    )
+    .join('');
+}
 
 /**
  * Canvas rejections of the submitted SQL that this tool reports under its `invalid_sql` contract
@@ -44,8 +81,7 @@ const INVALID_SQL_REASONS: ReadonlySet<string> = new Set([
 const MISSING_TABLE_REASON = 'missing_table';
 
 export const waterDataframeQuery = tool('water_dataframe_query', {
-  description:
-    'Run a read-only SQL SELECT against water data tables staged on a DataCanvas by water_get_series or water_find_sites. Workflow: run water_get_series or water_find_sites (get canvas_id + table_name) → water_dataframe_describe (confirm the table and its columns) → water_dataframe_query (SQL analysis), then optionally water_dataframe_drop (when this server enables it) to remove a table you are done with. Only SELECT statements are permitted. At most 10,000 rows are returned; a query matching more is capped and the response sets truncated=true — scope with WHERE/LIMIT, and use SELECT COUNT(*) or water_dataframe_describe to learn the true match count. Requires DataCanvas to be enabled on this server instance. Returns an error if DataCanvas is not available.',
+  description: `Run a read-only SQL SELECT against water data tables staged on a DataCanvas by water_get_series or water_find_sites. Workflow: run water_get_series or water_find_sites (get canvas_id + table_name) → water_dataframe_describe (confirm the table and its columns) → water_dataframe_query (SQL analysis), then optionally water_dataframe_drop (when this server enables it) to remove a table you are done with. Only SELECT statements are permitted. Returns at most ${ROW_CAP_TEXT}; a query matching more is capped and the response sets truncated=true, with row_count equal to the cap applied — scope with WHERE/LIMIT, and use SELECT COUNT(*) or water_dataframe_describe to learn the true match count. Requires DataCanvas to be enabled on this server instance. Returns an error if DataCanvas is not available.`,
   annotations: { readOnlyHint: true, idempotentHint: true, openWorldHint: false },
   input: z.object({
     canvas_id: CanvasIdSchema.describe(
@@ -54,7 +90,7 @@ export const waterDataframeQuery = tool('water_dataframe_query', {
     sql: z
       .string()
       .describe(
-        'Read-only SELECT statement. Reference the table by the table_name from water_get_series or water_find_sites; columns vary by source table, so run water_dataframe_describe first for the exact schema. Example: SELECT date_time, value FROM water_series_01646500_00060 ORDER BY date_time DESC LIMIT 10',
+        'Read-only SELECT statement. Reference the table by the table_name from water_get_series or water_find_sites; columns vary by source table, so run water_dataframe_describe first for the exact schema. Example on an instantaneous series table: SELECT time_utc, value FROM water_series_01646500_00060_iv_20261101_20261108 ORDER BY time_utc DESC LIMIT 10. Write a window relative to now as WHERE CAST(time_utc AS TIMESTAMPTZ) > now() - INTERVAL 6 HOUR.',
       ),
   }),
   output: z.object({
@@ -67,17 +103,19 @@ export const waterDataframeQuery = tool('water_dataframe_query', {
             'A result row whose keys are the selected column names and values are the corresponding cell values.',
           ),
       )
-      .describe('Result rows returned (up to 10,000). Column names match the SELECT clause.'),
+      .describe(
+        `Result rows returned, at most ${ROW_CAP_TEXT}. Column names match the SELECT clause.`,
+      ),
     row_count: z
       .number()
       .int()
       .describe(
-        'Number of rows returned in the rows array (up to the 10,000-row cap), not the total matched by the query. When truncated is true the cap was reached, so row_count equals the returned count and undercounts the true total. To get the true match count run SELECT COUNT(*) with the same filter, or call water_dataframe_describe for the full row count of the staged table; page large results with LIMIT/OFFSET.',
+        `Number of rows returned in the rows array (at most ${ROW_CAP_TEXT}), not the total matched by the query. When truncated is true the cap was reached, so row_count equals the cap applied and undercounts the true total. To get the true match count run SELECT COUNT(*) with the same filter, or call water_dataframe_describe for the full row count of the staged table; page large results with LIMIT/OFFSET.`,
       ),
     truncated: z
       .boolean()
       .describe(
-        'True when the query matched more rows than the 10,000-row cap and the result was capped — rows and row_count then cover only the first 10,000 matches, and the rest are not in this response. False means rows and row_count are the complete result for this query. When true, narrow the query with WHERE, page with LIMIT/OFFSET, or run SELECT COUNT(*) with the same filter for the true total.',
+        `True when the query matched more rows than the cap (${ROW_CAP_TEXT}) and the result was capped — rows and row_count then cover only the first row_count matches, and the rest are not in this response. False means rows and row_count are the complete result for this query. When true, narrow the query with WHERE, page with LIMIT/OFFSET, or run SELECT COUNT(*) with the same filter for the true total.`,
       ),
   }),
 
@@ -138,6 +176,8 @@ export const waterDataframeQuery = tool('water_dataframe_query', {
       result = await instance.query(input.sql, {
         signal: ctx.signal,
         denySystemCatalogs: true,
+        // The canvas is built from this same core config, and it refuses a rowLimit above its own.
+        rowLimit: Math.min(ROW_LIMIT, config.canvas.defaultRowLimit),
       });
     } catch (err: unknown) {
       if (err instanceof McpError) {
@@ -182,8 +222,9 @@ export const waterDataframeQuery = tool('water_dataframe_query', {
   },
 
   format(result) {
+    // A capped result's row_count is the cap the canvas applied, the server's lower limit included.
     const truncationNote = result.truncated
-      ? ' — **truncated** at the 10,000-row cap; more rows matched. Narrow with WHERE, page with LIMIT/OFFSET, or run SELECT COUNT(*) for the true total.'
+      ? ` — **truncated** at the ${result.row_count.toLocaleString('en-US')}-row cap; more rows matched. Narrow with WHERE, page with LIMIT/OFFSET, or run SELECT COUNT(*) for the true total.`
       : ' — not truncated';
     const lines = [
       `**${result.row_count} row(s)** (${result.rows.length} returned)${truncationNote}\n`,
@@ -191,12 +232,11 @@ export const waterDataframeQuery = tool('water_dataframe_query', {
     const firstRow = result.rows[0];
     if (firstRow !== undefined) {
       const headers = Object.keys(firstRow);
-      lines.push(`| ${headers.join(' | ')} |`);
+      lines.push(`| ${headers.map(tableCell).join(' | ')} |`);
       lines.push(`| ${headers.map(() => '---').join(' | ')} |`);
-      for (const row of result.rows.slice(0, 50)) {
-        lines.push(`| ${headers.map((h) => String(row?.[h] ?? '')).join(' | ')} |`);
+      for (const row of result.rows) {
+        lines.push(`| ${headers.map((h) => tableCell(row[h])).join(' | ')} |`);
       }
-      if (result.rows.length > 50) lines.push(`*(showing 50 of ${result.rows.length})*`);
     }
     return [{ type: 'text', text: lines.join('\n') }];
   },

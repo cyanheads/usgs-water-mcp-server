@@ -1,7 +1,8 @@
 /**
- * @fileoverview Tests for water_dataframe_query tool — SQL SELECT against canvas tables.
- * Mocks the canvas-accessor: most cases hand it a stub canvas, and the refusal block hands it a
- * real DuckDB-backed canvas, so the mapping is checked against what the installed canvas raises.
+ * @fileoverview Tests for water_dataframe_query tool — SQL SELECT against canvas tables, and the
+ * content[] table that renders every returned row. Mocks the canvas-accessor: most cases hand it a
+ * stub canvas, and the refusal, row, and sql-example blocks hand it a real DuckDB-backed canvas, so
+ * the mapping and the rendering are checked against what the installed canvas returns.
  * @module tests/tools/water-dataframe-query.tool.test
  */
 
@@ -13,6 +14,7 @@ import {
   type DuckdbErrorReason,
   DuckdbProvider,
 } from '@cyanheads/mcp-ts-core/canvas';
+import { config, resetConfig } from '@cyanheads/mcp-ts-core/config';
 import {
   JsonRpcErrorCode,
   McpError,
@@ -25,6 +27,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { waterDataframeQuery } from '@/mcp-server/tools/definitions/water-dataframe-query.tool.js';
 import { textContent } from '../helpers/content-block.js';
 import { captureError, contractError, declaredRecovery } from '../helpers/error-contract.js';
+import { expectLinear } from '../helpers/linear-time.js';
 
 let mockCanvasInstance: unknown;
 
@@ -128,6 +131,70 @@ function wireShape(error: unknown) {
   return { code: error.code, message: error.message, data: error.data };
 }
 
+/**
+ * Read a GFM table out of rendered text back into cell values, implementing the part of the GFM
+ * table extension and CommonMark inline syntax the encoder writes: a row splits on every `|` no
+ * backslash precedes, each cell is trimmed and its `\|` unescaped, then backslash escapes of ASCII
+ * punctuation and numeric character references are decoded. A cell of exactly `*null*` reads as
+ * NULL. Anything else CommonMark would read as markup — an unescaped `*`, `` ` ``, `[`, `]`, `~`,
+ * `<` opening a tag, or `&` opening a named entity — fails the read, since this reader cannot parse
+ * it and the encoder must never emit it.
+ */
+function readGfmTable(text: string): { headers: string[]; rows: (string | null)[][] } {
+  const lines = text.split('\n').filter((line) => line.startsWith('|'));
+  const split = (line: string) => {
+    const cells = line
+      .slice(1, -1)
+      .split(/(?<!\\)\|/)
+      .map((cell) => cell.trim().replaceAll('\\|', '|'));
+    return cells.map((cell): string | null => {
+      if (cell === '*null*') return null;
+      const live = cell
+        .replace(/\\[!-/:-@[-`{-~]/g, '')
+        .match(/[*`[\]~]|<[A-Za-z/!?]|&[A-Za-z][A-Za-z0-9]{1,31};/);
+      if (live) throw new Error(`Cell ${JSON.stringify(cell)} holds live markup: ${live[0]}`);
+      return cell.replace(
+        /\\([!-/:-@[-`{-~])|&#(\d{1,7});|&#[xX]([0-9a-fA-F]{1,6});/g,
+        (_m, punct?: string, dec?: string, hex?: string) =>
+          punct ?? String.fromCodePoint(dec ? Number(dec) : Number.parseInt(hex ?? '', 16)),
+      );
+    });
+  };
+  const [header, delimiter, ...body] = lines;
+  expect(delimiter).toMatch(/^\|( --- \|)+$/);
+  return {
+    headers: split(header ?? '').map((h) => h ?? '(null header)'),
+    rows: body.map(split),
+  };
+}
+
+/** The value a cell reads back as: a string as itself, NULL as null, anything else as its JSON. */
+function expectedCell(value: unknown): string | null {
+  if (value === null) return null;
+  return typeof value === 'string' ? value : JSON.stringify(value);
+}
+
+/**
+ * A DuckDB-backed canvas, installed as the accessor's canvas. Shut it down after each test. Its row
+ * limit comes from the framework config, as the server's canvas does (`CANVAS_DEFAULT_ROW_LIMIT`).
+ */
+function installRealCanvas(): DataCanvas {
+  const provider = new DuckdbProvider({
+    defaultRowLimit: config.canvas.defaultRowLimit,
+    exportRootPath: '.canvas-exports',
+    memoryLimitMb: 128,
+    schemaSniffRows: 100,
+  });
+  const registry = new CanvasRegistry(
+    provider,
+    { absoluteCapMs: 600_000, maxCanvasesPerTenant: 10, sweeperIntervalMs: 0, ttlMs: 60_000 },
+    () => 0,
+  );
+  const canvas = new DataCanvas(provider, registry);
+  mockCanvasInstance = canvas;
+  return canvas;
+}
+
 /** Canvas whose `query` rejects with `err`. */
 function canvasRejecting(err: unknown) {
   return {
@@ -165,6 +232,11 @@ describe('waterDataframeQuery', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mockCanvasInstance = undefined;
+  });
+
+  afterEach(() => {
+    // Drops any CANVAS_DEFAULT_ROW_LIMIT override a case set; the next read reparses the environment.
+    resetConfig();
   });
 
   it('names the tools that stage data and the tool that describes it', () => {
@@ -412,7 +484,7 @@ describe('waterDataframeQuery', () => {
     // so truncated is the only signal that rows are a partial read.
     const mockInstance = {
       canvasId: 'canvas0001',
-      query: vi.fn().mockResolvedValue({ ...MOCK_QUERY_RESULT, rowCount: 10_000, truncated: true }),
+      query: vi.fn().mockResolvedValue({ ...MOCK_QUERY_RESULT, rowCount: 5_000, truncated: true }),
     };
     mockCanvasInstance = { acquire: vi.fn().mockResolvedValue(mockInstance) };
 
@@ -424,7 +496,7 @@ describe('waterDataframeQuery', () => {
     const result = await waterDataframeQuery.handler(input, ctx);
 
     expect(result.truncated).toBe(true);
-    expect(result.row_count).toBe(10_000);
+    expect(result.row_count).toBe(5_000);
   });
 
   it('reports truncated=false when the canvas omits the flag on a complete result', async () => {
@@ -447,7 +519,7 @@ describe('waterDataframeQuery', () => {
     expect(waterDataframeQuery.output.parse(result).truncated).toBe(false);
   });
 
-  it('passes the sql and signal to instance.query', async () => {
+  it('passes the sql, signal, and the 5,000-row limit to instance.query', async () => {
     const mockQuery = vi.fn().mockResolvedValue(MOCK_QUERY_RESULT);
     const mockInstance = { canvasId: 'canvas0001', query: mockQuery };
     mockCanvasInstance = { acquire: vi.fn().mockResolvedValue(mockInstance) };
@@ -458,6 +530,60 @@ describe('waterDataframeQuery', () => {
     await waterDataframeQuery.handler(input, ctx);
 
     expect(mockQuery).toHaveBeenCalledWith(sql, expect.objectContaining({ signal: ctx.signal }));
+    expect(mockQuery).toHaveBeenCalledWith(sql, expect.objectContaining({ rowLimit: 5_000 }));
+  });
+
+  it("asks for no more rows than the server's canvas row limit when that is below 5,000", async () => {
+    const mockQuery = vi.fn().mockResolvedValue(MOCK_QUERY_RESULT);
+    const mockInstance = { canvasId: 'canvas0001', query: mockQuery };
+    mockCanvasInstance = { acquire: vi.fn().mockResolvedValue(mockInstance) };
+    const sql = 'SELECT * FROM water_series_01646500_00060';
+    const input = waterDataframeQuery.input.parse({ canvas_id: 'canvas0001', sql });
+
+    for (const [canvasLimit, sent] of [
+      ['1000', 1_000],
+      ['4999', 4_999],
+      ['5000', 5_000],
+      ['20000', 5_000],
+    ] as const) {
+      resetConfig({ CANVAS_DEFAULT_ROW_LIMIT: canvasLimit });
+      await waterDataframeQuery.handler(
+        input,
+        createMockContext({ errors: waterDataframeQuery.errors }),
+      );
+      expect(mockQuery, `CANVAS_DEFAULT_ROW_LIMIT=${canvasLimit}`).toHaveBeenLastCalledWith(
+        sql,
+        expect.objectContaining({ rowLimit: sent }),
+      );
+    }
+  });
+
+  it('says in the description and the output descriptions that a lower canvas row limit lowers the cap', () => {
+    const { rows, row_count, truncated } = waterDataframeQuery.output.shape;
+    for (const description of [
+      waterDataframeQuery.description,
+      rows.description ?? '',
+      row_count.description ?? '',
+      truncated.description ?? '',
+    ]) {
+      expect(description).toContain(
+        "5,000 rows, or this server instance's canvas row limit when that is lower",
+      );
+    }
+    expect(truncated.description).toContain('cover only the first row_count matches');
+  });
+
+  it('says 5,000 rows in the description, the output descriptions, and the truncation text (#58)', () => {
+    const { rows, row_count, truncated } = waterDataframeQuery.output.shape;
+    for (const description of [
+      waterDataframeQuery.description,
+      rows.description ?? '',
+      row_count.description ?? '',
+      truncated.description ?? '',
+    ]) {
+      expect(description).toContain('5,000');
+      expect(description).not.toContain('10,000');
+    }
   });
 
   it('formats results as a markdown table with row count', () => {
@@ -479,7 +605,7 @@ describe('waterDataframeQuery', () => {
     // carry the signal itself — and say so when the result is complete, not only when it is capped.
     const capped = waterDataframeQuery.format!({
       rows: MOCK_QUERY_RESULT.rows,
-      row_count: 10_000,
+      row_count: 5_000,
       truncated: true,
     });
     expect(textContent(capped[0])).toMatch(/truncated/i);
@@ -492,29 +618,89 @@ describe('waterDataframeQuery', () => {
     expect(textContent(complete[0])).toContain('not truncated');
   });
 
-  it('caps the rendered table at 50 rows with an accurate "showing 50 of N" caption at worst case (regression: #16 sub-case 2)', () => {
-    // Rows can reach the 10,000-row tool cap, so a render cap is legitimate (10k markdown rows is
-    // not viable) — this is honest capping, not a silent drop. The requirement is ACCURACY: the
-    // caption's stated count must equal what is actually emitted, and the header must disclose the
-    // real total. Worst case: the query matched more than the 10,000-row cap, so rows returned =
-    // 10,000 (capped) and row_count = the larger matched total. format-parity can't measure this —
-    // its synthetic sample is a single row.
-    const rows = Array.from({ length: 10_000 }, (_, i) => ({
+  it('renders every returned row of a capped 5,000-row result, with no "showing N of M" caption (#58)', () => {
+    // content[] carries the same rows as structuredContent. At the 5,000-row cap a staged series
+    // table's eight columns render to about 0.55 MB of table text beside about 1 MB of rows.
+    const rows = Array.from({ length: 5_000 }, (_, i) => ({
       date_time: `2024-01-01T00:${String(i % 60).padStart(2, '0')}:00`,
       value: String(i),
     }));
-    const result = { rows, row_count: 25_000, truncated: true };
-    const blocks = waterDataframeQuery.format!(result);
-    const text = textContent(blocks[0]);
+    const text = textContent(
+      waterDataframeQuery.format!({ rows, row_count: 5_000, truncated: true })[0],
+    );
 
-    // Header honestly discloses both the matched total and the returned (capped) count.
-    expect(text).toContain('25000 row(s)');
-    expect(text).toContain('(10000 returned)');
-    // Exactly 50 data rows emitted: table = column-header + separator + 50 data rows = 52 lines.
-    const tableLines = text.split('\n').filter((l) => l.startsWith('| '));
-    expect(tableLines).toHaveLength(52);
-    // The caption's stated rendered count matches what was actually rendered.
-    expect(text).toContain('showing 50 of 10000');
+    expect(text).toContain('**5000 row(s)** (5000 returned) — **truncated** at the 5,000-row cap');
+    const table = readGfmTable(text);
+    expect(table.headers).toEqual(['date_time', 'value']);
+    expect(table.rows).toHaveLength(5_000);
+    expect(table.rows[4_999]).toEqual([rows[4_999]?.date_time, '4999']);
+    expect(text).not.toMatch(/showing \d+ of/i);
+  });
+
+  describe('content[] table encoding (#58)', () => {
+    const render = (rows: Record<string, unknown>[]) =>
+      textContent(
+        waterDataframeQuery.format!({ rows, row_count: rows.length, truncated: false })[0],
+      );
+
+    it('keeps the cell count of a row whose value or column alias holds a pipe', () => {
+      const table = readGfmTable(render([{ 'h|dr': 'a|b', next: 'c' }]));
+      expect(table.headers).toEqual(['h|dr', 'next']);
+      expect(table.rows).toEqual([['a|b', 'c']]);
+    });
+
+    it('keeps a value with line breaks inside its row, each break as a reference', () => {
+      const text = render([{ nl: 'l1\nl2', crlf: 'r1\r\nr2', cr: 'c1\rc2', after: 'x' }]);
+      expect(text).toContain('| l1&#10;l2 | r1&#13;&#10;r2 | c1&#13;c2 | x |');
+      expect(readGfmTable(text).rows).toEqual([['l1\nl2', 'r1\r\nr2', 'c1\rc2', 'x']]);
+    });
+
+    it('renders a list and a struct as JSON, never 1,2 or [object Object]', () => {
+      const text = render([{ lst: [1, 2], st: { x: 1, y: 'b|c' } }]);
+      expect(text).not.toContain('[object Object]');
+      expect(readGfmTable(text).rows).toEqual([['[1,2]', '{"x":1,"y":"b|c"}']]);
+    });
+
+    it('reads NULL, an empty string, and a stored "*null*" back as three different values', () => {
+      const text = render([{ nul: null, emp: '', lit: '*null*' }]);
+      expect(text).toContain('| *null* |  | \\*null\\* |');
+      expect(readGfmTable(text).rows).toEqual([[null, '', '*null*']]);
+    });
+
+    it('reads every cell and header back as structuredContent carries it', () => {
+      const rows: Record<string, unknown>[] = [
+        {
+          text: '<b>x</b> *em* _u_ `code` [l](u) ~s~ &amp; #h',
+          blocks: '- item\n1. two\n> quote\n# head\n---',
+          edges: '  lead and trail  ',
+          slashes: 'a\\|b \\ end\\',
+          breaks: '\n\ntrailing\n',
+          unicode: '水 ≥ 5 µS/cm',
+          number: 5000.5,
+          flag: true,
+          interval: { months: 0, days: 1, micros: '0' },
+          map: [{ key: 'k', value: 1 }],
+          'col with "quotes" & *stars*': 'v',
+        },
+        {
+          text: 'plain',
+          blocks: '',
+          edges: null,
+          slashes: '\\',
+          breaks: 'one',
+          unicode: '',
+          number: -1,
+          flag: false,
+          interval: null,
+          map: [],
+          'col with "quotes" & *stars*': null,
+        },
+      ];
+      const table = readGfmTable(render(rows));
+      const headers = Object.keys(rows[0] ?? {});
+      expect(table.headers).toEqual(headers);
+      expect(table.rows).toEqual(rows.map((row) => headers.map((h) => expectedCell(row[h]))));
+    });
   });
 
   it('formats empty result set gracefully', () => {
@@ -530,19 +716,7 @@ describe('waterDataframeQuery', () => {
     let instance: CanvasInstance;
 
     beforeEach(async () => {
-      const provider = new DuckdbProvider({
-        defaultRowLimit: 10_000,
-        exportRootPath: '.canvas-exports',
-        memoryLimitMb: 128,
-        schemaSniffRows: 100,
-      });
-      const registry = new CanvasRegistry(
-        provider,
-        { absoluteCapMs: 600_000, maxCanvasesPerTenant: 10, sweeperIntervalMs: 0, ttlMs: 60_000 },
-        () => 0,
-      );
-      canvas = new DataCanvas(provider, registry);
-      mockCanvasInstance = canvas;
+      canvas = installRealCanvas();
       instance = await canvas.acquire(undefined, createMockContext());
       await instance.registerTable(SERIES_TABLE, [
         { date_time: '2024-01-01', value: '5000', qualifiers: 'A' },
@@ -695,4 +869,244 @@ describe('waterDataframeQuery', () => {
       ).toEqual(wireShape(CANVAS_ERRORS.canvasNotFound('abcdefghij')));
     });
   });
+
+  describe('rows from a real DuckDB canvas (#58)', () => {
+    const SERIES_TABLE = 'water_series_01646500_00060_dv_19300101_20261112';
+    let canvas: DataCanvas;
+    let instance: CanvasInstance;
+
+    beforeEach(async () => {
+      canvas = installRealCanvas();
+      instance = await canvas.acquire(undefined, createMockContext());
+      await instance.registerTable(
+        SERIES_TABLE,
+        Array.from({ length: 6_000 }, (_, i) => ({
+          date_time: `day ${String(i).padStart(4, '0')}`,
+          value: i % 7 === 0 ? null : String(1000 + i),
+          qualifiers: i % 2 === 0 ? 'A' : 'A,e',
+        })),
+      );
+    });
+
+    afterEach(async () => {
+      await canvas.shutdown(createMockContext());
+    });
+
+    async function run(sql: string) {
+      const result = await runToolContract(waterDataframeQuery, {
+        canvas_id: instance.canvasId,
+        sql,
+      });
+      expect(result.isError).toBeFalsy();
+      return {
+        structured: result.structuredContent as {
+          rows: Record<string, unknown>[];
+          row_count: number;
+          truncated: boolean;
+        },
+        text: textContent(result.content?.[0]),
+      };
+    }
+
+    it('returns the first 5,000 of 6,000 matches with truncated=true, rendering each in content[]', async () => {
+      const { structured, text } = await run(`SELECT * FROM ${SERIES_TABLE} ORDER BY date_time`);
+
+      expect(structured.rows).toHaveLength(5_000);
+      expect(structured.row_count).toBe(5_000);
+      expect(structured.truncated).toBe(true);
+      expect(structured.rows[4_999]).toEqual({
+        date_time: 'day 4999',
+        value: '5999',
+        qualifiers: 'A,e',
+      });
+      expect(text).toContain('truncated** at the 5,000-row cap');
+      const table = readGfmTable(text);
+      expect(table.headers).toEqual(['date_time', 'value', 'qualifiers']);
+      expect(table.rows).toEqual(
+        structured.rows.map((row) => table.headers.map((h) => expectedCell(row[h]))),
+      );
+    });
+
+    it('returns a 5,000-row result whole, not truncated', async () => {
+      const { structured } = await run(`SELECT * FROM ${SERIES_TABLE} LIMIT 5000`);
+      expect(structured.rows).toHaveLength(5_000);
+      expect(structured.truncated).toBe(false);
+    });
+
+    it('renders lists, structs, pipes, line breaks, NULL, and empty strings so content[] reads back as structuredContent', async () => {
+      const { structured, text } = await run(
+        `SELECT [1,2] AS lst, {'x':1} AS st, 'a|b' AS p, 'l1' || chr(10) || 'l2' AS nl, NULL AS nul, '' AS emp, '*null*' AS lit, 1 AS "h|dr" FROM ${SERIES_TABLE} LIMIT 1`,
+      );
+      expect(structured.rows).toEqual([
+        {
+          lst: [1, 2],
+          st: { x: 1 },
+          p: 'a|b',
+          nl: 'l1\nl2',
+          nul: null,
+          emp: '',
+          lit: '*null*',
+          'h|dr': 1,
+        },
+      ]);
+      const table = readGfmTable(text);
+      expect(table.headers).toEqual(['lst', 'st', 'p', 'nl', 'nul', 'emp', 'lit', 'h|dr']);
+      expect(table.rows).toEqual([['[1,2]', '{"x":1}', 'a|b', 'l1\nl2', null, '', '*null*', '1']]);
+    });
+  });
+
+  describe('a real DuckDB canvas whose row limit is set below 5,000', () => {
+    const SERIES_TABLE = 'water_series_01646500_00060_dv_19300101_20261112';
+    let canvas: DataCanvas;
+    let instance: CanvasInstance;
+
+    beforeEach(async () => {
+      // The canvas refuses a rowLimit above this default, which the server's canvas is built from.
+      resetConfig({ CANVAS_DEFAULT_ROW_LIMIT: '1000' });
+      canvas = installRealCanvas();
+      instance = await canvas.acquire(undefined, createMockContext());
+      await instance.registerTable(
+        SERIES_TABLE,
+        Array.from({ length: 6_000 }, (_, i) => ({
+          date_time: `day ${String(i).padStart(4, '0')}`,
+          value: String(1000 + i),
+        })),
+      );
+    });
+
+    afterEach(async () => {
+      await canvas.shutdown(createMockContext());
+    });
+
+    async function run(sql: string) {
+      const result = await runToolContract(waterDataframeQuery, {
+        canvas_id: instance.canvasId,
+        sql,
+      });
+      expect(result.isError, textContent(result.content?.[0])).toBeFalsy();
+      return {
+        structured: result.structuredContent as {
+          rows: Record<string, unknown>[];
+          row_count: number;
+          truncated: boolean;
+        },
+        text: textContent(result.content?.[0]),
+      };
+    }
+
+    it('caps a query matching more at that limit, naming the cap applied in content[]', async () => {
+      const { structured, text } = await run(`SELECT * FROM ${SERIES_TABLE} ORDER BY date_time`);
+
+      expect(structured.rows).toHaveLength(1_000);
+      expect(structured).toMatchObject({ row_count: 1_000, truncated: true });
+      expect(structured.rows[999]).toEqual({ date_time: 'day 0999', value: '1999' });
+      expect(text).toContain(
+        '**1000 row(s)** (1000 returned) — **truncated** at the 1,000-row cap; more rows matched.',
+      );
+      expect(text).not.toContain('5,000');
+      expect(readGfmTable(text).rows).toHaveLength(1_000);
+    });
+
+    it('returns a result that fits the limit whole, not truncated', async () => {
+      const { structured, text } = await run(`SELECT * FROM ${SERIES_TABLE} LIMIT 1000`);
+      expect(structured.rows).toHaveLength(1_000);
+      expect(structured.truncated).toBe(false);
+      expect(text).toContain('— not truncated');
+    });
+  });
+
+  describe('sql example (#59)', () => {
+    const sql = waterDataframeQuery.input.shape.sql.description ?? '';
+    const example = /Example on an instantaneous series table: (SELECT .+? LIMIT \d+)\./.exec(
+      sql,
+    )?.[1];
+    const recent = /as (WHERE CAST\(time_utc AS TIMESTAMPTZ\) > now\(\) - INTERVAL \d+ \w+)\./.exec(
+      sql,
+    )?.[1];
+    const table = /FROM (\w+)/.exec(example ?? '')?.[1] ?? '';
+    let canvas: DataCanvas;
+
+    beforeEach(() => {
+      canvas = installRealCanvas();
+    });
+
+    afterEach(async () => {
+      await canvas.shutdown(createMockContext());
+    });
+
+    it('names a table in the form water_get_series stages an instantaneous series under', () => {
+      // water_series_<site>_<parameterCd>_<dv|iv>_<startDate>_<endDate>[_<selection digest>]
+      expect(table).toMatch(/^water_series_\d{8,15}_\d{5}_iv_\d{8}_\d{8}(_[0-9a-f]{7})?$/);
+      expect(example).toMatch(/ORDER BY time_utc/);
+    });
+
+    it('runs as written, ordering by time_utc and windowing relative to now through a TIMESTAMPTZ cast', async () => {
+      const instance = await canvas.acquire(undefined, createMockContext());
+      // The fall-back hour: site-local date_time strings interleave, time_utc orders correctly.
+      await instance.registerTable(
+        table,
+        [
+          ['2026-11-01T01:00:00.000-04:00', 1, '2026-11-01T05:00:00.000Z'],
+          ['2026-11-01T01:00:00.000-05:00', 3, '2026-11-01T06:00:00.000Z'],
+          ['2026-11-01T01:05:00.000-04:00', 2, '2026-11-01T05:05:00.000Z'],
+          ['2999-01-01T00:00:00.000-05:00', 4, '2999-01-01T05:00:00.000Z'],
+        ].map(([date_time, value, time_utc]) => ({ date_time, value, time_utc })),
+        {
+          schema: [
+            { name: 'date_time', type: 'VARCHAR' },
+            { name: 'value', type: 'DOUBLE' },
+            { name: 'time_utc', type: 'VARCHAR' },
+          ],
+        },
+      );
+      const query = async (text: string) => {
+        const result = await runToolContract(waterDataframeQuery, {
+          canvas_id: instance.canvasId,
+          sql: text,
+        });
+        expect(result.isError).toBeFalsy();
+        return (result.structuredContent as { rows: { value: number }[] }).rows.map((r) => r.value);
+      };
+
+      expect(await query(example ?? '')).toEqual([4, 3, 2, 1]);
+      expect(await query(`SELECT value FROM ${table} ${recent} ORDER BY time_utc`)).toEqual([4]);
+    });
+  });
+
+  describe('regex timing: cell text rendered into content[] (#58)', () => {
+    /** Both line-break shapes ride along with each escape path's own worst cases. */
+    const lineBreakShapes: [string, (chars: number) => string][] = [
+      ['one long line ending in a break', (n) => `${'§1 x'.repeat(n / 4)}\ny`],
+      ['line breaks throughout', (n) => '  \r\n'.repeat(n / 4)],
+    ];
+
+    it.each([
+      ['a digit run', (n: number) => '1'.repeat(n)],
+      ...lineBreakShapes,
+      ['bare carriage returns', (n: number) => 'a\r'.repeat(n / 2)],
+      ['a run of # that would close a heading', (n: number) => `a #${'#'.repeat(n)}`],
+      ['an autolink opener that never closes', (n: number) => `<${'@'.repeat(n)}`],
+      ['nested tag openers', (n: number) => `${'<a'.repeat(n / 4)}${'>'.repeat(n / 2)}`],
+      ['entity openers that never close', (n: number) => '&#1'.repeat(n / 3)],
+      ['a backslash run', (n: number) => '\\'.repeat(n)],
+      ['an underscore run', (n: number) => '_'.repeat(n)],
+      ['a bracket run', (n: number) => '['.repeat(n)],
+      ['trailing whitespace', (n: number) => `a${' '.repeat(n)}`],
+    ])(
+      'encodes a cell of %s in linear time',
+      (_shape, shape) => {
+        expectLinear(
+          shape,
+          (cell) => {
+            waterDataframeQuery.format!({ rows: [{ c: cell }], row_count: 1, truncated: false });
+          },
+          MAX_CALL_MICROS,
+        );
+      },
+      0,
+    );
+  });
 });
+
+/** CPU ceiling per call at any size; the slowest shape above takes about 80 ms at 320k characters. */
+const MAX_CALL_MICROS = 500_000;
