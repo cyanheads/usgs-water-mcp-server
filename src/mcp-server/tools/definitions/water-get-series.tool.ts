@@ -1,6 +1,7 @@
 /**
- * @fileoverview Get a time series of daily or instantaneous values for a USGS site and parameter
- * over a date range. Large result sets (>500 rows) spill to DataCanvas when available.
+ * @fileoverview Get a time series of daily values, instantaneous values, field measurements, or
+ * annual peaks for a USGS site and parameter over a date range. Large result sets (>500 rows)
+ * spill to DataCanvas when available.
  * @module mcp-server/tools/definitions/water-get-series.tool
  */
 
@@ -405,7 +406,7 @@ export const waterGetSeries = tool('water_get_series', {
       .string()
       .nullable()
       .describe(
-        'Time-series ID of the series returned — the OGC time_series_id, the same value water_get_site_data_catalog lists as timeSeriesId. Pass it back as the methodId input to request this series again. Null only when the upstream sent the series without an ID.',
+        'Time-series ID of the series returned — the OGC time_series_id, or for a field series its field-measurement series ID (a hyphenated UUID); the same value water_get_site_data_catalog lists as timeSeriesId. Pass it back as the methodId input to request this series again. Null only when the upstream sent the series without an ID.',
       ),
     methodDescription: z
       .string()
@@ -439,7 +440,7 @@ export const waterGetSeries = tool('water_get_series', {
       .string()
       .optional()
       .describe(
-        'DuckDB table name in the canvas holding all records. Present when canvas_id is present. Use as the FROM target in water_dataframe_query SQL. Its value column is DOUBLE (NULL for a no-data record) and date_time keeps the site-local text; every table but a daily one ends with time_utc, the UTC instant as fixed-width text ending in Z that sorts chronologically — compare it with now() as CAST(time_utc AS TIMESTAMPTZ).',
+        'DuckDB table name in the canvas holding all records. Present when canvas_id is present. Use as the FROM target in water_dataframe_query SQL. Its value column is DOUBLE (NULL for a no-data record) and date_time keeps the site-local text; every table but a daily one ends with time_utc, the UTC instant as fixed-width text ending in Z that sorts chronologically (NULL on a field or peak record with no recorded time of day) — compare it with now() as CAST(time_utc AS TIMESTAMPTZ).',
       ),
     otherSeries: z
       .array(
@@ -547,7 +548,7 @@ export const waterGetSeries = tool('water_get_series', {
     {
       reason: 'method_not_found',
       code: JsonRpcErrorCode.NotFound,
-      when: 'No series returned for this query carries the requested methodId (within the requested statCd, when one is given). A numeric NWIS method ID always lands here: methodId is the 32-character OGC time-series ID.',
+      when: 'No series returned for this query carries the requested methodId (within the requested statCd, when one is given). A numeric NWIS method ID always lands here: methodId is the 32-character OGC time-series ID, or a hyphenated UUID for a field series.',
       recovery:
         'Re-request with a methodId listed in this error, or omit methodId to get the method with the most records.',
     },
