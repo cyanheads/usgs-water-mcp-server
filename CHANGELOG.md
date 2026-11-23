@@ -2,6 +2,10 @@
 
 All notable changes to this project. Each entry links to its full per-version file in [changelog/](changelog/).
 
+## [0.7.0](changelog/0.7.x/0.7.0.md) — 2026-11-23 · ⚠️ Breaking
+
+Reads field measurements and annual peaks through water_get_series and the site data catalog, ranks up to 100 sites per water_get_conditions call, and stages series values as numbers. water_get_conditions output moves into conditions[]; staged value is DOUBLE.
+
 ## [0.6.0](changelog/0.6.x/0.6.0.md) — 2026-11-11 · ⚠️ Breaking
 
 Ports every tool from the retired USGS WaterServices API to the USGS Water Data APIs, adds lastObservedAt and observedWithin to water_find_sites, ranks depth-to-water as a water level, and adopts mcp-ts-core 0.13.22. Four inputs that 0.5.0 answered are now rejected.

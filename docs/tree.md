@@ -1,6 +1,6 @@
 # usgs-water-mcp-server - Directory Structure
 
-Generated on: 2026-11-23 16:05:51
+Generated on: 2026-11-23 17:24:07
 
 ```text
 usgs-water-mcp-server/
@@ -30,6 +30,7 @@ usgs-water-mcp-server/
 │   ├── 0.4.x/
 │   ├── 0.5.x/
 │   ├── 0.6.x/
+│   ├── 0.7.x/
 │   └── template.md
 ├── docs/
 │   ├── design.md
@@ -301,6 +302,7 @@ usgs-water-mcp-server/
 │   ├── helpers/
 │   │   ├── content-block.ts
 │   │   ├── error-contract.ts
+│   │   ├── linear-time.ts
 │   │   ├── water-data-fake.test.ts
 │   │   └── water-data-fake.ts
 │   ├── prompts/
