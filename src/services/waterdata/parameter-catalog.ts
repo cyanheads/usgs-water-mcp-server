@@ -1,6 +1,6 @@
 /**
  * @fileoverview Reader and local search for the full USGS parameter-code catalog, served by the
- * USGS Water Data OGC API (`collections/parameter-codes`). The whole catalog (~19,600 codes) is read
+ * USGS Water Data OGC API (`collections/parameter-codes`). The whole catalog (~19,700 codes) is read
  * in one request, cached in module scope for 24 hours, and searched in memory.
  * @module services/waterdata/parameter-catalog
  */

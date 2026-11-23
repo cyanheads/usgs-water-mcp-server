@@ -11,7 +11,7 @@ import { CURATED_PARAMETERS } from '@/services/waterdata/curated-parameters.js';
 export const waterParametersResource = resource('usgs-water://parameters', {
   name: 'usgs-water-parameters',
   description:
-    'Curated table of well-known USGS parameter codes — the codes most requests use (discharge, gage height, water temperature, groundwater levels, common water-quality measures), with human-readable names, units, and thematic domain. Injectable context for clients that support resources; the same list water_list_parameters returns without a query. A curated subset of the ~19,600-code USGS catalog — search the rest with water_list_parameters query.',
+    'Curated table of well-known USGS parameter codes — the codes most requests use (discharge, gage height, water temperature, groundwater levels, common water-quality measures), with human-readable names, units, and thematic domain. Injectable context for clients that support resources; the same list water_list_parameters returns without a query. A curated subset of the ~19,700-code USGS catalog — search the rest with water_list_parameters query.',
   mimeType: 'application/json',
   params: z.object({}).describe('No parameters — returns the curated table.'),
 
