@@ -327,6 +327,13 @@ export async function fetchOgcItems<F extends z.ZodType>(
   return features;
 }
 
+/** The URL of one Statistics API endpoint carrying `query` — what {@link fetchStatistics} requests. */
+export function statisticsUrl(endpoint: StatisticsEndpoint, query: URLSearchParams): URL {
+  const url = new URL(`${STATISTICS_URL}/${endpoint}`);
+  for (const [key, value] of query) url.searchParams.append(key, value);
+  return url;
+}
+
 /**
  * Every feature of a Statistics API query, passing each page's `next` token back as
  * `next_token` until a page carries none. Multi-value parameters go in `query` as repeated pairs.
@@ -343,8 +350,7 @@ export async function fetchStatistics<F extends z.ZodType>(
   const tokens = new Set<string>();
   let token: string | undefined;
   do {
-    const url = new URL(`${STATISTICS_URL}/${endpoint}`);
-    for (const [key, value] of query) url.searchParams.append(key, value);
+    const url = statisticsUrl(endpoint, query);
     if (token) url.searchParams.set('next_token', token);
     const page: z.infer<typeof schema> = await requestJson('statistics', url, schema, request);
     features.push(...page.features);

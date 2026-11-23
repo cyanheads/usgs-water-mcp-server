@@ -23,7 +23,10 @@ import { textContent } from '../helpers/content-block.js';
 import { contractError, declaredRecovery } from '../helpers/error-contract.js';
 import {
   createWaterDataFake,
+  dailyMeanCapture,
   jsonResponse,
+  locationFilteredResponder,
+  type OgcFeature,
   ogcPage,
   ogcRoute,
   rateLimitResponse,
@@ -101,6 +104,7 @@ type Conditions = {
   methodId: string | null;
   note?: string;
   qualifiers: string[];
+  siteNumber: string;
 };
 
 /** A reading series as getReadings returns it — Potomac discharge unless overridden. */
@@ -126,20 +130,24 @@ const at = (dateTime: string, value: string, qualifiers = ['P']) => ({
   qualifiers,
 });
 
-/** The resolver answer for every captured site, and one site's captured daily-mean metadata. */
-function siteRoutes(site: string, parameterCd: string, metadata?: unknown) {
+/**
+ * The resolver answer for every captured site, and one site's daily-mean metadata — captured
+ * unless `metadata` replaces it — answering the batched read that names that site alone.
+ */
+function siteRoutes(site: string, parameterCd: string, metadata?: { features: OgcFeature[] }) {
   return [
     ogcRoute('monitoring-locations', () =>
       jsonResponse(waterDataFixture('monitoring-locations-conditions-sites.json')),
     ),
     ogcRoute(
       'time-series-metadata',
-      () =>
-        jsonResponse(
-          metadata ??
-            waterDataFixture(`time-series-metadata-daily-mean-${site}-${parameterCd}.json`),
-        ),
-      { query: { monitoring_location_id: `USGS-${site}`, parameter_code: parameterCd } },
+      locationFilteredResponder(metadata?.features ?? dailyMeanCapture(site, parameterCd)),
+      {
+        query: {
+          filter: `monitoring_location_id IN ('USGS-${site}') AND parameter_code IN ('${parameterCd}')`,
+          computation_period_identifier: 'Daily',
+        },
+      },
     ),
   ];
 }
@@ -172,43 +180,46 @@ function intervalsRoute(site: string, parameterCd: string, seriesId: string, res
                 `statistics-intervals-${site}-${parameterCd}-${seriesId.slice(0, 8)}.json`,
               ),
           ),
-    { query: { monitoring_location_id: `USGS-${site}`, parent_time_series_id: seriesId } },
+    { query: { parameter_code: parameterCd, parent_time_series_id: seriesId } },
   );
 }
 
 type Published = Record<'p05' | 'p10' | 'p25' | 'p50' | 'p75' | 'p95', number | null>;
 
-/** An `observationNormals` body (the captured shape) holding one daily-mean series' day. */
-function normalsBody(seriesId: string, monthDay: string, t: Published) {
+/** One location's `observationNormals` feature (the captured shape): one daily-mean series' day. */
+function normalsFeature(site: string, seriesId: string, monthDay: string, t: Published) {
   const value = (v: number | null) => (v === null ? 'nan' : String(v));
   return {
-    type: 'FeatureCollection',
-    next: null,
-    features: [
-      {
-        type: 'Feature',
-        properties: {
-          monitoring_location_id: 'USGS-01646500',
-          data: [
+    type: 'Feature',
+    properties: {
+      monitoring_location_id: `USGS-${site}`,
+      data: [
+        {
+          parent_time_series_id: seriesId,
+          parent_statistic_id: '00003',
+          values: [
             {
-              parent_time_series_id: seriesId,
-              parent_statistic_id: '00003',
-              values: [
-                {
-                  time_of_year: monthDay,
-                  time_of_year_type: 'day_of_year',
-                  computation: 'percentile',
-                  sample_count: 96,
-                  approval_status: 'approved',
-                  percentiles: ['5', '10', '25', '50', '75', '90', '95'],
-                  values: [t.p05, t.p10, t.p25, t.p50, t.p75, null, t.p95].map(value),
-                },
-              ],
+              time_of_year: monthDay,
+              time_of_year_type: 'day_of_year',
+              computation: 'percentile',
+              sample_count: 96,
+              approval_status: 'approved',
+              percentiles: ['5', '10', '25', '50', '75', '90', '95'],
+              values: [t.p05, t.p10, t.p25, t.p50, t.p75, null, t.p95].map(value),
             },
           ],
         },
-      },
-    ],
+      ],
+    },
+  };
+}
+
+/** An `observationNormals` body (the captured shape) holding one daily-mean series' day. */
+function normalsBody(seriesId: string, monthDay: string, t: Published) {
+  return {
+    type: 'FeatureCollection',
+    next: null,
+    features: [normalsFeature('01646500', seriesId, monthDay, t)],
   };
 }
 
@@ -240,30 +251,48 @@ function juneIntervals(seriesId: string) {
   };
 }
 
-/** A `time-series-metadata` page with one daily-mean series computed from `source`. */
+/** A Potomac `time-series-metadata` page with one daily-mean series computed from `source`. */
 function metadataPage(daily: string, source: string, sublocation: string | null = null) {
-  return ogcPage([
+  const features = [
     {
       type: 'Feature',
       id: daily,
       properties: {
+        monitoring_location_id: 'USGS-01646500',
         parent_time_series_id: source,
         sublocation_identifier: sublocation,
         web_description: null,
       },
       geometry: null,
     },
-  ]);
+  ];
+  return { ...ogcPage(features), features };
 }
 
 const statisticsRequests = () =>
   water.requests.filter((r) => r.url.pathname.startsWith('/statistics/v0/'));
 
+type ConditionsResult = {
+  conditions: Conditions[];
+  deferredSites: string[];
+  missingSites: string[];
+};
+
+/**
+ * One site's call, as the advertised `sites` list. `structured` is that site's conditions row —
+ * the shape a 0.6.0 call returned at the top level; `all` is the whole result.
+ */
 async function conditions(input: { parameterCd: string; site: string }, signal?: AbortSignal) {
-  const result = await runToolContract(tool, input, signal ? { context: { signal } } : undefined);
+  const result = await runToolContract(
+    tool,
+    { sites: [input.site], parameterCd: input.parameterCd },
+    signal ? { context: { signal } } : undefined,
+  );
+  const all = result.structuredContent as ConditionsResult;
   return {
     result,
-    structured: result.structuredContent as Conditions,
+    all,
+    structured: all.conditions?.[0] as Conditions,
     text: allText(result.content),
   };
 }
@@ -1269,6 +1298,41 @@ describe('a statistics failure keeps the reading', () => {
     ).toHaveLength(1);
   });
 
+  it('spends that one budget on the daily-mean series lookup beside the reading', async () => {
+    vi.useFakeTimers({ toFake: ['Date', 'setTimeout', 'clearTimeout'] });
+    /**
+     * The reading takes 44 of the call's 45 seconds; the daily-mean metadata read that runs beside
+     * it would stall far past the second that is left.
+     */
+    mockGetReadings.mockImplementation(async () => {
+      vi.setSystemTime(Date.now() + 44_000);
+      return [readingSeries({ values: [at('2026-11-11T02:50:00.000-05:00', '5000')] })];
+    });
+    water.route(
+      ...siteRoutes('01646500', '00060').slice(0, 1),
+      ogcRoute('time-series-metadata', stalled),
+    );
+    let settled = false;
+    const pending = conditions({ site: '01646500', parameterCd: '00060' }).finally(() => {
+      settled = true;
+    });
+    await vi.advanceTimersByTimeAsync(1_500);
+    expect(settled).toBe(true);
+    const { structured } = await pending;
+    expect(structured).toMatchObject({
+      currentValue: '5000',
+      historicalContextStatus: 'unavailable',
+    });
+    expect(structured.note).toContain(
+      'water_get_conditions ran out of the 45000 ms budget for this call after 1 attempt.',
+    );
+    expect(
+      water.requests.filter((r) => r.url.pathname.endsWith('/time-series-metadata/items')),
+    ).toHaveLength(1);
+    // With no series known, nothing is ranked: no statistics request is sent.
+    expect(statisticsRequests()).toEqual([]);
+  });
+
   it('rethrows caller cancellation during the statistics instead of reporting unavailable', async () => {
     vi.useFakeTimers({ toFake: ['Date', 'setTimeout', 'clearTimeout'] });
     reading();
@@ -1384,10 +1448,11 @@ describe('reading failures', () => {
 
 /** #52: the recovery and both messages send the caller to the catalog, never to water_find_sites. */
 describe('no_data_for_parameter', () => {
-  it('declares a recovery naming the catalog and a longer readings period', () => {
+  it('declares a recovery naming the catalog, per site, and a longer readings period', () => {
+    // One wording for a one-site call and for a call whose error names several sites.
     const { hint } = recovery('no_data_for_parameter');
     expect(hint).toBe(
-      'Call water_get_site_data_catalog for the site: not_found means no such site, an empty series list means the parameter was never measured there, and endDate gives the last report. For a gage silent only in the last two hours, call water_get_readings with a longer period.',
+      'Call water_get_site_data_catalog for each site the error names (it takes one site per call): not_found means no such site, an empty series list means the parameter was never measured there, and endDate gives the last report. For a gage silent only in the last two hours, call water_get_readings with a longer period.',
     );
     const contract = JSON.stringify(tool.errors);
     expect(contract).not.toContain('water_find_sites');
@@ -1458,6 +1523,373 @@ describe('no_data_for_parameter', () => {
   });
 });
 
+/**
+ * #62: several sites in one call. The upstream is synthetic and answers whatever sites a request
+ * names — by `monitoring_location_number`, repeated `monitoring_location_id` parameters, a CQL
+ * `IN (…)` filter, or repeated `parent_time_series_id` parameters — so these cases hold however
+ * the statistics reads group the sites.
+ */
+describe('a list of sites (#62)', () => {
+  /** Distinct eight-digit site numbers from 01000001. */
+  const numbers = (count: number, first = 1) =>
+    Array.from({ length: count }, (_, i) => String(1_000_000 + first + i).padStart(8, '0'));
+
+  const seriesSite = new Map<string, string>();
+  /** A synthetic site's daily-mean series and the instantaneous series it is computed from. */
+  function seriesOf(site: string) {
+    const ids = { daily: `d${site}`.padEnd(32, '0'), source: `s${site}`.padEnd(32, '0') };
+    seriesSite.set(ids.daily, site);
+    return ids;
+  }
+
+  /** The site numbers a request names, whichever way it names them. */
+  function namedSites(url: URL): string[] {
+    const listed = url.searchParams.getAll('monitoring_location_id');
+    const filtered = [...(url.searchParams.get('filter') ?? '').matchAll(/'USGS-(\d+)'/g)];
+    return [...listed, ...filtered.map((match) => `USGS-${match[1]}`)].map((id) =>
+      id.replace(/^USGS-/, ''),
+    );
+  }
+
+  const PUBLISHED: Published = {
+    p05: 2000,
+    p10: 3000,
+    p25: 4500,
+    p50: 6000,
+    p75: 9000,
+    p95: 14000,
+  };
+
+  /** Every month of water years 1990–2025's calendar years, approved. */
+  const MONTHS = Array.from({ length: 36 * 12 }, (_, i) => {
+    const year = 1990 + Math.floor(i / 12);
+    const month = (i % 12) + 1;
+    const last = new Date(Date.UTC(year, month, 0)).getUTCDate();
+    const mm = String(month).padStart(2, '0');
+    return { start_date: `${year}-${mm}-01`, end_date: `${year}-${mm}-${last}` };
+  });
+
+  /**
+   * The synthetic upstream: every named site resolves, keeps one daily-mean series computed from
+   * its sensor, and publishes `thresholds(site, day)` — or the normals read for `day` fails.
+   */
+  function syntheticUpstream({
+    thresholds = () => PUBLISHED,
+    failNormals = () => false,
+  }: {
+    failNormals?: (day: string) => boolean;
+    thresholds?: (site: string, day: string) => Published;
+  } = {}) {
+    water.route(
+      ogcRoute('monitoring-locations', (request) => {
+        const asked =
+          new URL(request.url).searchParams.get('monitoring_location_number')?.split(',') ?? [];
+        return jsonResponse(
+          ogcPage(
+            asked.map((site) => ({
+              type: 'Feature',
+              id: `USGS-${site}`,
+              properties: {
+                monitoring_location_number: site,
+                monitoring_location_name: `SITE ${site}`,
+                agency_code: 'USGS',
+                time_zone_abbreviation: 'EST',
+                uses_daylight_savings: 'Y',
+              },
+              geometry: null,
+            })),
+          ),
+        );
+      }),
+      ogcRoute('time-series-metadata', (request) =>
+        jsonResponse(
+          ogcPage(
+            namedSites(new URL(request.url)).map((site) => ({
+              type: 'Feature',
+              id: seriesOf(site).daily,
+              properties: {
+                monitoring_location_id: `USGS-${site}`,
+                parent_time_series_id: seriesOf(site).source,
+                sublocation_identifier: null,
+                web_description: null,
+              },
+              geometry: null,
+            })),
+          ),
+        ),
+      ),
+      statisticsRoute('observationNormals', (request) => {
+        const url = new URL(request.url);
+        const day = url.searchParams.get('start_date') ?? '';
+        if (failNormals(day)) {
+          return new Response('400 - Bad request', {
+            status: 400,
+            headers: { 'content-type': 'text/plain' },
+          });
+        }
+        return jsonResponse({
+          type: 'FeatureCollection',
+          next: null,
+          features: namedSites(url).map((site) =>
+            normalsFeature(site, seriesOf(site).daily, day, thresholds(site, day)),
+          ),
+        });
+      }),
+      statisticsRoute('observationIntervals', (request) =>
+        jsonResponse({
+          type: 'FeatureCollection',
+          next: null,
+          features: new URL(request.url).searchParams.getAll('parent_time_series_id').map((id) => ({
+            type: 'Feature',
+            properties: {
+              monitoring_location_id: `USGS-${seriesSite.get(id)}`,
+              data: [{ parent_time_series_id: id, parent_statistic_id: '00003', values: MONTHS }],
+            },
+          })),
+        }),
+      ),
+    );
+  }
+
+  /** getReadings answers each site `reads` keeps with one sensor reading `dateTime(site)`. */
+  function readings(
+    dateTime: (site: string) => string = () => '2026-11-11T02:50:00.000-05:00',
+    reads: (site: string) => boolean = () => true,
+  ) {
+    mockGetReadings.mockImplementation(async ({ sites }) =>
+      sites.filter(reads).map((site) =>
+        readingSeries({
+          siteNumber: site,
+          siteName: `SITE ${site}`,
+          methodId: seriesOf(site).source,
+          values: [at(dateTime(site), '6000')],
+        }),
+      ),
+    );
+  }
+
+  /** A call with raw arguments, as a client sends them — the alias form and invalid lists included. */
+  async function call(input: Record<string, unknown>) {
+    const result = await runToolContract(tool, input as Parameters<ConditionsTool['handler']>[0]);
+    return {
+      result,
+      all: result.structuredContent as ConditionsResult,
+      text: allText(result.content),
+    };
+  }
+
+  const deferredLine = (sites: string[]) =>
+    `**Deferred sites (${sites.length}):** ${sites.join(', ')} — not read in this call; resubmit them as \`sites\` in another call.`;
+
+  it.each([
+    [1, 1, 0],
+    [100, 100, 0],
+    [101, 100, 1],
+    [150, 100, 50],
+    [500, 100, 400],
+  ])(
+    'of %i distinct sites ranks the first %i and defers %i in input order',
+    async (count, readCount, deferredCount) => {
+      syntheticUpstream();
+      readings();
+      const sites = numbers(count);
+      const { result, all, text } = await call({ sites, parameterCd: '00060' });
+
+      expect(result.isError).toBeFalsy();
+      expect(mockGetReadings).toHaveBeenCalledTimes(1);
+      expect(mockGetReadings.mock.calls[0]?.[0]).toEqual({
+        sites: sites.slice(0, readCount),
+        parameterCds: ['00060'],
+        period: 'PT2H',
+      });
+      expect(all.conditions.map((row) => row.siteNumber)).toEqual(sites.slice(0, readCount));
+      expect(all.missingSites).toEqual([]);
+      expect(all.deferredSites).toEqual(sites.slice(readCount));
+      expect(all.deferredSites).toHaveLength(deferredCount);
+      for (const row of [all.conditions[0], all.conditions.at(-1)]) {
+        expect(row).toMatchObject({
+          currentValue: '6000',
+          historicalContextStatus: 'available',
+          historicalContext: {
+            percentileClass: 'normal',
+            p50: 6000,
+            periodOfRecord: '1991–2026',
+            methodMatched: true,
+          },
+        });
+      }
+      for (const site of [sites[0], sites[readCount - 1]]) {
+        expect(text).toContain(`### SITE ${site} (${site})`);
+      }
+      if (deferredCount > 0) expect(text).toContain(deferredLine(sites.slice(readCount)));
+      else expect(text).not.toContain('Deferred sites');
+    },
+  );
+
+  it('rejects 501 site numbers before any request', async () => {
+    const { result, text } = await call({ sites: numbers(501), parameterCd: '00060' });
+    expect(result.isError).toBe(true);
+    expect(result.structuredContent).toMatchObject({
+      error: { code: JsonRpcErrorCode.InvalidParams },
+    });
+    expect(text).toContain('<=500');
+    expect(mockGetReadings).not.toHaveBeenCalled();
+    expect(water.requests).toEqual([]);
+  });
+
+  it('ranks a repeated number once, and defers nothing for a repeat past the 100th place', async () => {
+    syntheticUpstream();
+    readings();
+    const sites = numbers(100);
+    const { all } = await call({
+      sites: [...sites, sites[0], sites[1], sites[0]],
+      parameterCd: '00060',
+    });
+    expect(mockGetReadings.mock.calls[0]?.[0].sites).toEqual(sites);
+    expect(all.conditions).toHaveLength(100);
+    expect(all.deferredSites).toEqual([]);
+  });
+
+  it('lists read sites without a reading in missingSites in input order, never a deferred one', async () => {
+    syntheticUpstream();
+    const sites = numbers(105);
+    const quiet = new Set(sites.filter((_, i) => i % 3 === 0));
+    readings(undefined, (site) => !quiet.has(site));
+    const { all, text } = await call({ sites, parameterCd: '00060' });
+
+    const read = sites.slice(0, 100);
+    expect(all.conditions.map((row) => row.siteNumber)).toEqual(read.filter((s) => !quiet.has(s)));
+    expect(all.missingSites).toEqual(read.filter((s) => quiet.has(s)));
+    expect(all.deferredSites).toEqual(sites.slice(100));
+    // The 103rd site is quiet but deferred: not read in this call, so not missing.
+    expect(quiet.has(sites[102] as string)).toBe(true);
+    expect(all.missingSites).not.toContain(sites[102]);
+    expect(text).toContain(
+      `**No reading in the last 2 hours:** ${all.missingSites.join(', ')} — check each with water_get_site_data_catalog`,
+    );
+    expect(text).toContain(deferredLine(sites.slice(100)));
+  });
+
+  it('succeeds with no rows when no read site has a reading and sites were deferred', async () => {
+    syntheticUpstream();
+    readings(undefined, () => false);
+    const sites = numbers(101);
+    const { result, all, text } = await call({ sites, parameterCd: '00060' });
+
+    expect(result.isError).toBeFalsy();
+    expect(all).toEqual({
+      conditions: [],
+      missingSites: sites.slice(0, 100),
+      deferredSites: [sites[100]],
+    });
+    expect(text).toContain(
+      'No site read in this call has a reading of the parameter in the last 2 hours.',
+    );
+    expect(text).toContain(`**No reading in the last 2 hours:** ${sites.slice(0, 100).join(', ')}`);
+    expect(text).toContain(deferredLine([sites[100] as string]));
+    expect(statisticsRequests()).toEqual([]);
+  });
+
+  it('fails no_data_for_parameter naming every site when several are read and none has a reading', async () => {
+    syntheticUpstream();
+    readings(undefined, () => false);
+    const sites = numbers(3);
+    const error = await contractError(tool, { sites, parameterCd: '00060' });
+    expect(error).toMatchObject({
+      code: JsonRpcErrorCode.NotFound,
+      message: `No 00060 reading came back in the last 2 hours for any of the 3 sites read (${sites.join(', ')}) — each may not exist, may never have measured this parameter, or reported nothing in that window. water_get_site_data_catalog tells these apart (not_found: no such site; an empty series list: never measured; endDate: the last report), and water_get_readings with a longer period returns the latest value of a gage silent only in the last two hours.`,
+      data: { reason: 'no_data_for_parameter', recovery: recovery('no_data_for_parameter') },
+    });
+    expect(statisticsRequests()).toEqual([]);
+  });
+
+  it('ranks readings that fall on two site-local days against their own day (#9)', async () => {
+    const [late, early] = numbers(2);
+    syntheticUpstream({
+      thresholds: (_site, day) => ({ ...PUBLISHED, p50: day === '06-28' ? 4780 : 4790 }),
+    });
+    readings((site) =>
+      site === late ? '2026-06-28T23:50:00.000-04:00' : '2026-06-29T00:05:00.000-04:00',
+    );
+    const { all } = await call({ sites: [late, early], parameterCd: '00060' });
+
+    expect(all.conditions.map((row) => [row.siteNumber, row.historicalContext?.p50])).toEqual([
+      [late, 4780],
+      [early, 4790],
+    ]);
+    const days = statisticsRequests()
+      .filter((r) => r.url.pathname.endsWith('observationNormals'))
+      .map((r) => r.url.searchParams.get('start_date'));
+    expect(new Set(days)).toEqual(new Set(['06-28', '06-29']));
+    expect(
+      all.conditions.every((row) => row.historicalContext?.periodOfRecord === '1990–2025'),
+    ).toBe(true);
+  });
+
+  it('marks only the rows a failed normals read covered unavailable', async () => {
+    const [first, second, third] = numbers(3);
+    syntheticUpstream({ failNormals: (day) => day === '06-28' });
+    readings((site) =>
+      site === third ? '2026-06-29T08:00:00.000-04:00' : '2026-06-28T08:00:00.000-04:00',
+    );
+    const { result, all, text } = await call({
+      sites: [first, second, third],
+      parameterCd: '00060',
+    });
+
+    expect(result.isError).toBeFalsy();
+    expect(all.conditions.map((row) => row.historicalContextStatus)).toEqual([
+      'unavailable',
+      'unavailable',
+      'available',
+    ]);
+    for (const row of all.conditions.slice(0, 2)) {
+      expect(row).toMatchObject({ currentValue: '6000', historicalContext: null });
+      expect(row.note).toBe(
+        "Historical percentile context could not be retrieved — the statistics service call failed. USGS Water Data Statistics API rejected the request: Bad request This is an upstream failure, not a statement about the site's record; call again later for the ranking.",
+      );
+      expect(text).toContain(`*${row.note}*`);
+    }
+    expect(all.conditions[2]?.historicalContext).toMatchObject({ percentileClass: 'normal' });
+  });
+
+  it('accepts the 0.6.0 call, { site, parameterCd }, as a one-site list', async () => {
+    mockGetReadings.mockResolvedValue([
+      readingSeries({ values: [at('2026-11-11T02:50:00.000-05:00', '5000')] }),
+    ]);
+    water.route(
+      ...siteRoutes('01646500', '00060'),
+      normalsRoute('01646500', '00060', '11-11'),
+      intervalsRoute('01646500', '00060', POTOMAC.daily),
+    );
+    const { result, all } = await call({ site: '01646500', parameterCd: '00060' });
+
+    expect(result.isError).toBeFalsy();
+    expect(mockGetReadings.mock.calls[0]?.[0].sites).toEqual(['01646500']);
+    expect(all.conditions).toHaveLength(1);
+    expect(all.conditions[0]).toMatchObject({
+      siteNumber: '01646500',
+      currentValue: '5000',
+      historicalContext: { percentileClass: 'normal', periodOfRecord: '1931–2026' },
+    });
+    expect(all).toMatchObject({ missingSites: [], deferredSites: [] });
+  });
+
+  it('rejects site sent beside sites, naming the alias', async () => {
+    const { result, text } = await call({
+      site: '01646500',
+      sites: ['01646500'],
+      parameterCd: '00060',
+    });
+    expect(result.isError).toBe(true);
+    expect(result.structuredContent).toMatchObject({
+      error: { code: JsonRpcErrorCode.InvalidParams },
+    });
+    expect(text).toContain('site is an alias of sites; send one of them, not both.');
+    expect(mockGetReadings).not.toHaveBeenCalled();
+  });
+});
+
 describe('format', () => {
   const base = {
     siteNumber: '01646500',
@@ -1472,9 +1904,13 @@ describe('format', () => {
     qualifiers: ['A'],
   };
 
+  /** One row's text, rendered as a one-site call's result. */
+  const rendered = (row: Parameters<NonNullable<typeof tool.format>>[0]['conditions'][number]) =>
+    tool.format?.({ conditions: [row], missingSites: [], deferredSites: [] })[0];
+
   it('renders the reading, the class, every threshold, and the series pairing', () => {
     const text = textContent(
-      tool.format?.({
+      rendered({
         ...base,
         historicalContext: {
           percentileClass: 'normal',
@@ -1493,7 +1929,7 @@ describe('format', () => {
         },
         historicalContextStatus: 'available',
         note: undefined,
-      })[0],
+      }),
     );
     expect(text).toContain('### POTOMAC RIVER NEAR WASH, DC LITTLE FALLS PUMP STA (01646500)');
     expect(text).toContain(`**Method:** (no description) | **Method ID:** ${POTOMAC.source}`);
@@ -1509,38 +1945,81 @@ describe('format', () => {
 
   it('renders a null historicalContext with its status and note', () => {
     const text = textContent(
-      tool.format?.({
+      rendered({
         ...base,
         historicalContext: null,
         historicalContextStatus: 'unavailable',
         note: 'Historical percentile context could not be retrieved.',
-      })[0],
+      }),
     );
     expect(text).toContain('**Condition:** No historical context available.');
     expect(text).toContain('**Historical context status:** unavailable');
     expect(text).toContain('*Historical percentile context could not be retrieved.*');
   });
+
+  const MISSING =
+    '**No reading in the last 2 hours:** 01646700 — check each with water_get_site_data_catalog: not_found means no such site, an empty series list means it never measured the parameter, and endDate gives its last report. water_get_readings with a longer period returns the latest value of a gage silent only in the last two hours.';
+  const DEFERRED =
+    '**Deferred sites (2):** 01646800, 01646900 — not read in this call; resubmit them as `sites` in another call.';
+
+  it('renders every row in order, then the missing and the deferred sites', () => {
+    const row = {
+      ...base,
+      historicalContext: null,
+      historicalContextStatus: 'no_record' as const,
+      note: undefined,
+    };
+    const text = textContent(
+      tool.format?.({
+        conditions: [row, { ...row, siteNumber: '01646600', siteName: 'SECOND SITE' }],
+        missingSites: ['01646700'],
+        deferredSites: ['01646800', '01646900'],
+      })[0],
+    );
+    const at = (needle: string) => text.indexOf(needle);
+    expect(at('### POTOMAC RIVER NEAR WASH, DC LITTLE FALLS PUMP STA (01646500)')).toBe(0);
+    expect(at('### SECOND SITE (01646600)')).toBeGreaterThan(0);
+    expect(at(MISSING)).toBeGreaterThan(at('### SECOND SITE (01646600)'));
+    expect(text.endsWith(`${MISSING}\n\n${DEFERRED}`)).toBe(true);
+  });
+
+  it('says no row came back, beside the missing and the deferred sites', () => {
+    const text = textContent(
+      tool.format?.({
+        conditions: [],
+        missingSites: ['01646700'],
+        deferredSites: ['01646800', '01646900'],
+      })[0],
+    );
+    expect(text).toBe(
+      [
+        'No site read in this call has a reading of the parameter in the last 2 hours.',
+        MISSING,
+        DEFERRED,
+      ].join('\n\n'),
+    );
+  });
 });
 
 describe('input validation', () => {
   it('rejects a non-numeric site before any request', () => {
-    expect(() => tool.input.parse({ site: 'abc', parameterCd: '00060' })).toThrow();
+    expect(() => tool.input.parse({ sites: ['abc'], parameterCd: '00060' })).toThrow();
     expect(mockGetReadings).not.toHaveBeenCalled();
     expect(water.requests).toEqual([]);
   });
 
   it('rejects a site number outside 8–15 digits', () => {
-    expect(() => tool.input.parse({ site: '1646500', parameterCd: '00060' })).toThrow();
-    expect(() => tool.input.parse({ site: '0164650012345678', parameterCd: '00060' })).toThrow();
+    expect(() => tool.input.parse({ sites: ['1646500'], parameterCd: '00060' })).toThrow();
+    expect(() => tool.input.parse({ sites: ['0164650012345678'], parameterCd: '00060' })).toThrow();
   });
 
   it('rejects a parameter code that is not exactly 5 digits', () => {
     for (const parameterCd of ['x', '0006', '000600']) {
-      expect(() => tool.input.parse({ site: '01646500', parameterCd })).toThrow();
+      expect(() => tool.input.parse({ sites: ['01646500'], parameterCd })).toThrow();
     }
   });
 
   it('accepts a well-formed site and parameter', () => {
-    expect(() => tool.input.parse({ site: '01646500', parameterCd: '00060' })).not.toThrow();
+    expect(() => tool.input.parse({ sites: ['01646500'], parameterCd: '00060' })).not.toThrow();
   });
 });

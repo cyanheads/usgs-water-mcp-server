@@ -1,0 +1,325 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_id": "USGS-01644380",
+        "parent_time_series_id": "c8d9a3bfe76a4bf3ab560022edce072c",
+        "sublocation_identifier": null,
+        "web_description": null
+      },
+      "id": "0963b475bf594cf194a1d16165b79fe3",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_id": "USGS-01636690",
+        "parent_time_series_id": "76b6a205147441b59bd55558f4fcaae1",
+        "sublocation_identifier": null,
+        "web_description": null
+      },
+      "id": "1ad5265634a44539a391f85a17638b35",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_id": "USGS-01638350",
+        "parent_time_series_id": "36fbf811da534b82996b645d2eedd9ff",
+        "sublocation_identifier": null,
+        "web_description": null
+      },
+      "id": "2a467b3c8f8343d599c2eff9c7d54fe1",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_id": "USGS-01646500",
+        "parent_time_series_id": "66a4e3fb8abe42fcb0942b5c0fe98f68",
+        "sublocation_identifier": null,
+        "web_description": null
+      },
+      "id": "2cf409b0d9694c01828f5d4ff14586a5",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_id": "USGS-01645762",
+        "parent_time_series_id": "cd23d109e62140c78dc4d1a9ca6ffb3f",
+        "sublocation_identifier": null,
+        "web_description": null
+      },
+      "id": "2ee0a864bfcd4d598ea51c537c092e87",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_id": "USGS-01638420",
+        "parent_time_series_id": "5f75e361b7274269990f04b7cb67fd41",
+        "sublocation_identifier": null,
+        "web_description": null
+      },
+      "id": "30f23a0badcc4e9789910caabab6fe2d",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_id": "USGS-01646305",
+        "parent_time_series_id": "70e3f1a000024c9fb11c36f38ac7ad3f",
+        "sublocation_identifier": null,
+        "web_description": null
+      },
+      "id": "329df1b21e7b4a87b6b1a9dc90174207",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_id": "USGS-01643590",
+        "parent_time_series_id": "65575381235a4f94b0dee95b70bf9af0",
+        "sublocation_identifier": null,
+        "web_description": null
+      },
+      "id": "497eec245db548318dc221d3ff442346",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_id": "USGS-0164578734",
+        "parent_time_series_id": "49e8ebc214f8437bae2fe3e5a7fd0dcd",
+        "sublocation_identifier": null,
+        "web_description": null
+      },
+      "id": "52365084ef7748c1bb9829a995e70de0",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_id": "USGS-01644000",
+        "parent_time_series_id": "c6aba3ab89dc4362a850a68dc0cdc010",
+        "sublocation_identifier": null,
+        "web_description": null
+      },
+      "id": "571019312377456caaee3aa492a77eb9",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_id": "USGS-01644371",
+        "parent_time_series_id": "08e8bc31a58e4ac79961d546a971a980",
+        "sublocation_identifier": null,
+        "web_description": null
+      },
+      "id": "5a2c54c04a9b437bbf2c159be85eb4d3",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_id": "USGS-01644390",
+        "parent_time_series_id": "6b1113c8034243ba80b8239db3ba8447",
+        "sublocation_identifier": null,
+        "web_description": null
+      },
+      "id": "5c34aa60dddf40009d429983c93eebe7",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_id": "USGS-01644388",
+        "parent_time_series_id": "6701ad876d02445dab74867047e8aabe",
+        "sublocation_identifier": null,
+        "web_description": null
+      },
+      "id": "60792f059a9743e0ba29176e17579d0f",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_id": "USGS-01638500",
+        "parent_time_series_id": "8fbb3237e67140cdbfc61dec49b28885",
+        "sublocation_identifier": null,
+        "web_description": null
+      },
+      "id": "6fce477b4108481d950866411cdc1c00",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_id": "USGS-01646000",
+        "parent_time_series_id": "adb06d80e6664bb38f44c836c6a25d31",
+        "sublocation_identifier": null,
+        "web_description": null
+      },
+      "id": "804f49a549b74389acf8550c9d303cc5",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_id": "USGS-01645000",
+        "parent_time_series_id": "e64055f44c484539898e7ba36f065bff",
+        "sublocation_identifier": null,
+        "web_description": null
+      },
+      "id": "890f87c5498e4114b24dc0a53b1adcd8",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_id": "USGS-01644375",
+        "parent_time_series_id": "29b50c894678493b96d78a449d8ca135",
+        "sublocation_identifier": null,
+        "web_description": null
+      },
+      "id": "89d9ca5b175d4b53a8ab9cea741e6978",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_id": "USGS-0164579522",
+        "parent_time_series_id": "8b2b23a1ee224596982159ee394ee90a",
+        "sublocation_identifier": null,
+        "web_description": null
+      },
+      "id": "97712eda5d0a40699459f09ec04b6cd0",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_id": "USGS-01643805",
+        "parent_time_series_id": "c6e12a561dae4de28fd6f88149f0f627",
+        "sublocation_identifier": null,
+        "web_description": null
+      },
+      "id": "9a0421092b79480abd874664e416ec93",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_id": "USGS-01638480",
+        "parent_time_series_id": "6487034250d046b6bfef4a42be822ac7",
+        "sublocation_identifier": null,
+        "web_description": null
+      },
+      "id": "aa32ee3ed8fb4d5884dbe9ea18626b69",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_id": "USGS-01643700",
+        "parent_time_series_id": "135fbe371d254e8185ad147caeca3803",
+        "sublocation_identifier": null,
+        "web_description": null
+      },
+      "id": "c91e8f4e9ae94178a283a53796e64ff7",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_id": "USGS-01644280",
+        "parent_time_series_id": "71d41c83809a49cb9391d6ecde80dd50",
+        "sublocation_identifier": null,
+        "web_description": null
+      },
+      "id": "ec029680267f40c6b1484894b9d3a040",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_id": "USGS-01637500",
+        "parent_time_series_id": "14ff22c660e04ef2bc9560acb1b49cbf",
+        "sublocation_identifier": null,
+        "web_description": null
+      },
+      "id": "ed82965ab98e461f8ad32fb28c638aec",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_id": "USGS-01645704",
+        "parent_time_series_id": "13b4bc701e764a2f8e8b1d03d6e3ab0f",
+        "sublocation_identifier": null,
+        "web_description": null
+      },
+      "id": "f39321f56e59431f97f4db95ac30c818",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_id": "USGS-01644372",
+        "parent_time_series_id": "2caec061d166498083bcad63236773b5",
+        "sublocation_identifier": null,
+        "web_description": null
+      },
+      "id": "f4cfaad74405437ca0474e59f62ef027",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_id": "USGS-01643880",
+        "parent_time_series_id": "bd85dee474884bf69004a7d7c4b7d8c2",
+        "sublocation_identifier": null,
+        "web_description": null
+      },
+      "id": "f90c6d2184314e5cafd528dc1b7e3d4f",
+      "geometry": null
+    }
+  ],
+  "numberReturned": 26,
+  "links": [
+    {
+      "type": "application/geo+json",
+      "rel": "self",
+      "title": "This document as GeoJSON",
+      "href": "https://api.waterdata.usgs.gov/ogcapi/v1/collections/time-series-metadata/items?f=json&filter-lang=cql2-text&filter=monitoring_location_id%20IN%20%28%27USGS-01636690%27,%27USGS-01637500%27,%27USGS-01638350%27,%27USGS-01638420%27,%27USGS-01638480%27,%27USGS-01638500%27,%27USGS-01643590%27,%27USGS-01643700%27,%27USGS-01643805%27,%27USGS-01643880%27,%27USGS-01644000%27,%27USGS-01644280%27,%27USGS-01644371%27,%27USGS-01644372%27,%27USGS-01644375%27,%27USGS-01644380%27,%27USGS-01644388%27,%27USGS-01644390%27,%27USGS-01645000%27,%27USGS-01645704%27,%27USGS-01645762%27,%27USGS-0164578734%27,%27USGS-0164579522%27,%27USGS-01646000%27,%27USGS-01646305%27,%27USGS-01646500%27%29%20AND%20parameter_code%20IN%20%28%2700060%27%29&computation_period_identifier=Daily&statistic_id=00003&skipGeometry=true&properties=monitoring_location_id,parent_time_series_id,sublocation_identifier,web_description&limit=1000"
+    },
+    {
+      "rel": "alternate",
+      "type": "application/ld+json",
+      "title": "This document as RDF (JSON-LD)",
+      "href": "https://api.waterdata.usgs.gov/ogcapi/v1/collections/time-series-metadata/items?f=jsonld&filter-lang=cql2-text&filter=monitoring_location_id%20IN%20%28%27USGS-01636690%27,%27USGS-01637500%27,%27USGS-01638350%27,%27USGS-01638420%27,%27USGS-01638480%27,%27USGS-01638500%27,%27USGS-01643590%27,%27USGS-01643700%27,%27USGS-01643805%27,%27USGS-01643880%27,%27USGS-01644000%27,%27USGS-01644280%27,%27USGS-01644371%27,%27USGS-01644372%27,%27USGS-01644375%27,%27USGS-01644380%27,%27USGS-01644388%27,%27USGS-01644390%27,%27USGS-01645000%27,%27USGS-01645704%27,%27USGS-01645762%27,%27USGS-0164578734%27,%27USGS-0164579522%27,%27USGS-01646000%27,%27USGS-01646305%27,%27USGS-01646500%27%29%20AND%20parameter_code%20IN%20%28%2700060%27%29&computation_period_identifier=Daily&statistic_id=00003&skipGeometry=true&properties=monitoring_location_id,parent_time_series_id,sublocation_identifier,web_description&limit=1000"
+    },
+    {
+      "type": "text/html",
+      "rel": "alternate",
+      "title": "This document as HTML",
+      "href": "https://api.waterdata.usgs.gov/ogcapi/v1/collections/time-series-metadata/items?f=html&filter-lang=cql2-text&filter=monitoring_location_id%20IN%20%28%27USGS-01636690%27,%27USGS-01637500%27,%27USGS-01638350%27,%27USGS-01638420%27,%27USGS-01638480%27,%27USGS-01638500%27,%27USGS-01643590%27,%27USGS-01643700%27,%27USGS-01643805%27,%27USGS-01643880%27,%27USGS-01644000%27,%27USGS-01644280%27,%27USGS-01644371%27,%27USGS-01644372%27,%27USGS-01644375%27,%27USGS-01644380%27,%27USGS-01644388%27,%27USGS-01644390%27,%27USGS-01645000%27,%27USGS-01645704%27,%27USGS-01645762%27,%27USGS-0164578734%27,%27USGS-0164579522%27,%27USGS-01646000%27,%27USGS-01646305%27,%27USGS-01646500%27%29%20AND%20parameter_code%20IN%20%28%2700060%27%29&computation_period_identifier=Daily&statistic_id=00003&skipGeometry=true&properties=monitoring_location_id,parent_time_series_id,sublocation_identifier,web_description&limit=1000"
+    },
+    {
+      "type": "text/csv; charset=utf-8",
+      "rel": "alternate",
+      "title": "This document as CSV",
+      "href": "https://api.waterdata.usgs.gov/ogcapi/v1/collections/time-series-metadata/items?f=csv&filter-lang=cql2-text&filter=monitoring_location_id%20IN%20%28%27USGS-01636690%27,%27USGS-01637500%27,%27USGS-01638350%27,%27USGS-01638420%27,%27USGS-01638480%27,%27USGS-01638500%27,%27USGS-01643590%27,%27USGS-01643700%27,%27USGS-01643805%27,%27USGS-01643880%27,%27USGS-01644000%27,%27USGS-01644280%27,%27USGS-01644371%27,%27USGS-01644372%27,%27USGS-01644375%27,%27USGS-01644380%27,%27USGS-01644388%27,%27USGS-01644390%27,%27USGS-01645000%27,%27USGS-01645704%27,%27USGS-01645762%27,%27USGS-0164578734%27,%27USGS-0164579522%27,%27USGS-01646000%27,%27USGS-01646305%27,%27USGS-01646500%27%29%20AND%20parameter_code%20IN%20%28%2700060%27%29&computation_period_identifier=Daily&statistic_id=00003&skipGeometry=true&properties=monitoring_location_id,parent_time_series_id,sublocation_identifier,web_description&limit=1000"
+    },
+    {
+      "type": "application/json",
+      "title": "Time series metadata",
+      "rel": "collection",
+      "href": "https://api.waterdata.usgs.gov/ogcapi/v1/collections/time-series-metadata"
+    }
+  ],
+  "timeStamp": "2026-11-23T15:47:30.781762Z"
+}

@@ -292,6 +292,7 @@ describe('waterGetReadings', () => {
       totalSeries: 1,
       truncated: false,
       missingSites: [],
+      deferredSites: [],
     };
     const blocks = waterGetReadings.format!(result);
     const text = textContent(blocks[0]);
@@ -522,7 +523,9 @@ describe('waterGetReadings', () => {
   }
 
   type ReadingsResult = {
+    deferredSites: string[];
     missingSites: string[];
+    query: { sites: string[] };
     readings: { parameterCd: string; siteNumber: string; totalValues: number }[];
     total: number;
     totalSeries: number;
@@ -678,10 +681,158 @@ describe('waterGetReadings', () => {
       expect(structured).toMatchObject({ total: 2, totalSeries: 2, truncated: false });
       expect(text.split('\n')[0]).toBe('**2 time series**');
     });
+  });
 
-    it('rejects more than 100 sites at the schema', () => {
-      const sites = Array.from({ length: SERIES_CAP + 1 }, (_, i) => siteNo(i));
-      expect(() => waterGetReadings.input.parse({ sites })).toThrow();
+  /** Distinct sites one call reads, and site numbers one call accepts. */
+  const SITES_READ = 100;
+  const SITES_ACCEPTED = 500;
+
+  /** `count` distinct site numbers from index `from`. */
+  const siteRange = (from: number, count: number) =>
+    Array.from({ length: count }, (_, i) => siteNo(from + i));
+
+  describe('site lists past 100 (#61)', () => {
+    it('reads every site of a 100-site call and defers none (characterization)', async () => {
+      const sites = siteRange(0, SITES_READ);
+      const { structured, text } = await readings(
+        sites.map((s) => seriesFor(s, '00060')),
+        sites,
+      );
+
+      expect(mockGetReadings.mock.calls[0]?.[0].sites).toEqual(sites);
+      expect(structured).toMatchObject({
+        total: SITES_READ,
+        missingSites: [],
+        deferredSites: [],
+        query: { sites },
+      });
+      expect(text).not.toContain('Deferred sites');
+    });
+
+    it('reads the first 100 distinct numbers and defers the 101st', async () => {
+      const sites = siteRange(0, SITES_READ + 1);
+      const { structured, text } = await readings([seriesFor(siteNo(0), '00060')], sites);
+
+      expect(mockGetReadings.mock.calls[0]?.[0].sites).toEqual(sites.slice(0, SITES_READ));
+      expect(structured.deferredSites).toEqual([siteNo(SITES_READ)]);
+      expect(structured.missingSites).toEqual(siteRange(1, SITES_READ - 1));
+      expect(structured.query.sites).toEqual(sites.slice(0, SITES_READ));
+      expect(text).toContain(
+        `**Deferred sites (1):** ${siteNo(SITES_READ)} — not read in this call; resubmit them as \`sites\` in another call.`,
+      );
+    });
+
+    it('accepts 500 numbers and reads the same 100 a 100-site call reads', async () => {
+      const sites = siteRange(0, SITES_ACCEPTED);
+      const { structured } = await readings([seriesFor(siteNo(0), '00060')], sites);
+
+      expect(mockGetReadings).toHaveBeenCalledTimes(1);
+      expect(mockGetReadings.mock.calls[0]?.[0]).toEqual({
+        sites: sites.slice(0, SITES_READ),
+        period: 'PT2H',
+      });
+      expect(structured.deferredSites).toEqual(sites.slice(SITES_READ));
+    });
+
+    it('rejects 501 numbers with invalid_arguments before any read', async () => {
+      const result = await runToolContract(waterGetReadings, {
+        sites: siteRange(0, SITES_ACCEPTED + 1),
+      });
+
+      expect(result.structuredContent).toMatchObject({
+        error: { code: JsonRpcErrorCode.InvalidParams },
+      });
+      expect(allText(result.content)).toContain('expected array to have <=500 items');
+      expect(allText(result.content)).toContain('invalid_arguments');
+      expect(mockGetReadings).not.toHaveBeenCalled();
+    });
+
+    it('reads 101 copies of one number once and defers nothing', async () => {
+      const sites = Array.from({ length: SITES_READ + 1 }, () => '01646500');
+      const { structured } = await readings([makeSeries(2)], sites);
+
+      expect(mockGetReadings.mock.calls[0]?.[0].sites).toEqual(['01646500']);
+      expect(structured).toMatchObject({
+        total: 1,
+        missingSites: [],
+        deferredSites: [],
+        query: { sites: ['01646500'] },
+      });
+    });
+
+    it('lists a nonexistent number passed twice once in missingSites', async () => {
+      const { structured, text } = await readings(
+        [makeSeries(2)],
+        ['01646500', '99999999', '99999999'],
+      );
+
+      expect(mockGetReadings.mock.calls[0]?.[0].sites).toEqual(['01646500', '99999999']);
+      expect(structured.missingSites).toEqual(['99999999']);
+      expect(structured.query.sites).toEqual(['01646500', '99999999']);
+      expect(text).toContain('**No series returned for:** 99999999 — ');
+    });
+
+    it('defers each later number once, in input order, never reading it or listing it missing', async () => {
+      // A repeat of a read site (siteNo(5)) is not deferred; a repeated deferred one is deferred once.
+      const sites = [
+        ...siteRange(0, SITES_READ),
+        siteNo(300),
+        siteNo(200),
+        siteNo(300),
+        siteNo(5),
+        siteNo(250),
+      ];
+      const deferred = [siteNo(300), siteNo(200), siteNo(250)];
+      const { structured, text } = await readings([seriesFor(siteNo(5), '00060')], sites);
+
+      expect(structured.deferredSites).toEqual(deferred);
+      const read = new Set([
+        ...structured.readings.map((r) => r.siteNumber),
+        ...structured.missingSites,
+        ...structured.query.sites,
+      ]);
+      expect(deferred.filter((s) => read.has(s))).toEqual([]);
+      expect(text).toContain(`**Deferred sites (3):** ${deferred.join(', ')} — `);
+    });
+
+    it('succeeds with empty readings when no read site returned a series and sites were deferred', async () => {
+      const sites = siteRange(0, 150);
+      const { structured, text } = await readings([], sites, ['00060']);
+
+      expect(structured).toEqual({
+        readings: [],
+        total: 0,
+        totalSeries: 0,
+        truncated: false,
+        missingSites: sites.slice(0, SITES_READ),
+        deferredSites: sites.slice(SITES_READ),
+        query: { sites: sites.slice(0, SITES_READ), parameterCd: ['00060'], period: 'PT2H' },
+      });
+      expect(text.split('\n')[0]).toBe('**0 time series**');
+      expect(text).toContain(
+        `**No series returned for:** ${sites.slice(0, SITES_READ).join(', ')} — `,
+      );
+      expect(text).toContain(`**Deferred sites (50):** ${sites.slice(SITES_READ).join(', ')} — `);
+    });
+
+    it('fails no_data_for_parameter for a repeated number with no series: nothing was deferred', async () => {
+      mockGetReadings.mockResolvedValue([]);
+      await expect(
+        contractError(waterGetReadings, { sites: ['99999999', '99999999'] }),
+      ).resolves.toMatchObject({ data: { reason: 'no_data_for_parameter' } });
+    });
+
+    it(`rejects more than ${SITES_ACCEPTED} sites at the schema`, () => {
+      expect(() =>
+        waterGetReadings.input.parse({ sites: siteRange(0, SITES_ACCEPTED + 1) }),
+      ).toThrow();
+    });
+
+    it('describes the 500-number list and its deferral on the definition', () => {
+      expect(waterGetReadings.description).toContain('deferredSites');
+      expect(waterGetReadings.description).not.toContain('up to 100 USGS sites');
+      expect(waterGetReadings.input.shape.sites.description).toContain('500');
+      expect(waterGetReadings.output.shape.missingSites.description).toContain('deferredSites');
     });
   });
 

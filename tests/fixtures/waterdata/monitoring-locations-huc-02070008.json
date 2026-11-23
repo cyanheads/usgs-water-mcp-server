@@ -1,0 +1,351 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_number": "01636690",
+        "monitoring_location_name": "PINEY RUN NEAR LOVETTSVILLE, VA",
+        "agency_code": "USGS",
+        "time_zone_abbreviation": "EST",
+        "uses_daylight_savings": "Y"
+      },
+      "id": "USGS-01636690",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_number": "01637500",
+        "monitoring_location_name": "CATOCTIN CREEK NEAR MIDDLETOWN, MD",
+        "agency_code": "USGS",
+        "time_zone_abbreviation": "EST",
+        "uses_daylight_savings": "Y"
+      },
+      "id": "USGS-01637500",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_number": "01638350",
+        "monitoring_location_name": "S F CATOCTIN CREEK AT RT 698 NEAR WATERFORD, VA",
+        "agency_code": "USGS",
+        "time_zone_abbreviation": "EST",
+        "uses_daylight_savings": "Y"
+      },
+      "id": "USGS-01638350",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_number": "01638420",
+        "monitoring_location_name": "N F CATOCTIN CREEK AT RT 681 NEAR WATERFORD, VA",
+        "agency_code": "USGS",
+        "time_zone_abbreviation": "EST",
+        "uses_daylight_savings": "Y"
+      },
+      "id": "USGS-01638420",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_number": "01638480",
+        "monitoring_location_name": "CATOCTIN CREEK AT TAYLORSTOWN, VA",
+        "agency_code": "USGS",
+        "time_zone_abbreviation": "EST",
+        "uses_daylight_savings": "Y"
+      },
+      "id": "USGS-01638480",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_number": "01638500",
+        "monitoring_location_name": "POTOMAC RIVER AT POINT OF ROCKS, MD",
+        "agency_code": "USGS",
+        "time_zone_abbreviation": "EST",
+        "uses_daylight_savings": "Y"
+      },
+      "id": "USGS-01638500",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_number": "01643590",
+        "monitoring_location_name": "LIMESTONE BRANCH NEAR LEESBURG, VA",
+        "agency_code": "USGS",
+        "time_zone_abbreviation": "EST",
+        "uses_daylight_savings": "Y"
+      },
+      "id": "USGS-01643590",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_number": "01643700",
+        "monitoring_location_name": "GOOSE CREEK NEAR MIDDLEBURG, VA",
+        "agency_code": "USGS",
+        "time_zone_abbreviation": "EST",
+        "uses_daylight_savings": "Y"
+      },
+      "id": "USGS-01643700",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_number": "01643805",
+        "monitoring_location_name": "N F GOOSE CREEK AT RT 729 NEAR LINCOLN, VA",
+        "agency_code": "USGS",
+        "time_zone_abbreviation": "EST",
+        "uses_daylight_savings": "Y"
+      },
+      "id": "USGS-01643805",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_number": "01643880",
+        "monitoring_location_name": "BEAVERDAM CREEK AT RT 734 NEAR MOUNTVILLE, VA",
+        "agency_code": "USGS",
+        "time_zone_abbreviation": "EST",
+        "uses_daylight_savings": "Y"
+      },
+      "id": "USGS-01643880",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_number": "01644000",
+        "monitoring_location_name": "GOOSE CREEK NEAR LEESBURG, VA",
+        "agency_code": "USGS",
+        "time_zone_abbreviation": "EST",
+        "uses_daylight_savings": "Y"
+      },
+      "id": "USGS-01644000",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_number": "01644280",
+        "monitoring_location_name": "BROAD RUN NEAR LEESBURG, VA",
+        "agency_code": "USGS",
+        "time_zone_abbreviation": "EST",
+        "uses_daylight_savings": "Y"
+      },
+      "id": "USGS-01644280",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_number": "01644371",
+        "monitoring_location_name": "LITTLE SENECA CREEK TRIBUTARY NEAR CLARKSBURG, MD",
+        "agency_code": "USGS",
+        "time_zone_abbreviation": "EST",
+        "uses_daylight_savings": "Y"
+      },
+      "id": "USGS-01644371",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_number": "01644372",
+        "monitoring_location_name": "LITTLE SENECA CREEK TRIBUTARY AT BRINK, MD",
+        "agency_code": "USGS",
+        "time_zone_abbreviation": "EST",
+        "uses_daylight_savings": "Y"
+      },
+      "id": "USGS-01644372",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_number": "01644375",
+        "monitoring_location_name": "LITTLE SENECA CREEK TRIBUTARY NEAR GERMANTOWN, MD",
+        "agency_code": "USGS",
+        "time_zone_abbreviation": "EST",
+        "uses_daylight_savings": "Y"
+      },
+      "id": "USGS-01644375",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_number": "01644380",
+        "monitoring_location_name": "CABIN BRANCH NEAR BOYDS, MD",
+        "agency_code": "USGS",
+        "time_zone_abbreviation": "EST",
+        "uses_daylight_savings": "Y"
+      },
+      "id": "USGS-01644380",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_number": "01644388",
+        "monitoring_location_name": "TENMILE CREEK NEAR CLARKSBURG, MD",
+        "agency_code": "USGS",
+        "time_zone_abbreviation": "EST",
+        "uses_daylight_savings": "Y"
+      },
+      "id": "USGS-01644388",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_number": "01644390",
+        "monitoring_location_name": "TENMILE CREEK NEAR BOYDS, MD",
+        "agency_code": "USGS",
+        "time_zone_abbreviation": "EST",
+        "uses_daylight_savings": "Y"
+      },
+      "id": "USGS-01644390",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_number": "01645000",
+        "monitoring_location_name": "SENECA CREEK AT DAWSONVILLE, MD",
+        "agency_code": "USGS",
+        "time_zone_abbreviation": "EST",
+        "uses_daylight_savings": "Y"
+      },
+      "id": "USGS-01645000",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_number": "01645704",
+        "monitoring_location_name": "DIFFICULT RUN ABOVE FOX LAKE NEAR FAIRFAX, VA",
+        "agency_code": "USGS",
+        "time_zone_abbreviation": "EST",
+        "uses_daylight_savings": "Y"
+      },
+      "id": "USGS-01645704",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_number": "01645762",
+        "monitoring_location_name": "S F LITTLE DIFFICULT RUN ABOVE MOUTH NR VIENNA, VA",
+        "agency_code": "USGS",
+        "time_zone_abbreviation": "EST",
+        "uses_daylight_savings": "Y"
+      },
+      "id": "USGS-01645762",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_number": "0164578734",
+        "monitoring_location_name": "SNAKEDEN BRANCH ABOVE LAKE AUDUBON AT RESTON, VA",
+        "agency_code": "USGS",
+        "time_zone_abbreviation": "EST",
+        "uses_daylight_savings": "Y"
+      },
+      "id": "USGS-0164578734",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_number": "0164579522",
+        "monitoring_location_name": "THE GLADE NEAR HOWLAND DRIVE AT RESTON, VA",
+        "agency_code": "USGS",
+        "time_zone_abbreviation": "EST",
+        "uses_daylight_savings": "Y"
+      },
+      "id": "USGS-0164579522",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_number": "01646000",
+        "monitoring_location_name": "DIFFICULT RUN NEAR GREAT FALLS, VA",
+        "agency_code": "USGS",
+        "time_zone_abbreviation": "EST",
+        "uses_daylight_savings": "Y"
+      },
+      "id": "USGS-01646000",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_number": "01646305",
+        "monitoring_location_name": "DEAD RUN AT WHANN AVENUE NEAR MCLEAN, VA",
+        "agency_code": "USGS",
+        "time_zone_abbreviation": "EST",
+        "uses_daylight_savings": "Y"
+      },
+      "id": "USGS-01646305",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_number": "01646500",
+        "monitoring_location_name": "POTOMAC RIVER NEAR WASH, DC LITTLE FALLS PUMP STA",
+        "agency_code": "USGS",
+        "time_zone_abbreviation": "EST",
+        "uses_daylight_savings": "Y"
+      },
+      "id": "USGS-01646500",
+      "geometry": null
+    }
+  ],
+  "numberReturned": 26,
+  "links": [
+    {
+      "type": "application/geo+json",
+      "rel": "self",
+      "title": "This document as GeoJSON",
+      "href": "https://api.waterdata.usgs.gov/ogcapi/v1/collections/monitoring-locations/items?f=json&skipGeometry=true&monitoring_location_number=01636690,01637500,01638350,01638420,01638480,01638500,01643590,01643700,01643805,01643880,01644000,01644280,01644371,01644372,01644375,01644380,01644388,01644390,01645000,01645704,01645762,0164578734,0164579522,01646000,01646305,01646500&properties=monitoring_location_number,monitoring_location_name,agency_code,time_zone_abbreviation,uses_daylight_savings&limit=1000"
+    },
+    {
+      "rel": "alternate",
+      "type": "application/ld+json",
+      "title": "This document as RDF (JSON-LD)",
+      "href": "https://api.waterdata.usgs.gov/ogcapi/v1/collections/monitoring-locations/items?f=jsonld&skipGeometry=true&monitoring_location_number=01636690,01637500,01638350,01638420,01638480,01638500,01643590,01643700,01643805,01643880,01644000,01644280,01644371,01644372,01644375,01644380,01644388,01644390,01645000,01645704,01645762,0164578734,0164579522,01646000,01646305,01646500&properties=monitoring_location_number,monitoring_location_name,agency_code,time_zone_abbreviation,uses_daylight_savings&limit=1000"
+    },
+    {
+      "type": "text/html",
+      "rel": "alternate",
+      "title": "This document as HTML",
+      "href": "https://api.waterdata.usgs.gov/ogcapi/v1/collections/monitoring-locations/items?f=html&skipGeometry=true&monitoring_location_number=01636690,01637500,01638350,01638420,01638480,01638500,01643590,01643700,01643805,01643880,01644000,01644280,01644371,01644372,01644375,01644380,01644388,01644390,01645000,01645704,01645762,0164578734,0164579522,01646000,01646305,01646500&properties=monitoring_location_number,monitoring_location_name,agency_code,time_zone_abbreviation,uses_daylight_savings&limit=1000"
+    },
+    {
+      "type": "text/csv; charset=utf-8",
+      "rel": "alternate",
+      "title": "This document as CSV",
+      "href": "https://api.waterdata.usgs.gov/ogcapi/v1/collections/monitoring-locations/items?f=csv&skipGeometry=true&monitoring_location_number=01636690,01637500,01638350,01638420,01638480,01638500,01643590,01643700,01643805,01643880,01644000,01644280,01644371,01644372,01644375,01644380,01644388,01644390,01645000,01645704,01645762,0164578734,0164579522,01646000,01646305,01646500&properties=monitoring_location_number,monitoring_location_name,agency_code,time_zone_abbreviation,uses_daylight_savings&limit=1000"
+    },
+    {
+      "type": "application/json",
+      "title": "Monitoring locations",
+      "rel": "collection",
+      "href": "https://api.waterdata.usgs.gov/ogcapi/v1/collections/monitoring-locations"
+    }
+  ],
+  "timeStamp": "2026-11-23T14:56:33.675731Z"
+}

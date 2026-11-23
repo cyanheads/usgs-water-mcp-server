@@ -41,7 +41,9 @@ type Reading = {
   values: Value[];
 };
 type Readings = {
+  deferredSites: string[];
   missingSites: string[];
+  query: { sites: string[] };
   readings: Reading[];
   total: number;
   totalSeries: number;
@@ -493,6 +495,7 @@ describe('water_get_readings over captured Water Data responses', () => {
         totalSeries: 1,
         truncated: false,
         missingSites: ['99999999'],
+        deferredSites: [],
         query: { sites: ['09497830', '99999999'], parameterCd: ['72203'], period: 'PT2H' },
       });
 
@@ -536,6 +539,139 @@ describe('water_get_readings over captured Water Data responses', () => {
       const { result } = await readings({ sites: ['1646500'] });
       expect(result.isError).toBe(true);
       expect(water.requests).toHaveLength(0);
+    });
+  });
+
+  describe('site lists past 100 (#61)', () => {
+    /** `count` eight-digit numbers no captured location carries, from index `from`. */
+    const absent = (count: number, from = 0) =>
+      Array.from({ length: count }, (_, i) => String(20_000_000 + from + i));
+
+    /** Every number the `monitoring-locations` requests asked for, in request order. */
+    const numbersAsked = () =>
+      sentTo('monitoring-locations').flatMap(
+        (r) => r.url.searchParams.get('monitoring_location_number')?.split(',') ?? [],
+      );
+
+    /** Each request from index `from` on as path plus sorted query, sorted. */
+    const requestsSent = (from = 0) =>
+      water.requests
+        .slice(from)
+        .map(
+          (r) =>
+            `${r.url.pathname}?${[...r.url.searchParams]
+              .map(([k, v]) => `${k}=${v}`)
+              .sort()
+              .join('&')}`,
+        )
+        .sort();
+
+    it('reads the first 100 distinct numbers and defers the 101st without naming it upstream', async () => {
+      water.route(...upstream());
+      const read = ['14233500', ...absent(99)];
+      const { result, structured, text } = await readings({
+        sites: [...read, '01646500'],
+        parameterCd: ['00060'],
+      });
+
+      expect(result.isError).toBeFalsy();
+      expect(structured.readings.map((r) => [r.siteNumber, r.methodId, r.totalValues])).toEqual([
+        ['14233500', COWLITZ_Q_OLD, 0],
+        ['14233500', COWLITZ_Q, 6],
+      ]);
+      expect(structured).toMatchObject({
+        missingSites: absent(99),
+        deferredSites: ['01646500'],
+        query: { sites: read },
+      });
+      expect(numbersAsked()).toEqual(read);
+      expect(sentTo('continuous')[0]?.url.searchParams.get('filter')).toBe(
+        "monitoring_location_id IN ('USGS-14233500') AND parameter_code IN ('00060')",
+      );
+      expect(text).toContain(
+        '**Deferred sites (1):** 01646500 — not read in this call; resubmit them as `sites` in another call.',
+      );
+      // Named once: in the deferred line, not in the query trailer.
+      expect(text.split('01646500')).toHaveLength(2);
+    });
+
+    it('sends the same requests for 500 numbers as for their first 100 alone', async () => {
+      water.route(...upstream());
+      const first = ['01646500', '14233500', ...absent(98)];
+      const rest = ['09497830', ...absent(399, 98)];
+      const alone = await readings({ sites: first, parameterCd: ['00060'] });
+      const aloneRequests = requestsSent();
+
+      // Cold caches again, so the second call pays the same site and catalog reads.
+      vi.resetModules();
+      ({ waterGetReadings: tool } = await import(
+        '@/mcp-server/tools/definitions/water-get-readings.tool.js'
+      ));
+      const before = water.requests.length;
+      const full = await readings({ sites: [...first, ...rest], parameterCd: ['00060'] });
+
+      expect(aloneRequests).toHaveLength(4);
+      expect(requestsSent(before)).toEqual(aloneRequests);
+      expect(full.structured.readings).toEqual(alone.structured.readings);
+      expect(full.structured.missingSites).toEqual(alone.structured.missingSites);
+      expect(full.structured.deferredSites).toEqual(rest);
+      expect(alone.structured.deferredSites).toEqual([]);
+    });
+
+    it('reads 101 copies of one number once and defers nothing', async () => {
+      water.route(...upstream());
+      const { structured } = await readings({
+        sites: Array.from({ length: 101 }, () => '01646500'),
+        parameterCd: ['00060'],
+      });
+
+      expect(structured).toMatchObject({
+        total: 1,
+        totalSeries: 1,
+        missingSites: [],
+        deferredSites: [],
+        query: { sites: ['01646500'] },
+      });
+      expect(structured.readings[0]).toMatchObject({ methodId: POTOMAC_Q, totalValues: 21 });
+      expect(numbersAsked()).toEqual(['01646500']);
+      expect(water.requests).toHaveLength(4);
+    });
+
+    it('lists a nonexistent number passed twice once in missingSites', async () => {
+      water.route(...upstream());
+      const { structured, text } = await readings({
+        sites: ['01646500', '99999999', '99999999'],
+        parameterCd: ['00060'],
+      });
+
+      expect(structured).toMatchObject({
+        missingSites: ['99999999'],
+        deferredSites: [],
+        query: { sites: ['01646500', '99999999'] },
+      });
+      expect(text).toContain('**No series returned for:** 99999999 — check each');
+      expect(numbersAsked()).toEqual(['01646500', '99999999']);
+    });
+
+    it('succeeds with empty readings when none of the 100 read sites has a location and one was deferred', async () => {
+      water.route(locationsRoute());
+      const { result, structured, text } = await readings({
+        sites: [...absent(100), '01646500'],
+        parameterCd: ['00060'],
+      });
+
+      expect(result.isError).toBeFalsy();
+      expect(structured).toEqual({
+        readings: [],
+        total: 0,
+        totalSeries: 0,
+        truncated: false,
+        missingSites: absent(100),
+        deferredSites: ['01646500'],
+        query: { sites: absent(100), parameterCd: ['00060'], period: 'PT2H' },
+      });
+      expect(text).toContain('**Deferred sites (1):** 01646500 — ');
+      expect(collectionsSent()).toEqual(['monitoring-locations']);
     });
   });
 

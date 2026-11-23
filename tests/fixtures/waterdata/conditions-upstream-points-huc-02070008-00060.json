@@ -1,0 +1,429 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_id": "USGS-01644371",
+        "parameter_code": "00060",
+        "statistic_id": "00011",
+        "begin": "2004-10-01T05:00:00+00:00",
+        "sublocation_identifier": null,
+        "web_description": null,
+        "unit_of_measure": "ft^3/s",
+        "parameter_name": "Discharge"
+      },
+      "id": "08e8bc31a58e4ac79961d546a971a980",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_id": "USGS-01643700",
+        "parameter_code": "00060",
+        "statistic_id": "00011",
+        "begin": "1990-10-01T04:30:00+00:00",
+        "sublocation_identifier": null,
+        "web_description": null,
+        "unit_of_measure": "ft^3/s",
+        "parameter_name": "Discharge"
+      },
+      "id": "135fbe371d254e8185ad147caeca3803",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_id": "USGS-01645704",
+        "parameter_code": "00060",
+        "statistic_id": "00011",
+        "begin": "2007-09-21T04:00:00+00:00",
+        "sublocation_identifier": null,
+        "web_description": null,
+        "unit_of_measure": "ft^3/s",
+        "parameter_name": "Discharge"
+      },
+      "id": "13b4bc701e764a2f8e8b1d03d6e3ab0f",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_id": "USGS-01637500",
+        "parameter_code": "00060",
+        "statistic_id": "00011",
+        "begin": "1982-07-27T05:03:09+00:00",
+        "sublocation_identifier": null,
+        "web_description": null,
+        "unit_of_measure": "ft^3/s",
+        "parameter_name": "Discharge"
+      },
+      "id": "14ff22c660e04ef2bc9560acb1b49cbf",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_id": "USGS-01644375",
+        "parameter_code": "00060",
+        "statistic_id": "00011",
+        "begin": "2004-10-01T05:00:00+00:00",
+        "sublocation_identifier": null,
+        "web_description": null,
+        "unit_of_measure": "ft^3/s",
+        "parameter_name": "Discharge"
+      },
+      "id": "29b50c894678493b96d78a449d8ca135",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_id": "USGS-01644372",
+        "parameter_code": "00060",
+        "statistic_id": "00011",
+        "begin": "2004-11-01T05:00:00+00:00",
+        "sublocation_identifier": null,
+        "web_description": null,
+        "unit_of_measure": "ft^3/s",
+        "parameter_name": "Discharge"
+      },
+      "id": "2caec061d166498083bcad63236773b5",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_id": "USGS-01638350",
+        "parameter_code": "00060",
+        "statistic_id": "00011",
+        "begin": "2001-07-01T04:00:00+00:00",
+        "sublocation_identifier": null,
+        "web_description": null,
+        "unit_of_measure": "ft^3/s",
+        "parameter_name": "Discharge"
+      },
+      "id": "36fbf811da534b82996b645d2eedd9ff",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_id": "USGS-0164578734",
+        "parameter_code": "00060",
+        "statistic_id": "00011",
+        "begin": "2021-03-11T18:45:00+00:00",
+        "sublocation_identifier": null,
+        "web_description": null,
+        "unit_of_measure": "ft^3/s",
+        "parameter_name": "Discharge"
+      },
+      "id": "49e8ebc214f8437bae2fe3e5a7fd0dcd",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_id": "USGS-01638420",
+        "parameter_code": "00060",
+        "statistic_id": "00011",
+        "begin": "2001-07-20T04:00:00+00:00",
+        "sublocation_identifier": null,
+        "web_description": null,
+        "unit_of_measure": "ft^3/s",
+        "parameter_name": "Discharge"
+      },
+      "id": "5f75e361b7274269990f04b7cb67fd41",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_id": "USGS-01638480",
+        "parameter_code": "00060",
+        "statistic_id": "00011",
+        "begin": "1990-10-01T04:15:00+00:00",
+        "sublocation_identifier": null,
+        "web_description": null,
+        "unit_of_measure": "ft^3/s",
+        "parameter_name": "Discharge"
+      },
+      "id": "6487034250d046b6bfef4a42be822ac7",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_id": "USGS-01643590",
+        "parameter_code": "00060",
+        "statistic_id": "00011",
+        "begin": "2001-08-23T04:00:00+00:00",
+        "sublocation_identifier": null,
+        "web_description": null,
+        "unit_of_measure": "ft^3/s",
+        "parameter_name": "Discharge"
+      },
+      "id": "65575381235a4f94b0dee95b70bf9af0",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_id": "USGS-01646500",
+        "parameter_code": "00060",
+        "statistic_id": "00011",
+        "begin": "1972-06-09T05:00:00+00:00",
+        "sublocation_identifier": null,
+        "web_description": null,
+        "unit_of_measure": "ft^3/s",
+        "parameter_name": "Discharge"
+      },
+      "id": "66a4e3fb8abe42fcb0942b5c0fe98f68",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_id": "USGS-01644388",
+        "parameter_code": "00060",
+        "statistic_id": "00011",
+        "begin": "2013-06-12T05:00:00+00:00",
+        "sublocation_identifier": null,
+        "web_description": null,
+        "unit_of_measure": "ft^3/s",
+        "parameter_name": "Discharge"
+      },
+      "id": "6701ad876d02445dab74867047e8aabe",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_id": "USGS-01644390",
+        "parameter_code": "00060",
+        "statistic_id": "00011",
+        "begin": "2010-10-28T05:00:00+00:00",
+        "sublocation_identifier": null,
+        "web_description": null,
+        "unit_of_measure": "ft^3/s",
+        "parameter_name": "Discharge"
+      },
+      "id": "6b1113c8034243ba80b8239db3ba8447",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_id": "USGS-01646305",
+        "parameter_code": "00060",
+        "statistic_id": "00011",
+        "begin": "2008-01-10T05:00:00+00:00",
+        "sublocation_identifier": null,
+        "web_description": null,
+        "unit_of_measure": "ft^3/s",
+        "parameter_name": "Discharge"
+      },
+      "id": "70e3f1a000024c9fb11c36f38ac7ad3f",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_id": "USGS-01644280",
+        "parameter_code": "00060",
+        "statistic_id": "00011",
+        "begin": "2001-10-01T04:00:00+00:00",
+        "sublocation_identifier": null,
+        "web_description": null,
+        "unit_of_measure": "ft^3/s",
+        "parameter_name": "Discharge"
+      },
+      "id": "71d41c83809a49cb9391d6ecde80dd50",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_id": "USGS-01636690",
+        "parameter_code": "00060",
+        "statistic_id": "00011",
+        "begin": "2001-10-01T05:00:00+00:00",
+        "sublocation_identifier": null,
+        "web_description": null,
+        "unit_of_measure": "ft^3/s",
+        "parameter_name": "Discharge"
+      },
+      "id": "76b6a205147441b59bd55558f4fcaae1",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_id": "USGS-0164579522",
+        "parameter_code": "00060",
+        "statistic_id": "00011",
+        "begin": "2021-02-25T17:30:00+00:00",
+        "sublocation_identifier": null,
+        "web_description": null,
+        "unit_of_measure": "ft^3/s",
+        "parameter_name": "Discharge"
+      },
+      "id": "8b2b23a1ee224596982159ee394ee90a",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_id": "USGS-01638500",
+        "parameter_code": "00060",
+        "statistic_id": "00011",
+        "begin": "1972-05-24T05:00:00+00:00",
+        "sublocation_identifier": null,
+        "web_description": null,
+        "unit_of_measure": "ft^3/s",
+        "parameter_name": "Discharge"
+      },
+      "id": "8fbb3237e67140cdbfc61dec49b28885",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_id": "USGS-01646000",
+        "parameter_code": "00060",
+        "statistic_id": "00011",
+        "begin": "2003-10-01T04:00:00+00:00",
+        "sublocation_identifier": null,
+        "web_description": null,
+        "unit_of_measure": "ft^3/s",
+        "parameter_name": "Discharge"
+      },
+      "id": "adb06d80e6664bb38f44c836c6a25d31",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_id": "USGS-01643880",
+        "parameter_code": "00060",
+        "statistic_id": "00011",
+        "begin": "2001-07-18T04:00:00+00:00",
+        "sublocation_identifier": null,
+        "web_description": null,
+        "unit_of_measure": "ft^3/s",
+        "parameter_name": "Discharge"
+      },
+      "id": "bd85dee474884bf69004a7d7c4b7d8c2",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_id": "USGS-01644000",
+        "parameter_code": "00060",
+        "statistic_id": "00011",
+        "begin": "1990-10-01T04:30:00+00:00",
+        "sublocation_identifier": null,
+        "web_description": null,
+        "unit_of_measure": "ft^3/s",
+        "parameter_name": "Discharge"
+      },
+      "id": "c6aba3ab89dc4362a850a68dc0cdc010",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_id": "USGS-01643805",
+        "parameter_code": "00060",
+        "statistic_id": "00011",
+        "begin": "2001-07-19T04:00:00+00:00",
+        "sublocation_identifier": null,
+        "web_description": null,
+        "unit_of_measure": "ft^3/s",
+        "parameter_name": "Discharge"
+      },
+      "id": "c6e12a561dae4de28fd6f88149f0f627",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_id": "USGS-01644380",
+        "parameter_code": "00060",
+        "statistic_id": "00011",
+        "begin": "2004-10-01T05:00:00+00:00",
+        "sublocation_identifier": null,
+        "web_description": null,
+        "unit_of_measure": "ft^3/s",
+        "parameter_name": "Discharge"
+      },
+      "id": "c8d9a3bfe76a4bf3ab560022edce072c",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_id": "USGS-01645762",
+        "parameter_code": "00060",
+        "statistic_id": "00011",
+        "begin": "2007-09-20T04:00:00+00:00",
+        "sublocation_identifier": null,
+        "web_description": null,
+        "unit_of_measure": "ft^3/s",
+        "parameter_name": "Discharge"
+      },
+      "id": "cd23d109e62140c78dc4d1a9ca6ffb3f",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_id": "USGS-01645000",
+        "parameter_code": "00060",
+        "statistic_id": "00011",
+        "begin": "1972-05-31T05:00:00+00:00",
+        "sublocation_identifier": null,
+        "web_description": null,
+        "unit_of_measure": "ft^3/s",
+        "parameter_name": "Discharge"
+      },
+      "id": "e64055f44c484539898e7ba36f065bff",
+      "geometry": null
+    }
+  ],
+  "numberReturned": 26,
+  "links": [
+    {
+      "type": "application/geo+json",
+      "rel": "self",
+      "title": "This document as GeoJSON",
+      "href": "https://api.waterdata.usgs.gov/ogcapi/v1/collections/time-series-metadata/items?f=json&filter-lang=cql2-text&filter=monitoring_location_id%20IN%20%28%27USGS-01636690%27,%27USGS-01637500%27,%27USGS-01638350%27,%27USGS-01638420%27,%27USGS-01638480%27,%27USGS-01638500%27,%27USGS-01643590%27,%27USGS-01643700%27,%27USGS-01643805%27,%27USGS-01643880%27,%27USGS-01644000%27,%27USGS-01644280%27,%27USGS-01644371%27,%27USGS-01644372%27,%27USGS-01644375%27,%27USGS-01644380%27,%27USGS-01644388%27,%27USGS-01644390%27,%27USGS-01645000%27,%27USGS-01645704%27,%27USGS-01645762%27,%27USGS-0164578734%27,%27USGS-0164579522%27,%27USGS-01646000%27,%27USGS-01646305%27,%27USGS-01646500%27%29%20AND%20parameter_code%20IN%20%28%2700060%27%29&computation_period_identifier=Points&skipGeometry=true&properties=monitoring_location_id,parameter_code,statistic_id,begin,sublocation_identifier,web_description,unit_of_measure,parameter_name&limit=10000"
+    },
+    {
+      "rel": "alternate",
+      "type": "application/ld+json",
+      "title": "This document as RDF (JSON-LD)",
+      "href": "https://api.waterdata.usgs.gov/ogcapi/v1/collections/time-series-metadata/items?f=jsonld&filter-lang=cql2-text&filter=monitoring_location_id%20IN%20%28%27USGS-01636690%27,%27USGS-01637500%27,%27USGS-01638350%27,%27USGS-01638420%27,%27USGS-01638480%27,%27USGS-01638500%27,%27USGS-01643590%27,%27USGS-01643700%27,%27USGS-01643805%27,%27USGS-01643880%27,%27USGS-01644000%27,%27USGS-01644280%27,%27USGS-01644371%27,%27USGS-01644372%27,%27USGS-01644375%27,%27USGS-01644380%27,%27USGS-01644388%27,%27USGS-01644390%27,%27USGS-01645000%27,%27USGS-01645704%27,%27USGS-01645762%27,%27USGS-0164578734%27,%27USGS-0164579522%27,%27USGS-01646000%27,%27USGS-01646305%27,%27USGS-01646500%27%29%20AND%20parameter_code%20IN%20%28%2700060%27%29&computation_period_identifier=Points&skipGeometry=true&properties=monitoring_location_id,parameter_code,statistic_id,begin,sublocation_identifier,web_description,unit_of_measure,parameter_name&limit=10000"
+    },
+    {
+      "type": "text/html",
+      "rel": "alternate",
+      "title": "This document as HTML",
+      "href": "https://api.waterdata.usgs.gov/ogcapi/v1/collections/time-series-metadata/items?f=html&filter-lang=cql2-text&filter=monitoring_location_id%20IN%20%28%27USGS-01636690%27,%27USGS-01637500%27,%27USGS-01638350%27,%27USGS-01638420%27,%27USGS-01638480%27,%27USGS-01638500%27,%27USGS-01643590%27,%27USGS-01643700%27,%27USGS-01643805%27,%27USGS-01643880%27,%27USGS-01644000%27,%27USGS-01644280%27,%27USGS-01644371%27,%27USGS-01644372%27,%27USGS-01644375%27,%27USGS-01644380%27,%27USGS-01644388%27,%27USGS-01644390%27,%27USGS-01645000%27,%27USGS-01645704%27,%27USGS-01645762%27,%27USGS-0164578734%27,%27USGS-0164579522%27,%27USGS-01646000%27,%27USGS-01646305%27,%27USGS-01646500%27%29%20AND%20parameter_code%20IN%20%28%2700060%27%29&computation_period_identifier=Points&skipGeometry=true&properties=monitoring_location_id,parameter_code,statistic_id,begin,sublocation_identifier,web_description,unit_of_measure,parameter_name&limit=10000"
+    },
+    {
+      "type": "text/csv; charset=utf-8",
+      "rel": "alternate",
+      "title": "This document as CSV",
+      "href": "https://api.waterdata.usgs.gov/ogcapi/v1/collections/time-series-metadata/items?f=csv&filter-lang=cql2-text&filter=monitoring_location_id%20IN%20%28%27USGS-01636690%27,%27USGS-01637500%27,%27USGS-01638350%27,%27USGS-01638420%27,%27USGS-01638480%27,%27USGS-01638500%27,%27USGS-01643590%27,%27USGS-01643700%27,%27USGS-01643805%27,%27USGS-01643880%27,%27USGS-01644000%27,%27USGS-01644280%27,%27USGS-01644371%27,%27USGS-01644372%27,%27USGS-01644375%27,%27USGS-01644380%27,%27USGS-01644388%27,%27USGS-01644390%27,%27USGS-01645000%27,%27USGS-01645704%27,%27USGS-01645762%27,%27USGS-0164578734%27,%27USGS-0164579522%27,%27USGS-01646000%27,%27USGS-01646305%27,%27USGS-01646500%27%29%20AND%20parameter_code%20IN%20%28%2700060%27%29&computation_period_identifier=Points&skipGeometry=true&properties=monitoring_location_id,parameter_code,statistic_id,begin,sublocation_identifier,web_description,unit_of_measure,parameter_name&limit=10000"
+    },
+    {
+      "type": "application/json",
+      "title": "Time series metadata",
+      "rel": "collection",
+      "href": "https://api.waterdata.usgs.gov/ogcapi/v1/collections/time-series-metadata"
+    }
+  ],
+  "timeStamp": "2026-11-23T14:56:33.742258Z"
+}

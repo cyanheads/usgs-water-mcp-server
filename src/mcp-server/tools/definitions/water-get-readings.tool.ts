@@ -1,6 +1,7 @@
 /**
  * @fileoverview Get the latest instantaneous values (real-time, ~15 min updates) for one or more
- * USGS monitoring sites. Supports up to 100 sites per call.
+ * USGS monitoring sites. Accepts up to 500 site numbers, reads the first 100 distinct, and returns
+ * the rest as deferred sites.
  * @module mcp-server/tools/definitions/water-get-readings.tool
  */
 
@@ -12,6 +13,12 @@ import {
   SiteNumberSchema,
 } from '@/services/waterdata/input-schemas.js';
 import { carriesValues, getReadings } from '@/services/waterdata/observations.js';
+import {
+  formatDeferredSites,
+  SITE_BATCH_SIZE,
+  SITE_LIST_MAX,
+  splitSiteBatch,
+} from '@/services/waterdata/site-batch.js';
 import type { NwisTimeSeries } from '@/services/waterdata/types.js';
 import { startRequest } from '@/services/waterdata/water-data-client.js';
 import { classifyWaterDataFailure } from '@/services/waterdata/water-data-errors.js';
@@ -26,9 +33,10 @@ const VALUES_PER_SERIES_CAP = 10;
 /**
  * Maximum series returned per call. parameterCd is optional, so a full 100-site batch otherwise
  * returns one series per site per published parameter per method — several hundred at
- * instrumented sites. Equal to the site maximum, so every site that returned data keeps a series.
+ * instrumented sites. Equal to the sites one call reads, so every site that returned data keeps a
+ * series.
  */
-const MAX_SERIES = 100;
+const MAX_SERIES = SITE_BATCH_SIZE;
 
 /**
  * Keep at most {@link MAX_SERIES} series, round-robin across sites: every site's first series, then
@@ -119,14 +127,16 @@ const ReadingResultSchema = z.object({
 });
 
 export const waterGetReadings = tool('water_get_readings', {
-  description: `Get the latest instantaneous (~15-min, real-time) values for up to 100 USGS sites in one call — per-site, per-parameter records with timestamp, value, unit, and provisional/approved qualifiers. Omitting parameterCd returns every parameter each site publishes. A site measuring one parameter with several sensors returns one series per sensor, each named by methodId (its time-series ID) and methodDescription; a sensor that reported nothing in the period still returns, with totalValues 0. At most ${MAX_SERIES} series return per call — every site that returned a series keeps at least one, and totalSeries reports how many the upstream returned; pass parameterCd or split the sites across calls to reach the rest. Each series returns only its ${VALUES_PER_SERIES_CAP} most recent records (totalValues reports the true count); truncated=true when either cap applied. Use water_get_series for a full date-range series. Sites that return no series are listed in missingSites, not dropped silently. Find site numbers with water_find_sites; water_get_site_data_catalog lists the parameters and sensors a site measures and when each last reported.`,
+  description: `Get the latest instantaneous (~15-min, real-time) values for USGS sites — per-site, per-parameter records with timestamp, value, unit, and provisional/approved qualifiers. Takes up to ${SITE_LIST_MAX} site numbers, a full water_find_sites page, and reads the first ${SITE_BATCH_SIZE} distinct ones; the rest return in deferredSites, in input order, to pass as sites in another call. Omitting parameterCd returns every parameter each site publishes. A site measuring one parameter with several sensors returns one series per sensor, each named by methodId (its time-series ID) and methodDescription; a sensor that reported nothing in the period still returns, with totalValues 0. At most ${MAX_SERIES} series return per call — every site that returned a series keeps at least one, and totalSeries reports how many the upstream returned; pass parameterCd or split the sites across calls to reach the rest. Each series returns only its ${VALUES_PER_SERIES_CAP} most recent records (totalValues reports the true count); truncated=true when either cap applied. Use water_get_series for a full date-range series. Sites read that return no series are listed in missingSites, not dropped silently. Find site numbers with water_find_sites; water_get_site_data_catalog lists the parameters and sensors a site measures and when each last reported.`,
   annotations: { readOnlyHint: true, idempotentHint: true, openWorldHint: true },
   input: z.object({
     sites: z
       .array(SiteNumberSchema.describe('A USGS site number (8–15 digits, e.g. "01646500").'))
       .min(1)
-      .max(100)
-      .describe('One or more USGS site numbers to query. Maximum 100 per call.'),
+      .max(SITE_LIST_MAX)
+      .describe(
+        `One or more USGS site numbers, at most ${SITE_LIST_MAX}. The first ${SITE_BATCH_SIZE} distinct numbers are read, in input order; the rest return in deferredSites to pass as sites in another call. A repeated number is read once.`,
+      ),
     parameterCd: z
       .array(
         ParameterCdSchema.describe('A 5-digit USGS parameter code (e.g. "00060" for discharge).'),
@@ -164,19 +174,28 @@ export const waterGetReadings = tool('water_get_readings', {
     truncated: z
       .boolean()
       .describe(
-        `True when either cap applied. The series cap: totalSeries > total — pass parameterCd or split the sites across calls. The ${VALUES_PER_SERIES_CAP}-record cap: some readings[].totalValues > values.length — use water_get_series for the full series.`,
+        `True when either cap applied. The series cap: totalSeries > total — pass parameterCd or split the sites across calls. The ${VALUES_PER_SERIES_CAP}-record cap: some readings[].totalValues > values.length — use water_get_series for the full series. Sites not read do not set it; they return in deferredSites.`,
       ),
     missingSites: z
-      .array(z.string().describe('A requested USGS site number that returned no time series.'))
+      .array(z.string().describe('A USGS site number read in this call that returned no series.'))
       .describe(
-        'Requested site numbers that returned no series — the site does not exist, or has no instantaneous series of the requested parameter(s). A site whose sensor reported nothing in the period is not listed here: it returns a series with totalValues 0. Empty when every requested site returned a series. Check a listed site with water_get_site_data_catalog: not_found means no such site, an empty series list means it never measured the parameter, and each row’s endDate gives its last report.',
+        'Site numbers read in this call that returned no series, each listed once — the site does not exist, or has no instantaneous series of the requested parameter(s). A site whose sensor reported nothing in the period is not listed here: it returns a series with totalValues 0. A site not read is not listed here either: it returns in deferredSites. Empty when every site read returned a series. Check a listed site with water_get_site_data_catalog: not_found means no such site, an empty series list means it never measured the parameter, and each row’s endDate gives its last report.',
+      ),
+    deferredSites: z
+      .array(z.string().describe('A USGS site number not read in this call.'))
+      .describe(
+        `Distinct site numbers past the first ${SITE_BATCH_SIZE} distinct in sites, in input order, each listed once — not read in this call. Pass them as sites in another call to read them. Empty when every site was read.`,
       ),
   }),
 
   enrichment: {
     query: z
       .object({
-        sites: z.array(z.string()).describe('Site numbers queried.'),
+        sites: z
+          .array(z.string())
+          .describe(
+            `Site numbers read in this call: the first ${SITE_BATCH_SIZE} distinct numbers of sites, in input order.`,
+          ),
         parameterCd: z
           .array(z.string())
           .optional()
@@ -200,7 +219,7 @@ export const waterGetReadings = tool('water_get_readings', {
     {
       reason: 'no_data_for_parameter',
       code: JsonRpcErrorCode.NotFound,
-      when: 'No requested site returned a series — each site either does not exist or has no instantaneous series of the requested parameter(s). A site whose sensor reported nothing in the period returns a series with totalValues 0 instead.',
+      when: 'No site read in this call returned a series and no site was deferred — each site either does not exist or has no instantaneous series of the requested parameter(s). A site whose sensor reported nothing in the period returns a series with totalValues 0 instead; when sites were deferred, the call succeeds with empty readings instead.',
       recovery:
         'Check each site with water_get_site_data_catalog: not_found means no such site, an empty series list means it never measured the parameter, and each row’s endDate gives its last report.',
     },
@@ -239,12 +258,13 @@ export const waterGetReadings = tool('water_get_readings', {
       period: input.period,
     });
 
+    const { read, deferred } = splitSiteBatch(input.sites);
     const request = startRequest(ctx, 'water_get_readings');
     let series: NwisTimeSeries[];
     try {
       series = await getReadings(
         {
-          sites: input.sites,
+          sites: read,
           period: input.period,
           ...(input.parameterCd?.length ? { parameterCds: input.parameterCd } : {}),
         },
@@ -257,9 +277,12 @@ export const waterGetReadings = tool('water_get_readings', {
       throw err;
     }
 
-    // A sensor that reported nothing in the period still returns, as a series with no records, so
-    // an empty list means no requested site has an instantaneous series of these parameters at all.
-    if (series.length === 0) {
+    /**
+     * A sensor that reported nothing in the period still returns, as a series with no records, so
+     * an empty list means no site read has an instantaneous series of these parameters at all.
+     * With sites deferred the call still succeeds: failing would drop the list the caller resubmits.
+     */
+    if (series.length === 0 && deferred.length === 0) {
       throw ctx.fail(
         'no_data_for_parameter',
         `No requested site returned an instantaneous series${input.parameterCd?.length ? ` for parameterCd ${input.parameterCd.join(', ')}` : ''} — each site either does not exist or has no such series.`,
@@ -280,14 +303,14 @@ export const waterGetReadings = tool('water_get_readings', {
     const truncated =
       readings.length < series.length || readings.some((r) => r.values.length < r.totalValues);
 
-    // A site that does not exist or has no matching series returns nothing — diff the request
+    // A site that does not exist or has no matching series returns nothing — diff the sites read
     // against what came back so a partial batch is visible rather than inferred.
     const returnedSites = new Set(series.map((s) => s.siteNumber));
-    const missingSites = input.sites.filter((s) => !returnedSites.has(s));
+    const missingSites = read.filter((s) => !returnedSites.has(s));
 
     ctx.enrich({
       query: {
-        sites: input.sites,
+        sites: read,
         parameterCd: input.parameterCd,
         period: input.period,
       },
@@ -298,6 +321,7 @@ export const waterGetReadings = tool('water_get_readings', {
       totalSeries: series.length,
       truncated,
       missingSiteCount: missingSites.length,
+      deferredSiteCount: deferred.length,
     });
     return {
       readings,
@@ -305,6 +329,7 @@ export const waterGetReadings = tool('water_get_readings', {
       totalSeries: series.length,
       truncated,
       missingSites,
+      deferredSites: deferred,
     };
   },
 
@@ -333,6 +358,8 @@ export const waterGetReadings = tool('water_get_readings', {
         `**No series returned for:** ${result.missingSites.join(', ')} — check each with water_get_site_data_catalog: not_found means no such site, an empty series list means it never measured the parameter.\n`,
       );
     }
+    const deferred = formatDeferredSites(result.deferredSites);
+    if (deferred) lines.push(`${deferred}\n`);
 
     for (const r of result.readings) {
       lines.push(

@@ -1,0 +1,890 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "geometry": { "type": "Point", "coordinates": [-77.7185, 39.31083333] },
+      "properties": {
+        "monitoring_location_id": "USGS-01636690",
+        "monitoring_location_name": "PINEY RUN NEAR LOVETTSVILLE, VA",
+        "site_type": "Stream",
+        "site_type_code": "ST",
+        "country_code": "US",
+        "state_code": "51",
+        "county_code": "107",
+        "data": [
+          {
+            "parameter_code": "00060",
+            "unit_of_measure": "ft^3/s",
+            "parent_time_series_id": "1ad5265634a44539a391f85a17638b35",
+            "parent_statistic_id": "00003",
+            "parent_statistic_name": "Mean",
+            "values": [
+              {
+                "time_of_year": "11-23",
+                "time_of_year_type": "day_of_year",
+                "values": ["0.872", "1.524", "2.97", "4.16", "8.85", "60.5", "96.03"],
+                "percentiles": ["5", "10", "25", "50", "75", "90", "95"],
+                "sample_count": 25,
+                "approval_status": "approved",
+                "computation_id": "0a5dc3d7-ae84-48ba-90c0-3aed981124bd",
+                "computation": "percentile"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": { "type": "Point", "coordinates": [-77.55616667, 39.42725] },
+      "properties": {
+        "monitoring_location_id": "USGS-01637500",
+        "monitoring_location_name": "CATOCTIN CREEK NEAR MIDDLETOWN, MD",
+        "site_type": "Stream",
+        "site_type_code": "ST",
+        "country_code": "US",
+        "state_code": "24",
+        "county_code": "021",
+        "data": [
+          {
+            "parameter_code": "00060",
+            "unit_of_measure": "ft^3/s",
+            "parent_time_series_id": "ed82965ab98e461f8ad32fb28c638aec",
+            "parent_statistic_id": "00003",
+            "parent_statistic_name": "Mean",
+            "values": [
+              {
+                "time_of_year": "11-23",
+                "time_of_year_type": "day_of_year",
+                "values": ["5.7", "8.2", "14.0", "24.0", "56.0", "179.0", "231.0"],
+                "percentiles": ["5", "10", "25", "50", "75", "90", "95"],
+                "sample_count": 79,
+                "approval_status": "approved",
+                "computation_id": "78203ec4-8098-4ba0-9a80-088c11437f7d",
+                "computation": "percentile"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": { "type": "Point", "coordinates": [-77.61544444, 39.19111111] },
+      "properties": {
+        "monitoring_location_id": "USGS-01638350",
+        "monitoring_location_name": "S F CATOCTIN CREEK AT RT 698 NEAR WATERFORD, VA",
+        "site_type": "Stream",
+        "site_type_code": "ST",
+        "country_code": "US",
+        "state_code": "51",
+        "county_code": "107",
+        "data": [
+          {
+            "parameter_code": "00060",
+            "unit_of_measure": "ft^3/s",
+            "parent_time_series_id": "2a467b3c8f8343d599c2eff9c7d54fe1",
+            "parent_statistic_id": "00003",
+            "parent_statistic_name": "Mean",
+            "values": [
+              {
+                "time_of_year": "11-23",
+                "time_of_year_type": "day_of_year",
+                "values": ["1.668", "2.676", "4.9", "9.99", "32.65", "139.88", "381.9"],
+                "percentiles": ["5", "10", "25", "50", "75", "90", "95"],
+                "sample_count": 25,
+                "approval_status": "approved",
+                "computation_id": "8a11ab01-f040-4860-88ec-7f17af069049",
+                "computation": "percentile"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": { "type": "Point", "coordinates": [-77.62388889, 39.205] },
+      "properties": {
+        "monitoring_location_id": "USGS-01638420",
+        "monitoring_location_name": "N F CATOCTIN CREEK AT RT 681 NEAR WATERFORD, VA",
+        "site_type": "Stream",
+        "site_type_code": "ST",
+        "country_code": "US",
+        "state_code": "51",
+        "county_code": "107",
+        "data": [
+          {
+            "parameter_code": "00060",
+            "unit_of_measure": "ft^3/s",
+            "parent_time_series_id": "30f23a0badcc4e9789910caabab6fe2d",
+            "parent_statistic_id": "00003",
+            "parent_statistic_name": "Mean",
+            "values": [
+              {
+                "time_of_year": "11-23",
+                "time_of_year_type": "day_of_year",
+                "values": ["1.308", "1.392", "3.2", "7.1", "18.05", "90.12", "147.8"],
+                "percentiles": ["5", "10", "25", "50", "75", "90", "95"],
+                "sample_count": 25,
+                "approval_status": "approved",
+                "computation_id": "e7cc1d2f-714c-481b-93c8-ef0b218cfbda",
+                "computation": "percentile"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": { "type": "Point", "coordinates": [-77.57637775, 39.25510206] },
+      "properties": {
+        "monitoring_location_id": "USGS-01638480",
+        "monitoring_location_name": "CATOCTIN CREEK AT TAYLORSTOWN, VA",
+        "site_type": "Stream",
+        "site_type_code": "ST",
+        "country_code": "US",
+        "state_code": "51",
+        "county_code": "107",
+        "data": [
+          {
+            "parameter_code": "00060",
+            "unit_of_measure": "ft^3/s",
+            "parent_time_series_id": "aa32ee3ed8fb4d5884dbe9ea18626b69",
+            "parent_statistic_id": "00003",
+            "parent_statistic_name": "Mean",
+            "values": [
+              {
+                "time_of_year": "11-23",
+                "time_of_year_type": "day_of_year",
+                "values": ["5.617", "8.15", "16.15", "29.45", "80.25", "189.5", "412.0"],
+                "percentiles": ["5", "10", "25", "50", "75", "90", "95"],
+                "sample_count": 54,
+                "approval_status": "approved",
+                "computation_id": "0f3c059f-2cca-4903-9c08-4d08c4a1cc75",
+                "computation": "percentile"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": { "type": "Point", "coordinates": [-77.54311111, 39.27358333] },
+      "properties": {
+        "monitoring_location_id": "USGS-01638500",
+        "monitoring_location_name": "POTOMAC RIVER AT POINT OF ROCKS, MD",
+        "site_type": "Stream",
+        "site_type_code": "ST",
+        "country_code": "US",
+        "state_code": "24",
+        "county_code": "021",
+        "data": [
+          {
+            "parameter_code": "00060",
+            "unit_of_measure": "ft^3/s",
+            "parent_time_series_id": "6fce477b4108481d950866411cdc1c00",
+            "parent_statistic_id": "00003",
+            "parent_statistic_name": "Mean",
+            "values": [
+              {
+                "time_of_year": "11-23",
+                "time_of_year_type": "day_of_year",
+                "values": ["1286.0", "1574.0", "2060.0", "3400.0", "7780.0", "14180.0", "20980.0"],
+                "percentiles": ["5", "10", "25", "50", "75", "90", "95"],
+                "sample_count": 131,
+                "approval_status": "approved",
+                "computation_id": "4d121de9-cdbd-45a9-8064-dbf72c79e747",
+                "computation": "percentile"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": { "type": "Point", "coordinates": [-77.53591667, 39.16761111] },
+      "properties": {
+        "monitoring_location_id": "USGS-01643590",
+        "monitoring_location_name": "LIMESTONE BRANCH NEAR LEESBURG, VA",
+        "site_type": "Stream",
+        "site_type_code": "ST",
+        "country_code": "US",
+        "state_code": "51",
+        "county_code": "107",
+        "data": [
+          {
+            "parameter_code": "00060",
+            "unit_of_measure": "ft^3/s",
+            "parent_time_series_id": "497eec245db548318dc221d3ff442346",
+            "parent_statistic_id": "00003",
+            "parent_statistic_name": "Mean",
+            "values": [
+              {
+                "time_of_year": "11-23",
+                "time_of_year_type": "day_of_year",
+                "values": ["0.558", "0.886", "1.605", "2.54", "5.465", "23.02", "77.12"],
+                "percentiles": ["5", "10", "25", "50", "75", "90", "95"],
+                "sample_count": 25,
+                "approval_status": "approved",
+                "computation_id": "610081b2-816e-4730-ac96-5073382466d8",
+                "computation": "percentile"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": { "type": "Point", "coordinates": [-77.79666143, 38.98649818] },
+      "properties": {
+        "monitoring_location_id": "USGS-01643700",
+        "monitoring_location_name": "GOOSE CREEK NEAR MIDDLEBURG, VA",
+        "site_type": "Stream",
+        "site_type_code": "ST",
+        "country_code": "US",
+        "state_code": "51",
+        "county_code": "107",
+        "data": [
+          {
+            "parameter_code": "00060",
+            "unit_of_measure": "ft^3/s",
+            "parent_time_series_id": "c91e8f4e9ae94178a283a53796e64ff7",
+            "parent_statistic_id": "00003",
+            "parent_statistic_name": "Mean",
+            "values": [
+              {
+                "time_of_year": "11-23",
+                "time_of_year_type": "day_of_year",
+                "values": ["6.332", "9.848", "16.0", "36.3", "121.0", "240.0", "393.0"],
+                "percentiles": ["5", "10", "25", "50", "75", "90", "95"],
+                "sample_count": 55,
+                "approval_status": "approved",
+                "computation_id": "7ea5e74c-7dd4-4dcf-afec-f541120b37bf",
+                "computation": "percentile"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": { "type": "Point", "coordinates": [-77.68394444, 39.07230556] },
+      "properties": {
+        "monitoring_location_id": "USGS-01643805",
+        "monitoring_location_name": "N F GOOSE CREEK AT RT 729 NEAR LINCOLN, VA",
+        "site_type": "Stream",
+        "site_type_code": "ST",
+        "country_code": "US",
+        "state_code": "51",
+        "county_code": "107",
+        "data": [
+          {
+            "parameter_code": "00060",
+            "unit_of_measure": "ft^3/s",
+            "parent_time_series_id": "9a0421092b79480abd874664e416ec93",
+            "parent_statistic_id": "00003",
+            "parent_statistic_name": "Mean",
+            "values": [
+              {
+                "time_of_year": "11-23",
+                "time_of_year_type": "day_of_year",
+                "values": ["1.989", "4.544", "6.275", "11.9", "38.05", "148.22", "411.4"],
+                "percentiles": ["5", "10", "25", "50", "75", "90", "95"],
+                "sample_count": 25,
+                "approval_status": "approved",
+                "computation_id": "128af089-6ce8-45b5-86f8-6554ca6665cc",
+                "computation": "percentile"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": { "type": "Point", "coordinates": [-77.72225, 39.03772222] },
+      "properties": {
+        "monitoring_location_id": "USGS-01643880",
+        "monitoring_location_name": "BEAVERDAM CREEK AT RT 734 NEAR MOUNTVILLE, VA",
+        "site_type": "Stream",
+        "site_type_code": "ST",
+        "country_code": "US",
+        "state_code": "51",
+        "county_code": "107",
+        "data": [
+          {
+            "parameter_code": "00060",
+            "unit_of_measure": "ft^3/s",
+            "parent_time_series_id": "f90c6d2184314e5cafd528dc1b7e3d4f",
+            "parent_statistic_id": "00003",
+            "parent_statistic_name": "Mean",
+            "values": [
+              {
+                "time_of_year": "11-23",
+                "time_of_year_type": "day_of_year",
+                "values": ["1.909", "2.032", "3.6", "10.9", "50.7", "136.8", "294.0"],
+                "percentiles": ["5", "10", "25", "50", "75", "90", "95"],
+                "sample_count": 25,
+                "approval_status": "approved",
+                "computation_id": "3d1e6bcb-3272-4bb5-93da-57c8216f57ad",
+                "computation": "percentile"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": { "type": "Point", "coordinates": [-77.57749181, 39.01955309] },
+      "properties": {
+        "monitoring_location_id": "USGS-01644000",
+        "monitoring_location_name": "GOOSE CREEK NEAR LEESBURG, VA",
+        "site_type": "Stream",
+        "site_type_code": "ST",
+        "country_code": "US",
+        "state_code": "51",
+        "county_code": "107",
+        "data": [
+          {
+            "parameter_code": "00060",
+            "unit_of_measure": "ft^3/s",
+            "parent_time_series_id": "571019312377456caaee3aa492a77eb9",
+            "parent_statistic_id": "00003",
+            "parent_statistic_name": "Mean",
+            "values": [
+              {
+                "time_of_year": "11-23",
+                "time_of_year_type": "day_of_year",
+                "values": ["11.0", "31.0", "53.0", "96.0", "263.0", "548.0", "957.0"],
+                "percentiles": ["5", "10", "25", "50", "75", "90", "95"],
+                "sample_count": 99,
+                "approval_status": "approved",
+                "computation_id": "69554c89-e4d3-48a7-8a88-c7d97a31e617",
+                "computation": "percentile"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": { "type": "Point", "coordinates": [-77.43238889, 39.04641667] },
+      "properties": {
+        "monitoring_location_id": "USGS-01644280",
+        "monitoring_location_name": "BROAD RUN NEAR LEESBURG, VA",
+        "site_type": "Stream",
+        "site_type_code": "ST",
+        "country_code": "US",
+        "state_code": "51",
+        "county_code": "107",
+        "data": [
+          {
+            "parameter_code": "00060",
+            "unit_of_measure": "ft^3/s",
+            "parent_time_series_id": "ec029680267f40c6b1484894b9d3a040",
+            "parent_statistic_id": "00003",
+            "parent_statistic_name": "Mean",
+            "values": [
+              {
+                "time_of_year": "11-23",
+                "time_of_year_type": "day_of_year",
+                "values": ["6.57", "15.6", "23.85", "38.4", "79.8", "397.0", "880.7"],
+                "percentiles": ["5", "10", "25", "50", "75", "90", "95"],
+                "sample_count": 25,
+                "approval_status": "approved",
+                "computation_id": "8b50024f-83e4-4a5c-a8b8-36ff0cbabd21",
+                "computation": "percentile"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": { "type": "Point", "coordinates": [-77.25569444, 39.23147222] },
+      "properties": {
+        "monitoring_location_id": "USGS-01644371",
+        "monitoring_location_name": "LITTLE SENECA CREEK TRIBUTARY NEAR CLARKSBURG, MD",
+        "site_type": "Stream",
+        "site_type_code": "ST",
+        "country_code": "US",
+        "state_code": "24",
+        "county_code": "031",
+        "data": [
+          {
+            "parameter_code": "00060",
+            "unit_of_measure": "ft^3/s",
+            "parent_time_series_id": "5a2c54c04a9b437bbf2c159be85eb4d3",
+            "parent_statistic_id": "00003",
+            "parent_statistic_name": "Mean",
+            "values": [
+              {
+                "time_of_year": "11-23",
+                "time_of_year_type": "day_of_year",
+                "values": ["0.133", "0.159", "0.237", "0.355", "0.5", "1.43", "5.872"],
+                "percentiles": ["5", "10", "25", "50", "75", "90", "95"],
+                "sample_count": 22,
+                "approval_status": "approved",
+                "computation_id": "8aa83605-122f-411c-bf27-80881bc0e020",
+                "computation": "percentile"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": { "type": "Point", "coordinates": [-77.24936111, 39.22272222] },
+      "properties": {
+        "monitoring_location_id": "USGS-01644372",
+        "monitoring_location_name": "LITTLE SENECA CREEK TRIBUTARY AT BRINK, MD",
+        "site_type": "Stream",
+        "site_type_code": "ST",
+        "country_code": "US",
+        "state_code": "24",
+        "county_code": "031",
+        "data": [
+          {
+            "parameter_code": "00060",
+            "unit_of_measure": "ft^3/s",
+            "parent_time_series_id": "f4cfaad74405437ca0474e59f62ef027",
+            "parent_statistic_id": "00003",
+            "parent_statistic_name": "Mean",
+            "values": [
+              {
+                "time_of_year": "11-23",
+                "time_of_year_type": "day_of_year",
+                "values": ["0.088", "0.133", "0.188", "0.23", "0.31", "0.776", "2.058"],
+                "percentiles": ["5", "10", "25", "50", "75", "90", "95"],
+                "sample_count": 22,
+                "approval_status": "approved",
+                "computation_id": "b94877f5-c4fd-41d2-a36d-a5c69d8f7ac9",
+                "computation": "percentile"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": { "type": "Point", "coordinates": [-77.27536111, 39.19938889] },
+      "properties": {
+        "monitoring_location_id": "USGS-01644375",
+        "monitoring_location_name": "LITTLE SENECA CREEK TRIBUTARY NEAR GERMANTOWN, MD",
+        "site_type": "Stream",
+        "site_type_code": "ST",
+        "country_code": "US",
+        "state_code": "24",
+        "county_code": "031",
+        "data": [
+          {
+            "parameter_code": "00060",
+            "unit_of_measure": "ft^3/s",
+            "parent_time_series_id": "89d9ca5b175d4b53a8ab9cea741e6978",
+            "parent_statistic_id": "00003",
+            "parent_statistic_name": "Mean",
+            "values": [
+              {
+                "time_of_year": "11-23",
+                "time_of_year_type": "day_of_year",
+                "values": ["0.525", "0.631", "0.808", "1.08", "1.558", "5.576", "11.117"],
+                "percentiles": ["5", "10", "25", "50", "75", "90", "95"],
+                "sample_count": 22,
+                "approval_status": "approved",
+                "computation_id": "1dffef1b-f559-45a9-b0d5-17f48b557817",
+                "computation": "percentile"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": { "type": "Point", "coordinates": [-77.28858333, 39.20661111] },
+      "properties": {
+        "monitoring_location_id": "USGS-01644380",
+        "monitoring_location_name": "CABIN BRANCH NEAR BOYDS, MD",
+        "site_type": "Stream",
+        "site_type_code": "ST",
+        "country_code": "US",
+        "state_code": "24",
+        "county_code": "031",
+        "data": [
+          {
+            "parameter_code": "00060",
+            "unit_of_measure": "ft^3/s",
+            "parent_time_series_id": "0963b475bf594cf194a1d16165b79fe3",
+            "parent_statistic_id": "00003",
+            "parent_statistic_name": "Mean",
+            "values": [
+              {
+                "time_of_year": "11-23",
+                "time_of_year_type": "day_of_year",
+                "values": ["0.183", "0.218", "0.365", "0.56", "1.062", "2.075", "3.299"],
+                "percentiles": ["5", "10", "25", "50", "75", "90", "95"],
+                "sample_count": 22,
+                "approval_status": "approved",
+                "computation_id": "22c56b6e-6823-4f4f-b5f5-e1735c8aec5b",
+                "computation": "percentile"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": { "type": "Point", "coordinates": [-77.31225, 39.22338889] },
+      "properties": {
+        "monitoring_location_id": "USGS-01644388",
+        "monitoring_location_name": "TENMILE CREEK NEAR CLARKSBURG, MD",
+        "site_type": "Stream",
+        "site_type_code": "ST",
+        "country_code": "US",
+        "state_code": "24",
+        "county_code": "031",
+        "data": [
+          {
+            "parameter_code": "00060",
+            "unit_of_measure": "ft^3/s",
+            "parent_time_series_id": "60792f059a9743e0ba29176e17579d0f",
+            "parent_statistic_id": "00003",
+            "parent_statistic_name": "Mean",
+            "values": [
+              {
+                "time_of_year": "11-23",
+                "time_of_year_type": "day_of_year",
+                "values": ["nan", "0.312", "0.61", "0.69", "1.02", "3.832", "nan"],
+                "percentiles": ["5", "10", "25", "50", "75", "90", "95"],
+                "sample_count": 13,
+                "approval_status": "approved",
+                "computation_id": "a02a7d72-4183-4765-a11b-73a937e102ad",
+                "computation": "percentile"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": { "type": "Point", "coordinates": [-77.31641667, 39.216] },
+      "properties": {
+        "monitoring_location_id": "USGS-01644390",
+        "monitoring_location_name": "TENMILE CREEK NEAR BOYDS, MD",
+        "site_type": "Stream",
+        "site_type_code": "ST",
+        "country_code": "US",
+        "state_code": "24",
+        "county_code": "031",
+        "data": [
+          {
+            "parameter_code": "00060",
+            "unit_of_measure": "ft^3/s",
+            "parent_time_series_id": "5c34aa60dddf40009d429983c93eebe7",
+            "parent_statistic_id": "00003",
+            "parent_statistic_name": "Mean",
+            "values": [
+              {
+                "time_of_year": "11-23",
+                "time_of_year_type": "day_of_year",
+                "values": ["nan", "0.711", "1.002", "1.37", "1.57", "23.769", "nan"],
+                "percentiles": ["5", "10", "25", "50", "75", "90", "95"],
+                "sample_count": 16,
+                "approval_status": "approved",
+                "computation_id": "f58e7e16-1c12-4489-a56f-b39501e0970e",
+                "computation": "percentile"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": { "type": "Point", "coordinates": [-77.33577778, 39.12808333] },
+      "properties": {
+        "monitoring_location_id": "USGS-01645000",
+        "monitoring_location_name": "SENECA CREEK AT DAWSONVILLE, MD",
+        "site_type": "Stream",
+        "site_type_code": "ST",
+        "country_code": "US",
+        "state_code": "24",
+        "county_code": "031",
+        "data": [
+          {
+            "parameter_code": "00060",
+            "unit_of_measure": "ft^3/s",
+            "parent_time_series_id": "890f87c5498e4114b24dc0a53b1adcd8",
+            "parent_statistic_id": "00003",
+            "parent_statistic_name": "Mean",
+            "values": [
+              {
+                "time_of_year": "11-23",
+                "time_of_year_type": "day_of_year",
+                "values": ["25.85", "31.4", "42.225", "59.0", "83.8", "161.7", "251.3"],
+                "percentiles": ["5", "10", "25", "50", "75", "90", "95"],
+                "sample_count": 96,
+                "approval_status": "approved",
+                "computation_id": "169236a7-f371-4250-9ee8-8017358deed0",
+                "computation": "percentile"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": { "type": "Point", "coordinates": [-77.33242934, 38.88469518] },
+      "properties": {
+        "monitoring_location_id": "USGS-01645704",
+        "monitoring_location_name": "DIFFICULT RUN ABOVE FOX LAKE NEAR FAIRFAX, VA",
+        "site_type": "Stream",
+        "site_type_code": "ST",
+        "country_code": "US",
+        "state_code": "51",
+        "county_code": "059",
+        "data": [
+          {
+            "parameter_code": "00060",
+            "unit_of_measure": "ft^3/s",
+            "parent_time_series_id": "f39321f56e59431f97f4db95ac30c818",
+            "parent_statistic_id": "00003",
+            "parent_statistic_name": "Mean",
+            "values": [
+              {
+                "time_of_year": "11-23",
+                "time_of_year_type": "day_of_year",
+                "values": ["nan", "1.33", "1.56", "2.88", "4.76", "7.85", "17.9"],
+                "percentiles": ["5", "10", "25", "50", "75", "90", "95"],
+                "sample_count": 19,
+                "approval_status": "approved",
+                "computation_id": "8471327e-7c6d-436f-bf69-307783b4c97e",
+                "computation": "percentile"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": { "type": "Point", "coordinates": [-77.33826272, 38.90888916] },
+      "properties": {
+        "monitoring_location_id": "USGS-01645762",
+        "monitoring_location_name": "S F LITTLE DIFFICULT RUN ABOVE MOUTH NR VIENNA, VA",
+        "site_type": "Stream",
+        "site_type_code": "ST",
+        "country_code": "US",
+        "state_code": "51",
+        "county_code": "059",
+        "data": [
+          {
+            "parameter_code": "00060",
+            "unit_of_measure": "ft^3/s",
+            "parent_time_series_id": "2ee0a864bfcd4d598ea51c537c092e87",
+            "parent_statistic_id": "00003",
+            "parent_statistic_name": "Mean",
+            "values": [
+              {
+                "time_of_year": "11-23",
+                "time_of_year_type": "day_of_year",
+                "values": ["nan", "0.44", "0.84", "1.39", "1.93", "3.28", "3.92"],
+                "percentiles": ["5", "10", "25", "50", "75", "90", "95"],
+                "sample_count": 19,
+                "approval_status": "approved",
+                "computation_id": "7b68145e-10be-493e-bcff-f9114cf93860",
+                "computation": "percentile"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": { "type": "Point", "coordinates": [-77.341139, 38.929661] },
+      "properties": {
+        "monitoring_location_id": "USGS-0164578734",
+        "monitoring_location_name": "SNAKEDEN BRANCH ABOVE LAKE AUDUBON AT RESTON, VA",
+        "site_type": "Stream",
+        "site_type_code": "ST",
+        "country_code": "US",
+        "state_code": "51",
+        "county_code": "059",
+        "data": [
+          {
+            "parameter_code": "00060",
+            "unit_of_measure": "ft^3/s",
+            "parent_time_series_id": "52365084ef7748c1bb9829a995e70de0",
+            "parent_statistic_id": "00003",
+            "parent_statistic_name": "Mean",
+            "values": [
+              {
+                "time_of_year": "11-23",
+                "time_of_year_type": "day_of_year",
+                "values": ["nan", "nan", "0.315", "0.44", "0.63", "nan", "nan"],
+                "percentiles": ["5", "10", "25", "50", "75", "90", "95"],
+                "sample_count": 5,
+                "approval_status": "approved",
+                "computation_id": "28a72e8c-ee31-4924-80df-6f6f440e8e46",
+                "computation": "percentile"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": { "type": "Point", "coordinates": [-77.32933889, 38.9256] },
+      "properties": {
+        "monitoring_location_id": "USGS-0164579522",
+        "monitoring_location_name": "THE GLADE NEAR HOWLAND DRIVE AT RESTON, VA",
+        "site_type": "Stream",
+        "site_type_code": "ST",
+        "country_code": "US",
+        "state_code": "51",
+        "county_code": "059",
+        "data": [
+          {
+            "parameter_code": "00060",
+            "unit_of_measure": "ft^3/s",
+            "parent_time_series_id": "97712eda5d0a40699459f09ec04b6cd0",
+            "parent_statistic_id": "00003",
+            "parent_statistic_name": "Mean",
+            "values": [
+              {
+                "time_of_year": "11-23",
+                "time_of_year_type": "day_of_year",
+                "values": ["nan", "nan", "0.045", "0.16", "0.35", "nan", "nan"],
+                "percentiles": ["5", "10", "25", "50", "75", "90", "95"],
+                "sample_count": 5,
+                "approval_status": "approved",
+                "computation_id": "cb3d8a27-2050-42ee-a972-edcbe865f160",
+                "computation": "percentile"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": { "type": "Point", "coordinates": [-77.24581439, 38.97594346] },
+      "properties": {
+        "monitoring_location_id": "USGS-01646000",
+        "monitoring_location_name": "DIFFICULT RUN NEAR GREAT FALLS, VA",
+        "site_type": "Stream",
+        "site_type_code": "ST",
+        "country_code": "US",
+        "state_code": "51",
+        "county_code": "059",
+        "data": [
+          {
+            "parameter_code": "00060",
+            "unit_of_measure": "ft^3/s",
+            "parent_time_series_id": "804f49a549b74389acf8550c9d303cc5",
+            "parent_statistic_id": "00003",
+            "parent_statistic_name": "Mean",
+            "values": [
+              {
+                "time_of_year": "11-23",
+                "time_of_year_type": "day_of_year",
+                "values": ["11.38", "13.2", "20.0", "30.0", "44.3", "72.8", "98.6"],
+                "percentiles": ["5", "10", "25", "50", "75", "90", "95"],
+                "sample_count": 91,
+                "approval_status": "approved",
+                "computation_id": "80d84cd6-c263-4dc4-b71d-a57f6bad02bb",
+                "computation": "percentile"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": { "type": "Point", "coordinates": [-77.17567426, 38.95977716] },
+      "properties": {
+        "monitoring_location_id": "USGS-01646305",
+        "monitoring_location_name": "DEAD RUN AT WHANN AVENUE NEAR MCLEAN, VA",
+        "site_type": "Stream",
+        "site_type_code": "ST",
+        "country_code": "US",
+        "state_code": "51",
+        "county_code": "059",
+        "data": [
+          {
+            "parameter_code": "00060",
+            "unit_of_measure": "ft^3/s",
+            "parent_time_series_id": "329df1b21e7b4a87b6b1a9dc90174207",
+            "parent_statistic_id": "00003",
+            "parent_statistic_name": "Mean",
+            "values": [
+              {
+                "time_of_year": "11-23",
+                "time_of_year_type": "day_of_year",
+                "values": ["nan", "0.362", "0.535", "0.63", "1.505", "3.22", "nan"],
+                "percentiles": ["5", "10", "25", "50", "75", "90", "95"],
+                "sample_count": 18,
+                "approval_status": "approved",
+                "computation_id": "c588056d-c998-4083-a407-0615361a5184",
+                "computation": "percentile"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": { "type": "Point", "coordinates": [-77.12763889, 38.94977778] },
+      "properties": {
+        "monitoring_location_id": "USGS-01646500",
+        "monitoring_location_name": "POTOMAC RIVER NEAR WASH, DC LITTLE FALLS PUMP STA",
+        "site_type": "Stream",
+        "site_type_code": "ST",
+        "country_code": "US",
+        "state_code": "24",
+        "county_code": "031",
+        "data": [
+          {
+            "parameter_code": "00060",
+            "unit_of_measure": "ft^3/s",
+            "parent_time_series_id": "2cf409b0d9694c01828f5d4ff14586a5",
+            "parent_statistic_id": "00003",
+            "parent_statistic_name": "Mean",
+            "values": [
+              {
+                "time_of_year": "11-23",
+                "time_of_year_type": "day_of_year",
+                "values": ["1153.5", "1799.0", "2302.5", "4240.0", "9670.0", "17680.0", "31385.0"],
+                "percentiles": ["5", "10", "25", "50", "75", "90", "95"],
+                "sample_count": 96,
+                "approval_status": "approved",
+                "computation_id": "7f51ab79-d54e-4a45-a868-caf997742203",
+                "computation": "percentile"
+              }
+            ]
+          }
+        ]
+      }
+    }
+  ],
+  "next": null
+}

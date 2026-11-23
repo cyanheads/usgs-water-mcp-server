@@ -24,10 +24,14 @@ import { allText } from '../helpers/content-block.js';
 import { declaredRecovery } from '../helpers/error-contract.js';
 import {
   createWaterDataFake,
+  dailyMeanCapture,
   jsonResponse,
+  locationFilteredResponder,
+  ogcPage,
   ogcRoute,
   rateLimitResponse,
   type SentRequest,
+  statisticsBatchResponder,
   statisticsRoute,
   type WaterDataFake,
   waterDataFixture,
@@ -210,17 +214,27 @@ function readingRoutes(
   ];
 }
 
-/** The site's daily-mean series list — the captured one unless `body` replaces it. */
-function dailyMeansRoute(site: string, parameterCd: string, body?: unknown) {
+/**
+ * The site's daily-mean series list, answering the batched read that names it alone — the captured
+ * list unless `body` replaces it, each row carrying the site's `monitoring_location_id` as the
+ * live collection does when `properties` names it.
+ */
+function dailyMeansRoute(site: string, parameterCd: string, body?: FeatureBody | (() => Response)) {
   return ogcRoute(
     'time-series-metadata',
-    respondWith(
-      body ?? waterDataFixture(`time-series-metadata-daily-mean-${site}-${parameterCd}.json`),
-    ),
+    typeof body === 'function'
+      ? body
+      : locationFilteredResponder(
+          body
+            ? body.features.map((feature) => ({
+                ...feature,
+                properties: { monitoring_location_id: `USGS-${site}`, ...feature.properties },
+              }))
+            : dailyMeanCapture(site, parameterCd),
+        ),
     {
       query: {
-        monitoring_location_id: `USGS-${site}`,
-        parameter_code: parameterCd,
+        filter: `monitoring_location_id IN ('USGS-${site}') AND parameter_code IN ('${parameterCd}')`,
         computation_period_identifier: 'Daily',
         statistic_id: '00003',
       },
@@ -251,7 +265,7 @@ function normalsRoute(site: string, parameterCd: string, monthDay: string, body?
   );
 }
 
-/** One daily-mean series' approved monthly intervals, captured. */
+/** One daily-mean series' approved monthly intervals, captured, asked for by series ID alone. */
 function intervalsRoute(site: string, parameterCd: string, seriesId: string) {
   return statisticsRoute(
     'observationIntervals',
@@ -263,7 +277,7 @@ function intervalsRoute(site: string, parameterCd: string, seriesId: string) {
       ),
     {
       query: {
-        monitoring_location_id: `USGS-${site}`,
+        monitoring_location_id: null,
         parameter_code: parameterCd,
         interval_type: 'M',
         computation_type: 'arithmetic_mean',
@@ -273,11 +287,23 @@ function intervalsRoute(site: string, parameterCd: string, seriesId: string) {
   );
 }
 
+type ConditionsResult = {
+  conditions: Conditions[];
+  deferredSites: string[];
+  missingSites: string[];
+};
+
+/**
+ * One site's call, as the advertised `sites` list. `structured` is that site's conditions row —
+ * the shape a 0.6.0 call returned at the top level; `all` is the whole result.
+ */
 async function conditions(site: string, parameterCd: string) {
-  const result = await runToolContract(tool, { site, parameterCd });
+  const result = await runToolContract(tool, { sites: [site], parameterCd });
+  const all = result.structuredContent as ConditionsResult;
   return {
     result,
-    structured: result.structuredContent as Conditions,
+    all,
+    structured: all.conditions?.[0] as Conditions,
     text: allText(result.content),
   };
 }
@@ -833,6 +859,187 @@ describe('#20: a statistics failure keeps the reading', () => {
     // A complete body that does not parse fails at once: read once, never re-sent.
     expect(sent().filter((name) => name === 'time-series-metadata Daily')).toHaveLength(1);
     expect(statisticsSent()).toEqual([]);
+  });
+});
+
+/**
+ * #62: the 26 discharge gages of HUC 02070008 that reported on 2026-11-23, captured live. The
+ * readings come from one batched call at 15:50Z: its Points series list and its `continuous` rows,
+ * trimmed to each series' latest row (the one a ranking reads). The site lookup, daily means,
+ * 11-23 normals, and monthly intervals are the `*-huc-02070008*` captures, the intervals trimmed to
+ * each series' first and last approved November holding the 23rd (the two its period of record is
+ * read from). Every route answers only the sites or series a request names, as the live API does,
+ * so a one-site call reads the same records the batch did. 01645000 lists a Points series and sent
+ * no row in the window.
+ */
+describe('#62: the 26 discharge gages of HUC 02070008 in one call', () => {
+  const HUC_02070008 = [
+    '01636690',
+    '01637500',
+    '01638350',
+    '01638420',
+    '01638480',
+    '01638500',
+    '01643590',
+    '01643700',
+    '01643805',
+    '01643880',
+    '01644000',
+    '01644280',
+    '01644371',
+    '01644372',
+    '01644375',
+    '01644380',
+    '01644388',
+    '01644390',
+    '01645000',
+    '01645704',
+    '01645762',
+    '0164578734',
+    '0164579522',
+    '01646000',
+    '01646305',
+    '01646500',
+  ];
+  const SILENT = '01645000';
+  const features = (name: string) => parse(name).features;
+
+  function hucRoutes() {
+    const locations = features('monitoring-locations-huc-02070008.json');
+    return [
+      ogcRoute('monitoring-locations', (request) => {
+        const named = new Set(
+          new URL(request.url).searchParams.get('monitoring_location_number')?.split(','),
+        );
+        return jsonResponse(
+          ogcPage(
+            locations.filter((f) => named.has(String(f.properties.monitoring_location_number))),
+          ),
+        );
+      }),
+      ogcRoute(
+        'parameter-codes',
+        () => jsonResponse(waterDataFixture('observations-parameter-codes.json')),
+        { query: { limit: '50000' } },
+      ),
+      ogcRoute(
+        'time-series-metadata',
+        locationFilteredResponder(features('conditions-upstream-points-huc-02070008-00060.json')),
+        { query: { computation_period_identifier: 'Points' } },
+      ),
+      ogcRoute(
+        'time-series-metadata',
+        locationFilteredResponder(
+          features('time-series-metadata-daily-mean-huc-02070008-00060.json'),
+        ),
+        { query: { computation_period_identifier: 'Daily', statistic_id: '00003' } },
+      ),
+      ogcRoute(
+        'continuous',
+        locationFilteredResponder(
+          features('conditions-upstream-continuous-huc-02070008-00060-20261123T1550Z.json'),
+        ),
+        { query: { time: 'PT2H' } },
+      ),
+      statisticsRoute(
+        'observationNormals',
+        statisticsBatchResponder(['statistics-normals-huc-02070008-00060-1123.json']),
+        {
+          query: {
+            parameter_code: '00060',
+            normal_type: 'DOY',
+            computation_type: 'percentile',
+            start_date: '11-23',
+            end_date: '11-23',
+          },
+        },
+      ),
+      statisticsRoute(
+        'observationIntervals',
+        statisticsBatchResponder(['statistics-intervals-huc-02070008-00060-1123.json']),
+        {
+          query: {
+            monitoring_location_id: null,
+            parameter_code: '00060',
+            interval_type: 'M',
+            computation_type: 'arithmetic_mean',
+          },
+        },
+      ),
+    ];
+  }
+
+  async function batch() {
+    const result = await runToolContract(tool, { sites: HUC_02070008, parameterCd: '00060' });
+    return {
+      result,
+      all: result.structuredContent as ConditionsResult,
+      text: allText(result.content),
+    };
+  }
+
+  it('ranks 25 gages in seven requests from a cold start, the silent 26th in missingSites', async () => {
+    water.route(...hucRoutes());
+    const { result, all, text } = await batch();
+
+    expect(result.isError).toBeFalsy();
+    // One site lookup serves both readers; 25 series fit one intervals request.
+    expect(sent().length).toBeLessThanOrEqual(8);
+    expect([...sent()].sort()).toEqual([
+      'continuous',
+      'monitoring-locations',
+      'observationIntervals',
+      'observationNormals',
+      'parameter-codes',
+      'time-series-metadata Daily',
+      'time-series-metadata Points',
+    ]);
+    for (const { url } of water.requests.filter((r) => r.url.pathname.startsWith('/statistics/'))) {
+      expect(url.href.length).toBeLessThan(2048);
+    }
+    expect(all.conditions.map((row) => row.siteNumber)).toEqual(
+      HUC_02070008.filter((site) => site !== SILENT),
+    );
+    expect(all.missingSites).toEqual([SILENT]);
+    expect(all.deferredSites).toEqual([]);
+    // 1520 ft3/s at 14:50Z lies between the 11-23 p05 (1153.5) and p10 (1799); the approved
+    // Novembers run 1930–2025, water years 1931–2026.
+    expect(all.conditions.find((row) => row.siteNumber === '01646500')).toMatchObject({
+      methodId: POTOMAC_DISCHARGE.sensor,
+      currentValue: '1520',
+      currentDateTime: '2026-11-23T09:50:00.000-05:00',
+      historicalContextStatus: 'available',
+      historicalContext: {
+        percentileClass: 'low',
+        p05: 1153.5,
+        p10: 1799,
+        p50: 4240,
+        periodOfRecord: '1931–2026',
+        statSeriesId: POTOMAC_DISCHARGE.daily,
+        methodMatched: true,
+      },
+    });
+    expect(text).toContain(`**No reading in the last 2 hours:** ${SILENT} — `);
+  });
+
+  it('gives each gage the row, on both surfaces, that a call for that gage alone returns', async () => {
+    water.route(...hucRoutes());
+    const { all, text } = await batch();
+
+    for (const row of all.conditions) {
+      const alone = await conditions(row.siteNumber, '00060');
+      expect(alone.structured, row.siteNumber).toEqual(row);
+      expect(alone.all).toMatchObject({ missingSites: [], deferredSites: [] });
+      expect(text).toContain(alone.text);
+    }
+    const silent = await runToolContract(tool, { sites: [SILENT], parameterCd: '00060' });
+    expect(silent.structuredContent).toMatchObject({
+      error: {
+        code: JsonRpcErrorCode.NotFound,
+        message: `No reading for site ${SILENT} parameter 00060 in the last 2 hours — the site reports this parameter but sent no value in that window. Call water_get_readings with a longer period for its latest value; water_get_site_data_catalog gives the series' endDate, its last report.`,
+        data: { reason: 'no_data_for_parameter' },
+      },
+    });
   });
 });
 

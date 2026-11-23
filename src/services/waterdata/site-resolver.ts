@@ -21,7 +21,7 @@ export interface ResolvedSite {
   timeZone: SiteTimeZone | null;
 }
 
-/** Numbers per request — the most any tool asks for at once (`water_get_readings` takes 100). */
+/** Numbers per request — the most one tool call reads (`water_get_readings` reads 100 per call). */
 const BATCH_SIZE = 100;
 /** Site identity and time zone change rarely; a day bounds how long an edit takes to show. */
 const CACHE_TTL_MS = 24 * 60 * 60 * 1000;
