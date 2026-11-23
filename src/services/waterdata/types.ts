@@ -103,6 +103,102 @@ export interface NwisTimeSeries {
   values: NwisValueRecord[];
 }
 
+/**
+ * The series a site publishes per parameter: daily statistics, instantaneous (continuous) values,
+ * field measurements (`field-measurements`: hand-measured well levels, discharge and gage-height
+ * measurements), and annual peaks (`peaks`).
+ */
+export const SERIES_TYPES = ['daily', 'instantaneous', 'field', 'peak'] as const;
+export type SeriesType = (typeof SERIES_TYPES)[number];
+
+/** A record of a field-measurement or annual-peak series: one dated measurement, not a reading on a clock. */
+interface MeasurementRecord extends NwisValueRecord {
+  /**
+   * The measurement's UTC instant written on the site's clock, like an instantaneous value
+   * (`2026-08-05T09:15:00.000-04:00`), when the upstream records a time of day. Otherwise the bare
+   * date the upstream records (`2000-09-08`). The upstream's date is the UTC date, so a measurement
+   * taken in the site's evening can carry the next day's date beside an earlier local time.
+   */
+  dateTime: string;
+  /**
+   * The coarsest part of the date the upstream does not know, which `dateTime` fills with 01:
+   * `month` (the year alone is known — `1958-01-01`), `day` (the year and month — `1964-03-01`).
+   * Null when the whole date is known.
+   */
+  unknownDatePart: 'month' | 'day' | null;
+}
+
+/** One field measurement. */
+export interface FieldValueRecord extends MeasurementRecord {
+  /** Stream-channel control condition at a gage visit (`Clear`, `Debris - Light`, `Ice - Cover`, …); null when unrecorded, as at wells. */
+  controlCondition: string | null;
+  /**
+   * Rating of the discharge measurement the record comes from — its discharge or mean gage height
+   * (`Excellent`, `Good`, `Fair`, `Poor`, `Unspecified`); null otherwise.
+   */
+  measurementRated: string | null;
+  /** How the value was measured, as the upstream writes it (`GW level, calib electric tape`); null when unstated. */
+  observingProcedure: string | null;
+  /**
+   * Approval code first (`A`, `P`), then each qualifier — coded as for instantaneous values where
+   * a code exists, otherwise the upstream word as written (`Static`, `Pumping`).
+   */
+  qualifiers: string[];
+}
+
+/** One annual peak. Peaks carry no approval status. */
+export interface PeakValueRecord extends MeasurementRecord {
+  /** Year since which this is the highest peak, when the upstream states one (`1889`); null otherwise. */
+  peakSince: number | null;
+  /**
+   * The peak's qualifiers, coded as for instantaneous values where a code exists (`<` less than,
+   * `R` revised) and otherwise the upstream word (`MONTHUNKNOWN`, `DIFFDATUM`, `BLWMIN`,
+   * `UNKNOWNREGULATION`). No approval code.
+   */
+  qualifiers: string[];
+  /** Water year of the peak (October through September, named for the year it ends in); null when unstated. */
+  waterYear: number | null;
+}
+
+/** The fields a field-measurement or annual-peak series shares with {@link NwisTimeSeries}. */
+type MeasurementSeriesBase = Omit<NwisTimeSeries, 'methodId' | 'statCd' | 'statName' | 'values'>;
+
+/**
+ * One field-measurement series: a site, parameter, and reading type. One site and parameter can
+ * hold several — at a stream gage, gage height read off the reference gage (`ReferencePrimary`)
+ * and the mean gage height of each discharge measurement (`MeanGageHeight`) are two.
+ */
+export interface FieldSeries extends MeasurementSeriesBase {
+  /**
+   * The series' label: its sublocation, then its reading type in brackets, as
+   * {@link NwisTimeSeries.methodDescription} composes one (`[ReferencePrimary]`).
+   */
+  methodDescription: string | null;
+  /** The `field-measurements-metadata` series ID (a UUID), the catalog's `timeSeriesId` for the series. */
+  methodId: string;
+  /** Reading type as the upstream writes it (`ReferencePrimary`, `MeanGageHeight`, `Discharge`); null when unstated. */
+  readingType: string | null;
+  seriesType: 'field';
+  statCd: null;
+  statName: null;
+  /** Records oldest first. */
+  values: FieldValueRecord[];
+}
+
+/** One annual-peak series: the `time-series-metadata` series computed `Max At Event Time`. */
+export interface PeakSeries extends MeasurementSeriesBase {
+  /** The OGC `time_series_id` (32 hex digits), the catalog's `timeSeriesId` for the series. */
+  methodId: string;
+  seriesType: 'peak';
+  statCd: null;
+  statName: null;
+  /** Records oldest first. */
+  values: PeakValueRecord[];
+}
+
+/** Any series {@link SeriesType} names; field and peak series carry `seriesType`, the others none. */
+export type ObservedSeries = NwisTimeSeries | FieldSeries | PeakSeries;
+
 /** Condition classification based on percentile comparison. */
 export type PercentileClass =
   | 'record-high'

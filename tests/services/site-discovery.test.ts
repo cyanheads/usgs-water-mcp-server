@@ -17,6 +17,7 @@ import {
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { DiscoveredSite } from '@/services/waterdata/site-discovery.js';
 import type { WaterDataRequest } from '@/services/waterdata/water-data-client.js';
+import { expectLinear } from '../helpers/linear-time.js';
 import {
   createWaterDataFake,
   jsonResponse,
@@ -536,6 +537,104 @@ describe('findSites: lastObservedAt and observedWithin', () => {
   });
 });
 
+describe('findSites: a measurement’s time of day', () => {
+  /** The Monmouth County, NJ well its field measurements were captured at. */
+  const WELL = {
+    type: 'Feature',
+    id: 'USGS-400954074302001',
+    geometry: null,
+    properties: {
+      monitoring_location_number: '400954074302001',
+      monitoring_location_name: '250790-- Imlaystown MW1',
+      site_type_code: 'GW',
+    },
+  };
+
+  it('counts a field measurement from its time of day, not 00:00 UTC on its date', async () => {
+    water.route(
+      serve('monitoring-locations', ogcPage([WELL])),
+      serve(
+        'latest-field-measurements',
+        fixture('sites-latest-field-measurements-400954074302001.json'),
+      ),
+    );
+    const sites = await discovery.findSites(
+      { countyCd: '34025', hasDataTypeCd: 'gw', siteOutput: 'basic' },
+      request(),
+    );
+    // The well was measured on 2026-08-05 at 13:15 UTC (time "2026-08-05", time_of_day "13:15:00+00:00").
+    expect(sites.map((s) => [s.siteNumber, s.lastObservedAt])).toEqual([
+      ['400954074302001', '2026-08-05T13:15:00.000Z'],
+    ]);
+    expect(sent('latest-field-measurements')[0]?.properties).toBe(
+      'monitoring_location_id,time,time_of_day',
+    );
+  });
+
+  it('counts a peak from its time of day, which can fall on the UTC day after the site-local one', async () => {
+    water.route(
+      serve('monitoring-locations', fixture('site-detail-01646500.json')),
+      serve('peaks', fixture('peaks-01646500-00060-wy2025.json')),
+    );
+    const sites = await discovery.findSites(
+      { stateCd: 'MD', hasDataTypeCd: 'pk', siteOutput: 'basic' },
+      request(),
+    );
+    // The water-year 2025 crest: time "2025-05-16", time_of_day "02:45:00+00:00" (22:45 EDT on 05-15).
+    expect(sites.map((s) => [s.siteNumber, s.lastObservedAt])).toEqual([
+      ['01646500', '2025-05-16T02:45:00.000Z'],
+    ]);
+    expect(sent('peaks')[0]?.properties).toBe('monitoring_location_id,time,time_of_day');
+  });
+
+  it('asks the continuous and daily collections for no time of day, which they do not carry', async () => {
+    water.route(
+      serve('monitoring-locations', fixture('site-detail-01646500.json')),
+      ...['latest-continuous', 'latest-daily', 'latest-field-measurements'].map((c) =>
+        serve(c, EMPTY),
+      ),
+    );
+    await discovery.findSites({ stateCd: 'MD', siteOutput: 'basic' }, request());
+    expect(sent('latest-continuous')[0]?.properties).toBe('monitoring_location_id,time');
+    expect(sent('latest-daily')[0]?.properties).toBe('monitoring_location_id,time');
+    expect(sent('latest-field-measurements')[0]?.properties).toBe(
+      'monitoring_location_id,time,time_of_day',
+    );
+  });
+
+  it('fails a time of day that is not a UTC clock time as an unreadable response', async () => {
+    water.route(
+      serve('monitoring-locations', ogcPage([WELL])),
+      serve(
+        'latest-field-measurements',
+        ogcPage([
+          {
+            type: 'Feature',
+            id: 'x1',
+            geometry: null,
+            properties: {
+              monitoring_location_id: 'USGS-400954074302001',
+              time: '2026-08-05',
+              time_of_day: 'afternoon',
+            },
+          },
+        ]),
+      ),
+    );
+    const error = await rejection(
+      discovery.findSites(
+        { countyCd: '34025', hasDataTypeCd: 'gw', siteOutput: 'basic' },
+        request(),
+      ),
+    );
+    expect(error).toMatchObject({
+      code: JsonRpcErrorCode.ServiceUnavailable,
+      data: { reason: 'upstream_error', retryable: false },
+    });
+    expect(sent('latest-field-measurements')).toHaveLength(1);
+  });
+});
+
 describe('findSites: one failure stops the call', () => {
   it('aborts the sibling page walks and sends no further page once one collection fails', async () => {
     const stalledReads: Request[] = [];
@@ -971,46 +1070,8 @@ describe('water_find_sites on the OGC collections', () => {
   });
 });
 
-/** This thread's CPU time per call, in microseconds, across `calls` back-to-back runs. */
-function cpuMicrosPerCall(run: () => void, calls: number): number {
-  const start = process.threadCpuUsage();
-  for (let i = 0; i < calls; i++) run();
-  const { user, system } = process.threadCpuUsage(start);
-  return (user + system) / calls;
-}
-
-const BASE_CHARS = 5_000;
-const MAX_CHARS = 320_000;
-/** Calls per 5k measurement; a larger size runs as many as keep the characters per measurement equal. */
-const BASE_CALLS = 64;
-const PAIRS = 5;
 /** CPU ceiling per call at any size; the slowest shape below takes about 5 ms at 320k characters. */
 const MAX_CALL_MICROS = 50_000;
-
-/**
- * Expect `run` to scale linearly over `shape`. The input doubles from 5k to 320k characters; at
- * each size the 5k baseline is timed again beside it, PAIRS times, and the least of those growth
- * ratios must stay under four times the size ratio (256 across the full 64×) before the next size
- * runs, so a quadratic fails within a few doublings instead of stalling on the largest input. CPU
- * time, never wall clock: a loaded machine descheduling the worker adds no CPU time.
- */
-function expectLinear(shape: (chars: number) => string, run: (input: string) => void): void {
-  const base = shape(BASE_CHARS);
-  for (let chars = BASE_CHARS * 2; chars <= MAX_CHARS; chars *= 2) {
-    const input = shape(chars);
-    const calls = Math.max(1, Math.round((BASE_CALLS * BASE_CHARS) / chars));
-    let growth = Number.POSITIVE_INFINITY;
-    let cost = Number.POSITIVE_INFINITY;
-    for (let pair = 0; pair < PAIRS; pair++) {
-      const baseline = cpuMicrosPerCall(() => run(base), BASE_CALLS);
-      const sized = cpuMicrosPerCall(() => run(input), calls);
-      growth = Math.min(growth, sized / baseline);
-      cost = Math.min(cost, sized);
-    }
-    expect(growth, `growth at ${chars} characters`).toBeLessThan((4 * chars) / BASE_CHARS);
-    expect(cost, `CPU µs per call at ${chars} characters`).toBeLessThan(MAX_CALL_MICROS);
-  }
-}
 
 describe('regex timing: caller-sized input on water_find_sites', () => {
   /** Both line-break shapes ride along with each pattern's own worst cases. */
@@ -1031,18 +1092,22 @@ describe('regex timing: caller-sized input on water_find_sites', () => {
       const outcomes: Promise<unknown>[] = [];
       // findSites validates synchronously before its first await, so the timed call covers the whole
       // split, trim, uppercase, and SITE_TYPE_CODE pass; each rejection is collected and checked below.
-      expectLinear(shape, (siteType) => {
-        const pending = discovery.findSites(
-          { huc: '02070008', siteType, siteOutput: 'basic' },
-          req,
-        );
-        outcomes.push(
-          pending.then(
-            () => 'resolved',
-            (error: unknown) => (error instanceof McpError ? error.data?.['reason'] : error),
-          ),
-        );
-      });
+      expectLinear(
+        shape,
+        (siteType) => {
+          const pending = discovery.findSites(
+            { huc: '02070008', siteType, siteOutput: 'basic' },
+            req,
+          );
+          outcomes.push(
+            pending.then(
+              () => 'resolved',
+              (error: unknown) => (error instanceof McpError ? error.data?.['reason'] : error),
+            ),
+          );
+        },
+        MAX_CALL_MICROS,
+      );
       expect(new Set(await Promise.all(outcomes))).toEqual(new Set(['invalid_request']));
       expect(water.requests).toHaveLength(0);
     },
@@ -1055,9 +1120,13 @@ describe('regex timing: caller-sized input on water_find_sites', () => {
     ...lineBreakShapes,
   ])('refuses observedWithin as %s through PeriodSchema in linear time', (_shape, shape) => {
     let accepted = 0;
-    expectLinear(shape, (observedWithin) => {
-      if (tool.input.safeParse({ stateCd: 'VA', observedWithin }).success) accepted++;
-    });
+    expectLinear(
+      shape,
+      (observedWithin) => {
+        if (tool.input.safeParse({ stateCd: 'VA', observedWithin }).success) accepted++;
+      },
+      MAX_CALL_MICROS,
+    );
     expect(accepted).toBe(0);
   });
 });

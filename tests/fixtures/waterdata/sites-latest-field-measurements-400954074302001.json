@@ -1,0 +1,72 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_id": "USGS-400954074302001",
+        "parameter_code": "72019",
+        "time": "2026-08-05",
+        "time_of_day": "13:15:00+00:00"
+      },
+      "id": "8299a5e6-e125-47cb-973b-725d304fbcfd",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_id": "USGS-400954074302001",
+        "parameter_code": "62610",
+        "time": "2026-08-05",
+        "time_of_day": "13:15:00+00:00"
+      },
+      "id": "a815f0d3-1a7e-40ee-8466-6455c075239d",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "monitoring_location_id": "USGS-400954074302001",
+        "parameter_code": "62611",
+        "time": "2026-08-05",
+        "time_of_day": "13:15:00+00:00"
+      },
+      "id": "cfa6fa94-fffd-4568-a597-edad1e844e76",
+      "geometry": null
+    }
+  ],
+  "numberReturned": 3,
+  "links": [
+    {
+      "type": "application/geo+json",
+      "rel": "self",
+      "title": "This document as GeoJSON",
+      "href": "https://api.waterdata.usgs.gov/ogcapi/v1/collections/latest-field-measurements/items?f=json&monitoring_location_id=USGS-400954074302001&time=2026-08-05T12%3A00%3A00Z%2F2026-11-23T00%3A00%3A00Z&skipGeometry=true&limit=100&properties=monitoring_location_id,parameter_code,time,time_of_day"
+    },
+    {
+      "rel": "alternate",
+      "type": "application/ld+json",
+      "title": "This document as RDF (JSON-LD)",
+      "href": "https://api.waterdata.usgs.gov/ogcapi/v1/collections/latest-field-measurements/items?f=jsonld&monitoring_location_id=USGS-400954074302001&time=2026-08-05T12%3A00%3A00Z%2F2026-11-23T00%3A00%3A00Z&skipGeometry=true&limit=100&properties=monitoring_location_id,parameter_code,time,time_of_day"
+    },
+    {
+      "type": "text/html",
+      "rel": "alternate",
+      "title": "This document as HTML",
+      "href": "https://api.waterdata.usgs.gov/ogcapi/v1/collections/latest-field-measurements/items?f=html&monitoring_location_id=USGS-400954074302001&time=2026-08-05T12%3A00%3A00Z%2F2026-11-23T00%3A00%3A00Z&skipGeometry=true&limit=100&properties=monitoring_location_id,parameter_code,time,time_of_day"
+    },
+    {
+      "type": "text/csv; charset=utf-8",
+      "rel": "alternate",
+      "title": "This document as CSV",
+      "href": "https://api.waterdata.usgs.gov/ogcapi/v1/collections/latest-field-measurements/items?f=csv&monitoring_location_id=USGS-400954074302001&time=2026-08-05T12%3A00%3A00Z%2F2026-11-23T00%3A00%3A00Z&skipGeometry=true&limit=100&properties=monitoring_location_id,parameter_code,time,time_of_day"
+    },
+    {
+      "type": "application/json",
+      "title": "Latest field measurements",
+      "rel": "collection",
+      "href": "https://api.waterdata.usgs.gov/ogcapi/v1/collections/latest-field-measurements"
+    }
+  ],
+  "timeStamp": "2026-11-23T15:30:36.017314Z"
+}

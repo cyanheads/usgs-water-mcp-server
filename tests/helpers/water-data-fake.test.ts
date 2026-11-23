@@ -59,6 +59,24 @@ describe('createWaterDataFake', () => {
     expect(() => fake.restore()).toThrow(/Requests matched no route:\nGET .*USGS-01646500/);
   });
 
+  it('matches a query pair of true only when the parameter is present, with any value', async () => {
+    const normals = 'https://api.waterdata.usgs.gov/statistics/v0/observationNormals';
+    const fake = createWaterDataFake().route(
+      statisticsRoute('observationNormals', jsonResponse({ named: true }), {
+        query: { monitoring_location_id: true },
+      }),
+    );
+    fake.install();
+    const named = await fetch(
+      `${normals}?monitoring_location_id=USGS-01646500&monitoring_location_id=USGS-01638500`,
+    );
+    expect(await named.json()).toEqual({ named: true });
+    await expect(fetch(`${normals}?parameter_code=00060`)).rejects.toThrow('unmocked fetch');
+    expect(() => fake.restore()).toThrow(
+      /Requests matched no route:\nGET .*observationNormals\?parameter_code=00060$/,
+    );
+  });
+
   it('reports an unmatched request at restore even when the caller swallowed it', async () => {
     const original = globalThis.fetch;
     const fake = createWaterDataFake();

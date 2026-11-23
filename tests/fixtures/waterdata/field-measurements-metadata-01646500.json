@@ -1,0 +1,90 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "3ab813d1-f76e-4268-b5e1-8ab4dc53e3d5",
+        "reading_type": "Discharge",
+        "monitoring_location_id": "USGS-01646500",
+        "parameter_code": "00060",
+        "parameter_name": "Discharge",
+        "parameter_description": "Discharge, cubic feet per second",
+        "begin": "1930-03-25T22:40:00+00:00",
+        "end": "2026-10-07T14:52:31+00:00",
+        "last_modified": "2026-11-10T18:26:42.452180+00:00",
+        "sublocation_identifier": null
+      },
+      "id": "3ab813d1-f76e-4268-b5e1-8ab4dc53e3d5",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "69cf03cd-7795-4b55-9550-ef69dd8fe9c1",
+        "reading_type": "ReferencePrimary",
+        "monitoring_location_id": "USGS-01646500",
+        "parameter_code": "00065",
+        "parameter_name": "Gage height",
+        "parameter_description": "Gage height, feet",
+        "begin": "2020-10-06T13:22:00+00:00",
+        "end": "2026-10-07T13:42:00+00:00",
+        "last_modified": "2026-11-10T18:26:42.452180+00:00",
+        "sublocation_identifier": null
+      },
+      "id": "69cf03cd-7795-4b55-9550-ef69dd8fe9c1",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "c141575d-9f1d-42ce-aa4a-0584728735ce",
+        "reading_type": "MeanGageHeight",
+        "monitoring_location_id": "USGS-01646500",
+        "parameter_code": "00065",
+        "parameter_name": "Gage height",
+        "parameter_description": "Gage height, feet",
+        "begin": "1930-03-25T22:40:00+00:00",
+        "end": "2026-10-07T14:52:31+00:00",
+        "last_modified": "2026-11-10T18:26:42.452180+00:00",
+        "sublocation_identifier": null
+      },
+      "id": "c141575d-9f1d-42ce-aa4a-0584728735ce",
+      "geometry": null
+    }
+  ],
+  "numberReturned": 3,
+  "links": [
+    {
+      "type": "application/geo+json",
+      "rel": "self",
+      "title": "This document as GeoJSON",
+      "href": "https://api.waterdata.usgs.gov/ogcapi/v1/collections/field-measurements-metadata/items?f=json&monitoring_location_id=USGS-01646500&skipGeometry=true&limit=1000"
+    },
+    {
+      "rel": "alternate",
+      "type": "application/ld+json",
+      "title": "This document as RDF (JSON-LD)",
+      "href": "https://api.waterdata.usgs.gov/ogcapi/v1/collections/field-measurements-metadata/items?f=jsonld&monitoring_location_id=USGS-01646500&skipGeometry=true&limit=1000"
+    },
+    {
+      "type": "text/html",
+      "rel": "alternate",
+      "title": "This document as HTML",
+      "href": "https://api.waterdata.usgs.gov/ogcapi/v1/collections/field-measurements-metadata/items?f=html&monitoring_location_id=USGS-01646500&skipGeometry=true&limit=1000"
+    },
+    {
+      "type": "text/csv; charset=utf-8",
+      "rel": "alternate",
+      "title": "This document as CSV",
+      "href": "https://api.waterdata.usgs.gov/ogcapi/v1/collections/field-measurements-metadata/items?f=csv&monitoring_location_id=USGS-01646500&skipGeometry=true&limit=1000"
+    },
+    {
+      "type": "application/json",
+      "title": "Field measurements metadata",
+      "rel": "collection",
+      "href": "https://api.waterdata.usgs.gov/ogcapi/v1/collections/field-measurements-metadata"
+    }
+  ],
+  "timeStamp": "2026-11-23T14:55:03.518031Z"
+}

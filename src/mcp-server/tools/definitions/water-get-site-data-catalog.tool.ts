@@ -22,7 +22,7 @@ function scalar(value: string | null): string {
 /** Per-site series metadata for planning a subsequent water_get_series call. */
 export const waterGetSiteDataCatalog = tool('water_get_site_data_catalog', {
   description:
-    'Discover a USGS site’s parameters, sensors, statistics, and UTC record bounds before calling water_get_series. Find site numbers with water_find_sites. Each row is a distinct series; metadata bounds may contain gaps and lag observations. For water_get_series, take YYYY-MM-DD from beginDate/endDate, pass statCd only for daily rows, and pass a row’s timeSeriesId as methodId to request that exact series (water_get_readings and water_get_series report the same ID as methodId). Rows with null seriesType are other computations and cannot be requested with water_get_series. Follow nextCursor with the same filters and limit until null.',
+    'Discover a USGS site’s parameters, sensors, statistics, and UTC record bounds before calling water_get_series. Find site numbers with water_find_sites. Each row is a distinct series; metadata bounds may contain gaps and lag observations. For water_get_series, take YYYY-MM-DD from beginDate/endDate, pass the row’s seriesType, pass statCd only for daily rows, and pass a row’s timeSeriesId as methodId to request that exact series (water_get_readings and water_get_series report the same ID as methodId). Field-measurement series (hand-measured values, such as the levels of a well with no continuous sensor) list as seriesType "field" and annual-peak series as "peak". Rows with null seriesType are other computations, such as a water-year mean or maximum, and cannot be requested with water_get_series. Follow nextCursor with the same filters and limit until null.',
   annotations: { readOnlyHint: true, idempotentHint: true, openWorldHint: true },
   input: z.object({
     site: SiteNumberSchema.describe(
@@ -34,10 +34,10 @@ export const waterGetSiteDataCatalog = tool('water_get_site_data_catalog', {
     seriesType: z
       .preprocess(
         (value) => (value === '' ? undefined : value),
-        z.enum(['daily', 'instantaneous']).optional(),
+        z.enum(['daily', 'instantaneous', 'field', 'peak']).optional(),
       )
       .describe(
-        'Limit to Daily computations or Points/Instantaneous computations. Omit to include all periods.',
+        'Limit to one series type: Daily computations, Points/Instantaneous computations, field-measurement series, or annual-peak series (computation Max At Event Time). Omit to include every series.',
       ),
     limit: z
       .number()
@@ -66,11 +66,16 @@ export const waterGetSiteDataCatalog = tool('water_get_site_data_catalog', {
             timeSeriesId: z
               .string()
               .describe(
-                'Distinct OGC time-series identifier; pass it as the water_get_series methodId, with this row’s seriesType.',
+                'Distinct series identifier — the OGC time-series ID (32 hexadecimal characters), or on a field row its field-measurement series ID (a hyphenated UUID); pass it as the water_get_series methodId, with this row’s seriesType.',
               ),
             parameterCd: z.string().describe('USGS parameter code for this series.'),
             parameterName: z.string().nullable().describe('Upstream parameter name, or null.'),
-            unit: z.string().nullable().describe('Upstream unit of measure, or null.'),
+            unit: z
+              .string()
+              .nullable()
+              .describe(
+                'Upstream unit of measure, or null; always null on a field row, whose metadata states none.',
+              ),
             statCd: z
               .string()
               .nullable()
@@ -98,17 +103,25 @@ export const waterGetSiteDataCatalog = tool('water_get_site_data_catalog', {
               .string()
               .nullable()
               .describe(
-                'Raw upstream computation period (e.g. Daily, Points, Water Year), or null.',
+                'Raw upstream computation period (e.g. Daily, Points, Water Year), or null; null on a field row.',
               ),
             computation: z
               .string()
               .nullable()
-              .describe('Raw upstream computation (e.g. Mean, Instantaneous), or null.'),
-            seriesType: z
-              .enum(['daily', 'instantaneous'])
+              .describe(
+                'Raw upstream computation (e.g. Mean, Instantaneous, Max At Event Time), or null; null on a field row.',
+              ),
+            readingType: z
+              .string()
               .nullable()
               .describe(
-                'daily for Daily; instantaneous for Points with Instantaneous; null otherwise.',
+                'Field rows only: the upstream reading type, one field series per type (e.g. ReferencePrimary for staff-gage readings, MeanGageHeight for the mean gage height of each discharge measurement, Discharge); null on every other row.',
+              ),
+            seriesType: z
+              .enum(['daily', 'instantaneous', 'field', 'peak'])
+              .nullable()
+              .describe(
+                'daily for Daily; instantaneous for Points with Instantaneous; field for a field-measurement series; peak for the Max At Event Time computation (annual peaks); null otherwise. Pass it as the water_get_series seriesType.',
               ),
           })
           .describe('One distinct sensor/statistic metadata record.'),

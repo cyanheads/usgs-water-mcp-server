@@ -5,7 +5,12 @@
  */
 
 import { tool, z } from '@cyanheads/mcp-ts-core';
-import { CanvasIdSchema, type CanvasInstance, spillover } from '@cyanheads/mcp-ts-core/canvas';
+import {
+  CanvasIdSchema,
+  type CanvasInstance,
+  type ColumnSchema,
+  spillover,
+} from '@cyanheads/mcp-ts-core/canvas';
 import { JsonRpcErrorCode } from '@cyanheads/mcp-ts-core/errors';
 import { acquireCanvas } from '@/services/canvas/acquire-canvas.js';
 import { getCanvas } from '@/services/canvas/canvas-accessor.js';
@@ -17,9 +22,20 @@ import {
 import { ParameterCdSchema, SiteNumberSchema } from '@/services/waterdata/input-schemas.js';
 import { carriesValues, getSeries } from '@/services/waterdata/observations.js';
 import { startDeadline } from '@/services/waterdata/request-deadline.js';
-import type { NwisTimeSeries, NwisValueRecord } from '@/services/waterdata/types.js';
+import { type ObservedSeries, SERIES_TYPES, type SeriesType } from '@/services/waterdata/types.js';
 import type { WaterDataRequest } from '@/services/waterdata/water-data-client.js';
 import { classifyWaterDataFailure } from '@/services/waterdata/water-data-errors.js';
+
+/**
+ * Each series type's token in a staged table name, two characters each so the longest name still
+ * fits the 63-character identifier cap.
+ */
+const SERIES_TYPE_TOKENS = {
+  daily: 'dv',
+  instantaneous: 'iv',
+  field: 'fm',
+  peak: 'pk',
+} as const satisfies Record<SeriesType, string>;
 
 /** Threshold above which results spill to canvas. */
 const SPILLOVER_THRESHOLD = 500;
@@ -44,6 +60,102 @@ const CATALOG_INSTANTANEOUS_STAT_CD = '00011';
  * hexadecimal characters, so such an ID matches no series.
  */
 const NUMERIC_METHOD_ID = /^\d+$/;
+
+/**
+ * The columns of a staged daily table, declared rather than sniffed: the sniffer types a column off
+ * its first rows, so an all-integer head would stage `value` as BIGINT and truncate a later
+ * fraction, and text values would stage as VARCHAR and compare as strings.
+ */
+const DAILY_COLUMNS: ColumnSchema[] = [
+  { name: 'date_time', type: 'VARCHAR' },
+  { name: 'value', type: 'DOUBLE' },
+  { name: 'qualifiers', type: 'VARCHAR' },
+  { name: 'site_number', type: 'VARCHAR' },
+  { name: 'parameter_cd', type: 'VARCHAR' },
+  { name: 'unit_code', type: 'VARCHAR' },
+  { name: 'stat_cd', type: 'VARCHAR' },
+  { name: 'method_id', type: 'VARCHAR' },
+];
+
+/**
+ * Every table but a daily one ends with `time_utc`. It stays text: the canvas has no TIMESTAMPTZ
+ * column and its session zone follows the host, so a TIMESTAMP compared with `now()` would be off
+ * by the host's offset without an error, while `CAST(time_utc AS TIMESTAMPTZ)` reads the trailing
+ * `Z` on every host and the fixed width sorts chronologically as text.
+ */
+const TIME_UTC_COLUMN: ColumnSchema = { name: 'time_utc', type: 'VARCHAR' };
+
+/** Each series type's staged columns, in row order. */
+const STAGED_COLUMNS = {
+  daily: DAILY_COLUMNS,
+  instantaneous: [...DAILY_COLUMNS, TIME_UTC_COLUMN],
+  field: [
+    ...DAILY_COLUMNS,
+    { name: 'observing_procedure', type: 'VARCHAR' },
+    { name: 'measurement_rated', type: 'VARCHAR' },
+    { name: 'control_condition', type: 'VARCHAR' },
+    { name: 'unknown_date_part', type: 'VARCHAR' },
+    TIME_UTC_COLUMN,
+  ],
+  peak: [
+    ...DAILY_COLUMNS,
+    { name: 'water_year', type: 'INTEGER' },
+    { name: 'peak_since', type: 'INTEGER' },
+    { name: 'unknown_date_part', type: 'VARCHAR' },
+    TIME_UTC_COLUMN,
+  ],
+} satisfies Record<SeriesType, ColumnSchema[]>;
+
+/**
+ * A timestamp that names its UTC offset. A daily value's site-local day (`…T00:00:00.000`) and a
+ * field or peak record with no time of day (a bare `YYYY-MM-DD`) name none.
+ */
+const ZONED_TIMESTAMP = /(?:Z|[+-]\d{2}:\d{2})$/;
+
+/** The UTC instant of a record's timestamp in `toISOString()` form, or null when it names no offset. */
+function utcInstant(dateTime: string): string | null {
+  return ZONED_TIMESTAMP.test(dateTime) ? new Date(dateTime).toISOString() : null;
+}
+
+/**
+ * The staged rows of `ts`, in {@link STAGED_COLUMNS} order. `value` stages as a number; a record
+ * the upstream reported as no data stages as NULL, so SQL aggregates skip it instead of meeting an
+ * empty string. Every record past a daily one — a no-data one included — carries its UTC instant.
+ */
+function stagedRows(ts: ObservedSeries, seriesType: SeriesType): Record<string, unknown>[] {
+  const base = (v: { dateTime: string; qualifiers: readonly string[]; value: string }) => ({
+    date_time: v.dateTime,
+    value: v.value === '' ? null : Number(v.value),
+    qualifiers: v.qualifiers.join(','),
+    site_number: ts.siteNumber,
+    parameter_cd: ts.parameterCd,
+    unit_code: ts.unitCode,
+    stat_cd: ts.statCd,
+    method_id: ts.methodId,
+  });
+  if (!('seriesType' in ts)) {
+    return ts.values.map((v) =>
+      seriesType === 'daily' ? base(v) : { ...base(v), time_utc: utcInstant(v.dateTime) },
+    );
+  }
+  if (ts.seriesType === 'field') {
+    return ts.values.map((v) => ({
+      ...base(v),
+      observing_procedure: v.observingProcedure,
+      measurement_rated: v.measurementRated,
+      control_condition: v.controlCondition,
+      unknown_date_part: v.unknownDatePart,
+      time_utc: utcInstant(v.dateTime),
+    }));
+  }
+  return ts.values.map((v) => ({
+    ...base(v),
+    water_year: v.waterYear,
+    peak_since: v.peakSince,
+    unknown_date_part: v.unknownDatePart,
+    time_utc: utcInstant(v.dateTime),
+  }));
+}
 
 /** True when a YYYY-MM-DD string is a real calendar date; JS rollover (Feb 30 → Mar 1) and NaN both fail. */
 function isCalendarDate(date: string): boolean {
@@ -76,9 +188,9 @@ function optionalText(value: string | undefined): string | undefined {
  * Undefined only when the requested statCd/methodId matched nothing.
  */
 function selectSeries(
-  seriesList: NwisTimeSeries[],
+  seriesList: ObservedSeries[],
   wanted: { methodId: string | undefined; statCd: string | undefined },
-): NwisTimeSeries | undefined {
+): ObservedSeries | undefined {
   const pool = seriesList.filter(
     (s) =>
       (!wanted.statCd || s.statCd === wanted.statCd) &&
@@ -91,7 +203,7 @@ function selectSeries(
     : candidates[0]?.statCd;
   return candidates
     .filter((s) => s.statCd === statCd)
-    .reduce<NwisTimeSeries | undefined>(
+    .reduce<ObservedSeries | undefined>(
       (best, s) =>
         !best ||
         s.values.length > best.values.length ||
@@ -108,14 +220,39 @@ function selectSeries(
 function describeSeries(s: {
   methodDescription: string | null;
   methodId: string | null;
-  statCd: string;
+  statCd: string | null;
 }): string {
-  return `statCd ${s.statCd}, methodId ${s.methodId ?? 'none'} (${s.methodDescription ?? 'no description'})`;
+  const method = `methodId ${s.methodId ?? 'none'} (${s.methodDescription ?? 'no description'})`;
+  return s.statCd === null ? method : `statCd ${s.statCd}, ${method}`;
+}
+
+/**
+ * Field measurements and peaks carry no statistic: any statCd selects nothing for them, and a
+ * methodId alone names one of their series.
+ */
+function isStatless(seriesType: SeriesType): boolean {
+  return seriesType === 'field' || seriesType === 'peak';
+}
+
+/** The inputs that re-request one series of a type, as the error hints and content[] name them. */
+function reRequestInputs(seriesType: SeriesType): string {
+  return isStatless(seriesType) ? 'methodId' : 'statCd and methodId';
+}
+
+/** A series' statistic as the formatted response names it; a field or peak series has none. */
+function statisticLabel(s: { statCd: string | null; statName: string | null }): string {
+  return s.statCd === null
+    ? 'none (statCd null)'
+    : `${s.statName ?? 'unnamed'} (statCd ${s.statCd})`;
 }
 
 /** A single value record in the series output. */
 const ValueRecordSchema = z.object({
-  dateTime: z.string().describe('ISO 8601 date or date-time of this observation.'),
+  dateTime: z
+    .string()
+    .describe(
+      'ISO 8601 date or date-time of this observation. A field or peak record carries the measurement’s UTC instant on the site’s clock (e.g. "2026-08-05T09:15:00.000-04:00") when the upstream records a time of day, and otherwise the bare date the upstream records (e.g. "2000-09-08"), a UTC date that can fall a day after the site-local date of an evening measurement.',
+    ),
   value: z
     .string()
     .describe(
@@ -126,17 +263,77 @@ const ValueRecordSchema = z.object({
       z
         .string()
         .describe(
-          'A USGS data qualifier code (e.g. "P" = provisional, "A" = approved, "e" = estimated). A qualifier with no code is the upstream word as written (e.g. "OTHERAGENCY").',
+          'A USGS data qualifier code (e.g. "P" = provisional, "A" = approved, "e" = estimated). A qualifier with no code is the upstream word as written (e.g. "OTHERAGENCY", "Static", "MONTHUNKNOWN").',
         ),
     )
     .describe(
-      'Data qualifier codes for this value: the approval code first, then one per qualifier.',
+      'Data qualifier codes for this value: the approval code first, then one per qualifier. Peak records carry no approval code.',
+    ),
+  unknownDatePart: z
+    .enum(['month', 'day'])
+    .nullable()
+    .optional()
+    .describe(
+      'Field and peak records only: the coarsest part of the date the upstream does not know, which dateTime fills with 01 — "month" when only the year is known (e.g. "1958-01-01"), "day" when the year and month are. Null when the whole date is known.',
+    ),
+  observingProcedure: z
+    .string()
+    .nullable()
+    .optional()
+    .describe(
+      'Field records only: how the value was measured (e.g. "GW level, calib electric tape"); null when unstated.',
+    ),
+  measurementRated: z
+    .string()
+    .nullable()
+    .optional()
+    .describe(
+      'Field records only: rating of the discharge measurement the value comes from, for its discharge or mean gage height (e.g. "Good", "Fair", "Poor"); null otherwise.',
+    ),
+  controlCondition: z
+    .string()
+    .nullable()
+    .optional()
+    .describe(
+      'Field records only: stream-channel control condition at the visit (e.g. "Clear", "Debris - Light"); null when unrecorded, as at wells.',
+    ),
+  waterYear: z
+    .number()
+    .int()
+    .nullable()
+    .optional()
+    .describe(
+      'Peak records only: water year of the peak (October through September, named for the year it ends in); null when unstated.',
+    ),
+  peakSince: z
+    .number()
+    .int()
+    .nullable()
+    .optional()
+    .describe(
+      'Peak records only: the year since which this is the highest peak, when the upstream states one (e.g. 1889); null otherwise.',
     ),
 });
 
+/**
+ * A record's field- or peak-specific facts as format() appends them, each non-null one named; empty
+ * for a daily or instantaneous record, which carries none.
+ */
+function recordDetails(v: z.infer<typeof ValueRecordSchema>): string {
+  const parts = [
+    v.waterYear != null ? `water year ${v.waterYear}` : '',
+    v.peakSince != null ? `highest since ${v.peakSince}` : '',
+    v.observingProcedure != null ? `procedure: ${v.observingProcedure}` : '',
+    v.measurementRated != null ? `measurement rated ${v.measurementRated}` : '',
+    v.controlCondition != null ? `control: ${v.controlCondition}` : '',
+    v.unknownDatePart != null ? `${v.unknownDatePart} unknown` : '',
+  ].filter(Boolean);
+  return parts.length > 0 ? ` (${parts.join('; ')})` : '';
+}
+
 export const waterGetSeries = tool('water_get_series', {
   description:
-    'Get a daily or instantaneous time series for one USGS site and parameter over a date range, as time-ordered value records. A site can hold several series for one query — one per daily statistic (mean, maximum, minimum) and one per sensor (method); this returns one, reporting its statCd and methodId (its time-series ID), and lists the rest in otherSeries so any can be re-requested with the statCd and methodId inputs. By default it returns the daily mean when one carries values, and the method with the most records. Large sets (>500 records) return the most recent records inline with truncated=true — the last 500 without DataCanvas, and with DataCanvas enabled the complete series also spills to a canvas (canvas_id/table_name): inspect the staged table with water_dataframe_describe, then read the full series with water_dataframe_query. Use water_find_sites and water_list_parameters to resolve inputs; water_get_site_data_catalog lists a site’s series with their record bounds (beginDate/endDate), and a row’s timeSeriesId works as methodId.',
+    'Get a time series for one USGS site and parameter over a date range, as time-ordered value records: daily values, instantaneous (~15-minute) readings, field measurements (values measured by hand on a site visit, such as a well’s groundwater level or a discharge measurement), or annual peaks. A site can hold several series for one query — one per daily statistic (mean, maximum, minimum), one per sensor (method), and one per field reading type; this returns one, reporting its statCd and methodId (its time-series ID), and lists the rest in otherSeries so any can be re-requested with the statCd and methodId inputs (methodId alone for a field or peak series). By default it returns the daily mean when one carries values, and the method with the most records. Large sets (>500 records) return the most recent records inline with truncated=true — the last 500 without DataCanvas, and with DataCanvas enabled the complete series also spills to a canvas (canvas_id/table_name): inspect the staged table with water_dataframe_describe, then read the full series with water_dataframe_query. Use water_find_sites and water_list_parameters to resolve inputs; water_get_site_data_catalog lists a site’s series with their record bounds (beginDate/endDate), and a row’s timeSeriesId works as methodId.',
   annotations: { readOnlyHint: true, idempotentHint: true, openWorldHint: true },
   input: z.object({
     site: SiteNumberSchema.describe(
@@ -154,22 +351,22 @@ export const waterGetSeries = tool('water_get_series', {
       .regex(/^\d{4}-\d{2}-\d{2}$/, 'endDate must be in YYYY-MM-DD format (e.g. "2024-12-31").')
       .describe('End date in YYYY-MM-DD format (e.g. "2024-12-31").'),
     seriesType: z
-      .enum(['daily', 'instantaneous'])
+      .enum(SERIES_TYPES)
       .default('daily')
       .describe(
-        '"daily" returns one value per day (typically mean/max/min). "instantaneous" returns ~15-minute readings. Default: "daily". Use "instantaneous" for high-resolution analysis.',
+        '"daily" returns one value per day (typically mean/max/min). "instantaneous" returns ~15-minute readings. "field" returns field measurements: values measured by hand on a site visit, such as the groundwater level of a well with no continuous sensor or a discharge measurement at a stream gage. "peak" returns annual peaks, one per water year. Default: "daily". Use "instantaneous" for high-resolution analysis.',
       ),
     statCd: z
       .string()
       .optional()
       .describe(
-        'Daily statistic to return, as a 5-digit USGS statistic code: "00003" mean, "00001" maximum, "00002" minimum. Omit for the mean when one carries values, otherwise the lowest-numbered statistic that has values; the response names the one returned and lists the others in otherSeries. Daily series only — instantaneous values carry just "00000" ("00011", the statistic water_get_site_data_catalog lists on instantaneous rows, reads the same).',
+        'Daily statistic to return, as a 5-digit USGS statistic code: "00003" mean, "00001" maximum, "00002" minimum. Omit for the mean when one carries values, otherwise the lowest-numbered statistic that has values; the response names the one returned and lists the others in otherSeries. Daily series only — instantaneous values carry just "00000" ("00011", the statistic water_get_site_data_catalog lists on instantaneous rows, reads the same), and field and peak series carry no statistic, so any statCd fails for them.',
       ),
     methodId: z
       .string()
       .optional()
       .describe(
-        'Time-series ID of the series to return (the OGC time_series_id, 32 hexadecimal characters) — the methodId or an otherSeries[].methodId from a prior response for the same site, parameter, and seriesType, or a timeSeriesId from water_get_site_data_catalog whose seriesType matches this call. Omit for the method with the most records, ties going to the site’s default sensor (methodDescription null) over a labeled one such as an auxiliary gage, then to the series that began first. Each daily statistic and the instantaneous series of one sensor carry different IDs. A numeric NWIS method ID matches no series.',
+        'Time-series ID of the series to return (the OGC time_series_id, 32 hexadecimal characters; for a field series, its field-measurement series ID, a hyphenated UUID) — the methodId or an otherSeries[].methodId from a prior response for the same site, parameter, and seriesType, or a timeSeriesId from water_get_site_data_catalog whose seriesType matches this call. Omit for the method with the most records, ties going to the site’s default sensor (methodDescription null) over a labeled one such as an auxiliary gage, then to the series that began first. Each daily statistic, the instantaneous series of one sensor, and each field reading type (such as staff-gage readings beside the mean gage height of each discharge measurement) carry different IDs. A numeric NWIS method ID matches no series.',
       ),
     canvas_id: CanvasIdSchema.optional().describe(
       'Canvas ID from a prior call to add this series as a table on an existing canvas rather than creating a new one. Each distinct site, parameter code, series type, date range, and selected statistic and method gets its own table name, so re-running the identical query replaces its own table while a different query adds another alongside it. Applies only when the series spills to a canvas. Omit to start a fresh canvas.',
@@ -188,18 +385,21 @@ export const waterGetSeries = tool('water_get_series', {
       .string()
       .describe('Unit of measure for all values in this series (e.g. "ft3/s", "ft", "deg C").'),
     seriesType: z
-      .enum(['daily', 'instantaneous'])
-      .describe('"daily" = one value per day; "instantaneous" = ~15-minute readings.'),
+      .enum(SERIES_TYPES)
+      .describe(
+        '"daily" = one value per day; "instantaneous" = ~15-minute readings; "field" = field measurements; "peak" = annual peaks.',
+      ),
     statCd: z
       .string()
+      .nullable()
       .describe(
-        'USGS statistic code of the returned series: "00003" daily mean, "00001" daily maximum, "00002" daily minimum, "00000" for instantaneous values.',
+        'USGS statistic code of the returned series: "00003" daily mean, "00001" daily maximum, "00002" daily minimum, "00000" for instantaneous values. Null for field and peak series, which carry no statistic.',
       ),
     statName: z
       .string()
       .nullable()
       .describe(
-        'Statistic name for statCd (e.g. "Mean", "Maximum"). Null when the upstream gives none, as for instantaneous values.',
+        'Statistic name for statCd (e.g. "Mean", "Maximum"). Null when the upstream gives none, as for instantaneous values, and for field and peak series.',
       ),
     methodId: z
       .string()
@@ -239,13 +439,18 @@ export const waterGetSeries = tool('water_get_series', {
       .string()
       .optional()
       .describe(
-        'DuckDB table name in the canvas holding all records. Present when canvas_id is present. Use as the FROM target in water_dataframe_query SQL.',
+        'DuckDB table name in the canvas holding all records. Present when canvas_id is present. Use as the FROM target in water_dataframe_query SQL. Its value column is DOUBLE (NULL for a no-data record) and date_time keeps the site-local text; every table but a daily one ends with time_utc, the UTC instant as fixed-width text ending in Z that sorts chronologically — compare it with now() as CAST(time_utc AS TIMESTAMPTZ).',
       ),
     otherSeries: z
       .array(
         z
           .object({
-            statCd: z.string().describe('USGS statistic code of this series (e.g. "00001").'),
+            statCd: z
+              .string()
+              .nullable()
+              .describe(
+                'USGS statistic code of this series (e.g. "00001"); null for a field or peak series.',
+              ),
             statName: z
               .string()
               .nullable()
@@ -268,7 +473,7 @@ export const waterGetSeries = tool('water_get_series', {
           .describe('One series returned for this query that was not selected.'),
       )
       .describe(
-        'Every other statistic × method series returned for this query, a series with no records in the range included (recordCount 0), ordered by statistic code, then first observation — re-request one with its statCd and methodId. Empty when the query produced a single series.',
+        'Every other statistic × method series returned for this query, a series with no records in the range included (recordCount 0), ordered by statistic code, then first observation — re-request one with its statCd and methodId (methodId alone for a field or peak series). Empty when the query produced a single series.',
       ),
   }),
 
@@ -279,7 +484,7 @@ export const waterGetSeries = tool('water_get_series', {
         parameterCd: z.string().describe('Parameter code queried.'),
         startDate: z.string().describe('Start date applied (YYYY-MM-DD).'),
         endDate: z.string().describe('End date applied (YYYY-MM-DD).'),
-        seriesType: z.enum(['daily', 'instantaneous']).describe('Series type used.'),
+        seriesType: z.enum(SERIES_TYPES).describe('Series type used.'),
         statCd: z.string().optional().describe('Statistic code requested, if any.'),
         methodId: z.string().optional().describe('Method ID requested, if any.'),
       })
@@ -310,7 +515,7 @@ export const waterGetSeries = tool('water_get_series', {
       code: JsonRpcErrorCode.NotFound,
       when: 'The site and parameter combination has no data in the requested date range.',
       recovery:
-        'Read the site’s record bounds with water_get_site_data_catalog (beginDate/endDate on each series row) and request a range inside them, or use seriesType="instantaneous" for recent data.',
+        'Read the site’s record bounds with water_get_site_data_catalog (beginDate/endDate on each series row) and request a range inside them, or use seriesType="instantaneous" for recent data, seriesType="field" for values measured by hand (such as a well with no continuous sensor), or seriesType="peak" for annual peaks.',
     },
     {
       reason: 'invalid_date_range',
@@ -331,6 +536,13 @@ export const waterGetSeries = tool('water_get_series', {
       when: 'statCd names a daily statistic but seriesType is "instantaneous", whose values carry only statistic "00000". Raised before any upstream request.',
       recovery:
         'Omit statCd for an instantaneous series, or set seriesType to "daily" to select a daily statistic.',
+    },
+    {
+      reason: 'stat_cd_for_field_or_peak',
+      code: JsonRpcErrorCode.ValidationError,
+      when: 'statCd is set but seriesType is "field" or "peak", whose series carry no statistic. Raised before any upstream request.',
+      recovery:
+        'Omit statCd for a field or peak series; pick among a site’s field or peak series with methodId instead.',
     },
     {
       reason: 'method_not_found',
@@ -415,6 +627,13 @@ export const waterGetSeries = tool('water_get_series', {
         ? INSTANTANEOUS_STAT_CD
         : requestedStatCd;
     const methodId = optionalText(input.methodId);
+    // Checked ahead of the statCd format: no statCd, well-formed or not, selects a statless series.
+    if (statCd && isStatless(input.seriesType)) {
+      throw ctx.fail(
+        'stat_cd_for_field_or_peak',
+        `statCd "${statCd}" was given, but seriesType "${input.seriesType}" series carry no statistic.`,
+      );
+    }
     if (statCd && !/^\d{5}$/.test(statCd)) {
       throw ctx.fail('invalid_stat_cd', `statCd "${statCd}" is not a 5-digit USGS statistic code.`);
     }
@@ -451,7 +670,7 @@ export const waterGetSeries = tool('water_get_series', {
       operation: 'water_get_series',
       signal: ctx.signal,
     };
-    let seriesList: NwisTimeSeries[];
+    let seriesList: ObservedSeries[];
     try {
       seriesList = await getSeries(
         {
@@ -478,14 +697,14 @@ export const waterGetSeries = tool('water_get_series', {
         .map(describeSeries)
         .join('; ');
       const numericNote = NUMERIC_METHOD_ID.test(methodId)
-        ? ' Numeric NWIS method IDs match no series: methodId takes a 32-character time-series ID, such as the ones this error lists.'
+        ? ` Numeric NWIS method IDs match no series: methodId takes ${input.seriesType === 'field' ? 'a field-measurement series ID (a hyphenated UUID)' : 'a 32-character time-series ID'}, such as the ones this error lists.`
         : '';
       throw ctx.fail(
         'method_not_found',
         `No series with methodId "${methodId}"${statCd ? ` and statCd ${statCd}` : ''} was returned for site ${input.site} parameter ${input.parameterCd} (${input.seriesType}) over ${input.startDate} to ${input.endDate}.${numericNote}`,
         {
           recovery: {
-            hint: `Re-request with one of these (pass its statCd and methodId), or omit methodId to get the method with the most records: ${available}.`,
+            hint: `Re-request with one of these (pass its ${reRequestInputs(input.seriesType)}), or omit methodId to get the method with the most records: ${available}.`,
           },
         },
       );
@@ -563,19 +782,6 @@ export const waterGetSeries = tool('water_get_series', {
     if (canvas && totalRecords > SPILLOVER_THRESHOLD) {
       instance ??= await canvas.acquire(undefined, ctx);
 
-      // Build rows suitable for canvas. A record the upstream reported as no data stages as NULL,
-      // so SQL aggregates skip it instead of meeting an empty string.
-      const rows = ts.values.map((v: NwisValueRecord) => ({
-        date_time: v.dateTime,
-        value: v.value === '' ? null : v.value,
-        qualifiers: v.qualifiers.join(','),
-        site_number: ts.siteNumber,
-        parameter_cd: ts.parameterCd,
-        unit_code: ts.unitCode,
-        stat_cd: ts.statCd,
-        method_id: ts.methodId,
-      }));
-
       // The name carries every dimension that changes the staged rows. registerTable is DROP +
       // CREATE, so a name that collapsed a site's daily and instantaneous series — different
       // quantities, identical columns — would replace one with the other and still report success.
@@ -592,7 +798,7 @@ export const waterGetSeries = tool('water_get_series', {
           'water_series',
           sanitizeIdentifierToken(input.site),
           sanitizeIdentifierToken(input.parameterCd),
-          input.seriesType === 'daily' ? 'dv' : 'iv',
+          SERIES_TYPE_TOKENS[input.seriesType],
           sanitizeIdentifierToken(input.startDate.replaceAll('-', '')),
           sanitizeIdentifierToken(input.endDate.replaceAll('-', '')),
           ...(selectionMade ? [shortHash({ statCd: ts.statCd, methodId: ts.methodId }, 7)] : []),
@@ -601,7 +807,8 @@ export const waterGetSeries = tool('water_get_series', {
 
       const spillResult = await spillover({
         canvas: instance,
-        source: rows,
+        source: stagedRows(ts, input.seriesType),
+        schema: STAGED_COLUMNS[input.seriesType],
         tableName,
         previewChars: PREVIEW_CHARS,
         signal: ctx.signal,
@@ -671,15 +878,15 @@ export const waterGetSeries = tool('water_get_series', {
       `### ${result.siteName} (${result.siteNumber})`,
       `**Parameter:** ${result.parameterName} (${result.parameterCd}) | **Unit:** ${result.unitCode}`,
       `**Series type:** ${result.seriesType} | **Total records:** ${result.totalRecords}`,
-      `**Statistic:** ${result.statName ?? 'unnamed'} (statCd ${result.statCd}) | **Method:** ${result.methodDescription ?? '(no description)'} | **Method ID:** ${result.methodId ?? 'none'}`,
+      `**Statistic:** ${statisticLabel(result)} | **Method:** ${result.methodDescription ?? '(no description)'} | **Method ID:** ${result.methodId ?? 'none'}`,
     ];
 
     if (result.otherSeries.length > 0) {
       lines.push(
-        `**Other series for this query** (re-request with statCd and methodId): ${result.otherSeries
+        `**Other series for this query** (re-request with ${reRequestInputs(result.seriesType)}): ${result.otherSeries
           .map(
             (s) =>
-              `${s.statName ?? 'unnamed'} (statCd ${s.statCd}), ${s.methodDescription ?? '(no description)'} (methodId ${s.methodId ?? 'none'}), ${s.recordCount} records`,
+              `${statisticLabel(s)}, ${s.methodDescription ?? '(no description)'} (methodId ${s.methodId ?? 'none'}), ${s.recordCount} records`,
           )
           .join('; ')}`,
       );
@@ -707,8 +914,8 @@ export const waterGetSeries = tool('water_get_series', {
       const qualifier = v.qualifiers.length > 0 ? ` [${v.qualifiers.join(',')}]` : '';
       lines.push(
         v.value === ''
-          ? `- ${v.dateTime}: no data${qualifier}`
-          : `- ${v.dateTime}: **${v.value}** ${result.unitCode}${qualifier}`,
+          ? `- ${v.dateTime}: no data${qualifier}${recordDetails(v)}`
+          : `- ${v.dateTime}: **${v.value}** ${result.unitCode}${qualifier}${recordDetails(v)}`,
       );
     }
 

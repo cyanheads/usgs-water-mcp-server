@@ -1,14 +1,19 @@
 /**
  * @fileoverview Find USGS monitoring sites by geographic filter (bbox, state, county, HUC),
  * site type, and parameter availability, each row carrying the time of its newest matching
- * observation. Results are paged inline through limit/offset, capped at 500 per page; when the
- * match set exceeds that cap and a DataCanvas provider is enabled, the full set is staged to a
- * canvas table for gap-free retrieval via SQL.
+ * observation. Results are paged inline through limit/offset, 25 per page by default and 500 at
+ * most; when the match set exceeds 500 sites and a DataCanvas provider is enabled, the full set is
+ * staged to a canvas table for gap-free retrieval via SQL.
  * @module mcp-server/tools/definitions/water-find-sites.tool
  */
 
 import { tool, z } from '@cyanheads/mcp-ts-core';
-import { CanvasIdSchema, type CanvasInstance } from '@cyanheads/mcp-ts-core/canvas';
+import {
+  CanvasIdSchema,
+  type CanvasInstance,
+  type ColumnSchema,
+  type ColumnType,
+} from '@cyanheads/mcp-ts-core/canvas';
 import { JsonRpcErrorCode } from '@cyanheads/mcp-ts-core/errors';
 import { acquireCanvas } from '@/services/canvas/acquire-canvas.js';
 import { getCanvas } from '@/services/canvas/canvas-accessor.js';
@@ -33,8 +38,43 @@ import {
 import { startRequest } from '@/services/waterdata/water-data-client.js';
 import { classifyWaterDataFailure } from '@/services/waterdata/water-data-errors.js';
 
-/** Maximum sites returned inline in a single response. Prevents token overflows on broad queries. */
+/**
+ * Maximum sites returned inline in a single response, and the match-set size past which the full
+ * set stages to DataCanvas.
+ */
 const SITE_CAP = 500;
+
+/** Sites per page when the caller sets no limit. A site row runs about 215–300 bytes per surface. */
+const DEFAULT_LIMIT = 25;
+
+/**
+ * Columns of the staged site table, in order, with their declared types. Declared rather than
+ * sniffed from the first rows: a sample of whole numbers (a state's contributing areas, a basic-mode
+ * longitude) types a column BIGINT, which query rows return as strings and which truncates a later
+ * fraction, and a column null throughout the sample (every expanded-only field in basic mode) types
+ * VARCHAR. last_observed_at stays the UTC ISO 8601 string the inline rows carry.
+ */
+const SITE_TABLE_COLUMNS = {
+  site_number: 'VARCHAR',
+  site_name: 'VARCHAR',
+  site_type: 'VARCHAR',
+  latitude: 'DOUBLE',
+  longitude: 'DOUBLE',
+  huc_cd: 'VARCHAR',
+  state_cd: 'VARCHAR',
+  county_cd: 'VARCHAR',
+  drainage_area: 'DOUBLE',
+  altitude: 'DOUBLE',
+  contributing_area: 'DOUBLE',
+  last_observed_at: 'VARCHAR',
+} as const satisfies Record<string, ColumnType>;
+
+const SITE_TABLE_SCHEMA: ColumnSchema[] = Object.entries(SITE_TABLE_COLUMNS).map(
+  ([name, type]) => ({ name, type }),
+);
+
+/** One staged site row — keyed exactly by the declared columns. */
+type SiteTableRow = Record<keyof typeof SITE_TABLE_COLUMNS, string | number | null>;
 
 /**
  * Exactly one geographic scope per call. The OGC collections would take several at once, or none
@@ -45,7 +85,7 @@ const MAJOR_FILTERS = ['bbox', 'stateCd', 'countyCd', 'huc'] as const;
 
 export const waterFindSites = tool('water_find_sites', {
   description:
-    'Find USGS water monitoring sites by bounding box, state, county, or HUC watershed code, filtered by site type and parameter availability. Returns site numbers, names, coordinates, types, altitude, the UTC time each site last reported (lastObservedAt), and (in expanded mode) drainage area. Call this first — water_get_readings, water_get_series, and water_get_conditions all require a site number. Supply exactly one major filter — bbox, stateCd, countyCd, or huc; siteType, parameterCd, hasDataTypeCd, and observedWithin only narrow within it and cannot stand alone. parameterCd and hasDataTypeCd match sites that have ever reported, discontinued ones included; set observedWithin to keep only sites reporting now. Page through matches with limit/offset (500 per page); truncated=true means matches remain after the returned window and upstreamTotal holds the full count. When the match set exceeds 500 and DataCanvas is enabled, the complete set also stages to a canvas (canvas_id/table_name) — inspect it with water_dataframe_describe, then retrieve it with water_dataframe_query.',
+    'Find USGS water monitoring sites by bounding box, state, county, or HUC watershed code, filtered by site type and parameter availability. Returns site numbers, names, coordinates, types, altitude, the UTC time each site last reported (lastObservedAt), and (in expanded mode) drainage area. Call this first — water_get_readings, water_get_series, and water_get_conditions all require a site number. Supply exactly one major filter — bbox, stateCd, countyCd, or huc; siteType, parameterCd, hasDataTypeCd, and observedWithin only narrow within it and cannot stand alone. parameterCd and hasDataTypeCd match sites that have ever reported, discontinued ones included; set observedWithin to keep only sites reporting now. Page through matches with limit/offset (default 25 per page, at most 500); truncated=true means matches remain after the returned window and upstreamTotal holds the full count. When the match set exceeds 500 and DataCanvas is enabled, the complete set also stages to a canvas (canvas_id/table_name) — inspect it with water_dataframe_describe, then retrieve it with water_dataframe_query.',
   annotations: { readOnlyHint: true, idempotentHint: true, openWorldHint: true },
   input: z.object({
     bbox: BboxSchema.optional().describe(
@@ -76,7 +116,7 @@ export const waterFindSites = tool('water_find_sites', {
         'Require sites that have ever reported data of this type: "iv" (instantaneous, continuous record; "uv" and "rt" are aliases), "dv" (daily values), "gw" (groundwater-level field measurements), "pk" (annual peaks). No other code has a source. Comma-separate multiple types. A discontinued site still matches — read lastObservedAt, or set observedWithin to keep only sites reporting now.',
       ),
     observedWithin: PeriodSchema.optional().describe(
-      'ISO 8601 duration ending now, the form water_get_readings period takes (e.g. "P7D", "PT6H", "P1Y"). Keeps only sites whose lastObservedAt falls inside it — sites reporting now, not discontinued ones. Counts the series parameterCd and hasDataTypeCd select, or any continuous, daily, or field-measurement series when both are omitted. Daily values and field measurements carry a date only and daily values publish a day or two late, so a window under "P3D" can drop a site that reports daily values only.',
+      'ISO 8601 duration ending now, the form water_get_readings period takes (e.g. "P7D", "PT6H", "P1Y"). Keeps only sites whose lastObservedAt falls inside it — sites reporting now, not discontinued ones. Counts the series parameterCd and hasDataTypeCd select, or any continuous, daily, or field-measurement series when both are omitted. Daily values carry a date only, as does a field measurement or peak with no recorded time of day, and daily values publish a day or two late, so a window under "P3D" can drop a site that reports daily values only. A site last observed by a field measurement or peak is kept by its date, so its lastObservedAt can fall up to a day before the window starts.',
     ),
     siteOutput: z
       .enum(['basic', 'expanded'])
@@ -89,9 +129,9 @@ export const waterFindSites = tool('water_find_sites', {
       .int()
       .min(1)
       .max(SITE_CAP)
-      .default(SITE_CAP)
+      .default(DEFAULT_LIMIT)
       .describe(
-        `Maximum sites to return inline, 1–${SITE_CAP}. Default ${SITE_CAP} (the inline cap).`,
+        `Maximum sites to return inline, 1–${SITE_CAP}. Default ${DEFAULT_LIMIT}; pass up to ${SITE_CAP} for a larger page.`,
       ),
     offset: z
       .number()
@@ -99,10 +139,10 @@ export const waterFindSites = tool('water_find_sites', {
       .min(0)
       .default(0)
       .describe(
-        'Number of matching sites to skip before returning results. Page through matches beyond the inline cap by advancing offset by limit. Default 0.',
+        'Number of matching sites to skip before returning results. Page through the match set by advancing offset by limit. Default 0.',
       ),
     canvas_id: CanvasIdSchema.optional().describe(
-      'Canvas ID from a prior call to add this match set as a table on an existing canvas rather than creating a new one. Each distinct filter set gets its own table name, so re-running the identical query replaces its own table while a different query adds another alongside it. Applies only when the match set exceeds the inline cap and DataCanvas is enabled. Omit to start a fresh canvas.',
+      `Canvas ID from a prior call to add this match set as a table on an existing canvas rather than creating a new one. Each distinct filter set gets its own table name, so re-running the identical query replaces its own table while a different query adds another alongside it. Applies only when the match set exceeds ${SITE_CAP} sites and DataCanvas is enabled. Omit to start a fresh canvas.`,
     ),
   }),
   output: z.object({
@@ -165,13 +205,13 @@ export const waterFindSites = tool('water_find_sites', {
               .string()
               .nullable()
               .describe(
-                'UTC time (ISO 8601) of the newest observation among this site’s series that match parameterCd and hasDataTypeCd — any continuous, daily, or field-measurement series when both are omitted. A daily value, field measurement, or peak carries a date only and counts from 00:00 UTC on it. A time years in the past marks a discontinued site. Null when the site has no matching series, or none with a recorded time.',
+                'UTC time (ISO 8601) of the newest observation among this site’s series that match parameterCd and hasDataTypeCd — any continuous, daily, or field-measurement series when both are omitted. A field measurement or peak counts from its recorded time of day; a daily value, or a field measurement or peak with no recorded time of day, carries a date only and counts from 00:00 UTC on it. A time years in the past marks a discontinued site. Null when the site has no matching series, or none with a recorded time.',
               ),
           })
           .describe('A USGS monitoring site with location, type, and when it last reported.'),
       )
       .describe(
-        'The requested window of matching USGS monitoring sites — the slice starting at offset, at most limit long (500 max). upstreamTotal holds the full match count; canvas_id/table_name point to the staged full set when it exceeded the cap and DataCanvas is enabled.',
+        'The requested window of matching USGS monitoring sites — the slice starting at offset, at most limit long (limit defaults to 25, 500 max). upstreamTotal holds the full match count; canvas_id/table_name point to the staged full set when it exceeded 500 sites and DataCanvas is enabled.',
       ),
     total: z
       .number()
@@ -182,7 +222,7 @@ export const waterFindSites = tool('water_find_sites', {
     truncated: z
       .boolean()
       .describe(
-        'True when matches remain after the returned window (offset + total < upstreamTotal) — false on the last page, and false for a window starting past the end of the match set, where the notice names the valid offset range instead. Advance offset by limit for the next page, narrow filters (add bbox, countyCd, huc, siteType, parameterCd, hasDataTypeCd, or observedWithin), or when canvas_id is present read the staged set with water_dataframe_describe then water_dataframe_query.',
+        'True when matches remain after the returned window (offset + total < upstreamTotal) — false on the last page, and false for a window starting past the end of the match set, where the notice names the valid offset range instead. Advance offset by limit (default 25, at most 500) for the next page, narrow filters (add bbox, countyCd, huc, siteType, parameterCd, hasDataTypeCd, or observedWithin), or when canvas_id is present read the staged set with water_dataframe_describe then water_dataframe_query.',
       ),
     upstreamTotal: z
       .number()
@@ -194,7 +234,7 @@ export const waterFindSites = tool('water_find_sites', {
       .string()
       .optional()
       .describe(
-        'Canvas ID for the DataCanvas holding the full, uncapped match set. Present only when the match set exceeded the 500-site cap and DataCanvas is enabled. Pass to water_dataframe_describe then water_dataframe_query to retrieve sites beyond the inline cap.',
+        'Canvas ID for the DataCanvas holding the full, uncapped match set. Present only when the match set exceeded 500 sites and DataCanvas is enabled. Pass to water_dataframe_describe then water_dataframe_query to retrieve every match with SQL.',
       ),
     table_name: z
       .string()
@@ -422,21 +462,23 @@ export const waterFindSites = tool('water_find_sites', {
       );
       const handle = await instance.registerTable(
         table,
-        sites.map((s) => ({
-          site_number: s.siteNumber,
-          site_name: s.siteName,
-          site_type: s.siteType,
-          latitude: s.latitude,
-          longitude: s.longitude,
-          huc_cd: s.hucCd ?? null,
-          state_cd: s.stateCd ?? null,
-          county_cd: s.countyCd ?? null,
-          drainage_area: s.drainageArea ?? null,
-          altitude: s.altitude ?? null,
-          contributing_area: s.contributingArea ?? null,
-          last_observed_at: s.lastObservedAt,
-        })),
-        { signal: ctx.signal },
+        sites.map(
+          (s): SiteTableRow => ({
+            site_number: s.siteNumber,
+            site_name: s.siteName,
+            site_type: s.siteType,
+            latitude: s.latitude,
+            longitude: s.longitude,
+            huc_cd: s.hucCd ?? null,
+            state_cd: s.stateCd ?? null,
+            county_cd: s.countyCd ?? null,
+            drainage_area: s.drainageArea ?? null,
+            altitude: s.altitude ?? null,
+            contributing_area: s.contributingArea ?? null,
+            last_observed_at: s.lastObservedAt,
+          }),
+        ),
+        { schema: SITE_TABLE_SCHEMA, signal: ctx.signal },
       );
       canvasId = instance.canvasId;
       tableName = handle.tableName;
@@ -444,6 +486,8 @@ export const waterFindSites = tool('water_find_sites', {
 
     const narrowingAdvice =
       'Add bbox, countyCd, huc, siteType, parameterCd, hasDataTypeCd, or observedWithin filters to narrow the query.';
+    const nextPage = truncated ? ' Advance offset by limit for the next page.' : '';
+    const pageRange = `sites ${input.offset + 1} to ${input.offset + page.length} of ${upstreamTotal}`;
     const notices: string[] = [];
     if (page.length === 0) {
       // Distinct from no_sites_found: the filters matched upstream, the requested window just
@@ -453,17 +497,23 @@ export const waterFindSites = tool('water_find_sites', {
       );
     }
     if (canvasId) {
+      // The staged set is the whole match set while the page is whatever limit/offset selected, so
+      // the notice names that window and the per-page maximum, never a cap the page never reached.
+      const inline =
+        page.length > 0
+          ? `Showing ${pageRange} inline, at most ${SITE_CAP} per page.${nextPage}`
+          : `A page holds at most ${SITE_CAP} sites.`;
       notices.push(
-        `The full ${upstreamTotal}-site match set is staged on DataCanvas as table "${tableName}" — use water_dataframe_describe to inspect its columns, then water_dataframe_query to retrieve every match with SQL (canvas_id "${canvasId}"). Inline results are capped at ${SITE_CAP}.`,
+        `The full ${upstreamTotal}-site match set is staged on DataCanvas as table "${tableName}" — use water_dataframe_describe to inspect its columns, then water_dataframe_query to retrieve every match with SQL (canvas_id "${canvasId}"). ${inline}`,
       );
     } else if (truncated) {
       // Name whichever bound actually cut the page: the inline cap, or the caller's own window.
       // "Result capped at 500 of 4220" would misreport a limit: 5 call, and would leave a caller
-      // paging at offset 600 with default limit unable to tell which 500 they were handed.
+      // paging at offset 600 with limit 500 unable to tell which 500 they were handed.
       notices.push(
         exceedsCap && input.limit === SITE_CAP && input.offset === 0
           ? `Result capped at ${SITE_CAP} of ${upstreamTotal} matching sites. ${narrowingAdvice}`
-          : `Showing sites ${input.offset + 1} to ${input.offset + page.length} of ${upstreamTotal} matches. Advance offset by limit for the next page.${exceedsCap ? ` ${narrowingAdvice}` : ''}`,
+          : `Showing ${pageRange} matches.${nextPage}${exceedsCap ? ` ${narrowingAdvice}` : ''}`,
       );
     }
     // A canvas_id the caller supplied that no staging used: without this the response is
@@ -472,7 +522,7 @@ export const waterFindSites = tool('water_find_sites', {
       notices.push(
         exceedsCap
           ? `DataCanvas is not enabled on this server, so the match set was not staged and canvas "${input.canvas_id}" went unused.`
-          : `The ${upstreamTotal}-site match set fits within the ${SITE_CAP}-site inline cap, so it was returned inline and nothing was staged on canvas "${input.canvas_id}".`,
+          : `Only a match set over ${SITE_CAP} sites stages to DataCanvas, so nothing was staged on canvas "${input.canvas_id}" for these ${upstreamTotal} matches${truncated ? '; page through them with limit and offset' : ''}.`,
       );
     }
     ctx.enrich({ filters: appliedFilters });

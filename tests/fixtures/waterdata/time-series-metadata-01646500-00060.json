@@ -1,0 +1,176 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "2cf409b0d9694c01828f5d4ff14586a5",
+        "unit_of_measure": "ft^3/s",
+        "parameter_name": "Discharge",
+        "parameter_code": "00060",
+        "statistic_id": "00003",
+        "last_modified": "2026-11-23T05:56:49.508928",
+        "begin": "1930-03-01T05:00:00+00:00",
+        "end": "2026-11-22T05:00:00+00:00",
+        "computation_period_identifier": "Daily",
+        "computation_identifier": "Mean",
+        "thresholds": [],
+        "sublocation_identifier": null,
+        "primary": "Primary",
+        "monitoring_location_id": "USGS-01646500",
+        "web_description": null,
+        "parameter_description": "Discharge, cubic feet per second",
+        "parent_time_series_id": "66a4e3fb8abe42fcb0942b5c0fe98f68",
+        "data_gap_interval": null,
+        "statistics_begin": null
+      },
+      "id": "2cf409b0d9694c01828f5d4ff14586a5",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "51a7ecee083843328f6609518990e022",
+        "unit_of_measure": "ft^3/s",
+        "parameter_name": "Discharge",
+        "parameter_code": "00060",
+        "statistic_id": null,
+        "last_modified": "2026-11-10T18:31:58.570468",
+        "begin": "1931-04-03T05:00:00+00:00",
+        "end": "2026-05-25T04:00:00+00:00",
+        "computation_period_identifier": "Water Year",
+        "computation_identifier": "Max At Event Time",
+        "thresholds": [
+          {
+            "Name": "Highest since 1889-01-01",
+            "Type": "ThresholdAbove",
+            "Periods": [
+              {
+                "EndTime": "1936-03-19T00:00:00.0000000-05:00",
+                "StartTime": "1889-01-01T00:00:00.0000000-05:00",
+                "AppliedTime": "2019-06-21T00:22:04.7726781Z",
+                "SuppressData": false,
+                "ReferenceValue": 484000
+              }
+            ],
+            "Severity": 0,
+            "Description": "Highest possible flood value for period based on local observations - min value above which a higher flood would have been detected for the period",
+            "DisplayColor": "#0000CC",
+            "ReferenceCode": "Lower perception threshold - Highest for period",
+            "ProcessingOrder": "Suppression"
+          }
+        ],
+        "sublocation_identifier": null,
+        "primary": "Primary",
+        "monitoring_location_id": "USGS-01646500",
+        "web_description": null,
+        "parameter_description": "Discharge, cubic feet per second",
+        "parent_time_series_id": "66a4e3fb8abe42fcb0942b5c0fe98f68",
+        "data_gap_interval": null,
+        "statistics_begin": null
+      },
+      "id": "51a7ecee083843328f6609518990e022",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "66a4e3fb8abe42fcb0942b5c0fe98f68",
+        "unit_of_measure": "ft^3/s",
+        "parameter_name": "Discharge",
+        "parameter_code": "00060",
+        "statistic_id": "00011",
+        "last_modified": "2026-11-23T07:57:05.570826",
+        "begin": "1972-06-09T05:00:00+00:00",
+        "end": "2026-11-23T07:50:00+00:00",
+        "computation_period_identifier": "Points",
+        "computation_identifier": "Instantaneous",
+        "thresholds": [
+          {
+            "Name": "Begin low flow measurements",
+            "Type": "None",
+            "Periods": [
+              {
+                "EndTime": "9999-12-31T23:59:59.9999999+00:00",
+                "StartTime": "2025-06-16T00:00:00.0000000-05:00",
+                "AppliedTime": "2025-06-20T16:02:17.2082799Z",
+                "SuppressData": false,
+                "ReferenceValue": 2000,
+                "SecondaryReferenceValue": 2500
+              }
+            ],
+            "Severity": 0,
+            "Description": "NWISWeb reference line displayed to WSC level users",
+            "DisplayColor": "#009933",
+            "ReferenceCode": "NWISWeb ref level - WSC",
+            "ProcessingOrder": "Normal"
+          },
+          {
+            "Name": "Base discharge",
+            "Type": "ThresholdAbove",
+            "Periods": [
+              {
+                "EndTime": "9999-12-31T23:59:59.9999999+00:00",
+                "Comments": "Base discharge from adaps",
+                "StartTime": "2016-10-01T00:00:00.0000000-05:00",
+                "AppliedTime": "2017-11-24T19:12:15.0109953Z",
+                "SuppressData": false,
+                "ReferenceValue": 45000,
+                "SecondaryReferenceValue": 45000
+              }
+            ],
+            "Severity": 0,
+            "Description": "Unspecified threshold value",
+            "DisplayColor": "#f20aee",
+            "ReferenceCode": "AQUARIUS only",
+            "ProcessingOrder": "Suppression"
+          }
+        ],
+        "sublocation_identifier": null,
+        "primary": "Primary",
+        "monitoring_location_id": "USGS-01646500",
+        "web_description": null,
+        "parameter_description": "Discharge, cubic feet per second",
+        "parent_time_series_id": "8a83eb3a3cbc4087b0c201cf07c0c76d",
+        "data_gap_interval": "PT1H15M",
+        "statistics_begin": "1981"
+      },
+      "id": "66a4e3fb8abe42fcb0942b5c0fe98f68",
+      "geometry": null
+    }
+  ],
+  "numberReturned": 3,
+  "links": [
+    {
+      "type": "application/geo+json",
+      "rel": "self",
+      "title": "This document as GeoJSON",
+      "href": "https://api.waterdata.usgs.gov/ogcapi/v1/collections/time-series-metadata/items?f=json&monitoring_location_id=USGS-01646500&parameter_code=00060&skipGeometry=true&limit=1000"
+    },
+    {
+      "rel": "alternate",
+      "type": "application/ld+json",
+      "title": "This document as RDF (JSON-LD)",
+      "href": "https://api.waterdata.usgs.gov/ogcapi/v1/collections/time-series-metadata/items?f=jsonld&monitoring_location_id=USGS-01646500&parameter_code=00060&skipGeometry=true&limit=1000"
+    },
+    {
+      "type": "text/html",
+      "rel": "alternate",
+      "title": "This document as HTML",
+      "href": "https://api.waterdata.usgs.gov/ogcapi/v1/collections/time-series-metadata/items?f=html&monitoring_location_id=USGS-01646500&parameter_code=00060&skipGeometry=true&limit=1000"
+    },
+    {
+      "type": "text/csv; charset=utf-8",
+      "rel": "alternate",
+      "title": "This document as CSV",
+      "href": "https://api.waterdata.usgs.gov/ogcapi/v1/collections/time-series-metadata/items?f=csv&monitoring_location_id=USGS-01646500&parameter_code=00060&skipGeometry=true&limit=1000"
+    },
+    {
+      "type": "application/json",
+      "title": "Time series metadata",
+      "rel": "collection",
+      "href": "https://api.waterdata.usgs.gov/ogcapi/v1/collections/time-series-metadata"
+    }
+  ],
+  "timeStamp": "2026-11-23T14:55:03.407520Z"
+}

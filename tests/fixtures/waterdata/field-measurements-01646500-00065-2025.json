@@ -1,0 +1,430 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "field_measurements_series_id": "69cf03cd-7795-4b55-9550-ef69dd8fe9c1",
+        "monitoring_location_id": "USGS-01646500",
+        "parameter_code": "00065",
+        "time": "2025-07-30",
+        "time_of_day": "13:11:00+00:00",
+        "month": 7,
+        "day": 30,
+        "value": "3.46",
+        "unit_of_measure": "ft",
+        "approval_status": "Approved",
+        "qualifier": null,
+        "observing_procedure": "Gage height, staff gage",
+        "measurement_rated": null,
+        "control_condition": "Clear",
+        "reading_type": "ReferencePrimary",
+        "sublocation_identifier": null
+      },
+      "id": "07be0d7e-2cf9-461b-a2ae-d9a5934703fb",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "field_measurements_series_id": "69cf03cd-7795-4b55-9550-ef69dd8fe9c1",
+        "monitoring_location_id": "USGS-01646500",
+        "parameter_code": "00065",
+        "time": "2025-04-25",
+        "time_of_day": "13:35:00+00:00",
+        "month": 4,
+        "day": 25,
+        "value": "3.37",
+        "unit_of_measure": "ft",
+        "approval_status": "Approved",
+        "qualifier": null,
+        "observing_procedure": "Gage height, staff gage",
+        "measurement_rated": null,
+        "control_condition": "Clear",
+        "reading_type": "ReferencePrimary",
+        "sublocation_identifier": null
+      },
+      "id": "351ae6fa-9ea7-468c-add3-b4c8a7cdff73",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "field_measurements_series_id": "c141575d-9f1d-42ce-aa4a-0584728735ce",
+        "monitoring_location_id": "USGS-01646500",
+        "parameter_code": "00065",
+        "time": "2025-07-30",
+        "time_of_day": "15:05:34+00:00",
+        "month": 7,
+        "day": 30,
+        "value": "3.46",
+        "unit_of_measure": "ft",
+        "approval_status": "Approved",
+        "qualifier": null,
+        "observing_procedure": "None",
+        "measurement_rated": "Fair",
+        "control_condition": "Clear",
+        "reading_type": "MeanGageHeight",
+        "sublocation_identifier": null
+      },
+      "id": "49fed03a-24ec-4a95-a935-0324ec054aa7",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "field_measurements_series_id": "c141575d-9f1d-42ce-aa4a-0584728735ce",
+        "monitoring_location_id": "USGS-01646500",
+        "parameter_code": "00065",
+        "time": "2025-11-26",
+        "time_of_day": "17:14:00+00:00",
+        "month": 11,
+        "day": 26,
+        "value": "2.86",
+        "unit_of_measure": "ft",
+        "approval_status": "Approved",
+        "qualifier": null,
+        "observing_procedure": "None",
+        "measurement_rated": "Fair",
+        "control_condition": "Debris - Light",
+        "reading_type": "MeanGageHeight",
+        "sublocation_identifier": null
+      },
+      "id": "639797f2-eb1c-48cc-94bc-9ddafc8018ec",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "field_measurements_series_id": "c141575d-9f1d-42ce-aa4a-0584728735ce",
+        "monitoring_location_id": "USGS-01646500",
+        "parameter_code": "00065",
+        "time": "2025-02-27",
+        "time_of_day": "16:05:38+00:00",
+        "month": 2,
+        "day": 27,
+        "value": "3.85",
+        "unit_of_measure": "ft",
+        "approval_status": "Approved",
+        "qualifier": null,
+        "observing_procedure": "None",
+        "measurement_rated": "Fair",
+        "control_condition": "Clear",
+        "reading_type": "MeanGageHeight",
+        "sublocation_identifier": null
+      },
+      "id": "726ece22-2203-4cdf-b513-f7f50c71cda7",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "field_measurements_series_id": "c141575d-9f1d-42ce-aa4a-0584728735ce",
+        "monitoring_location_id": "USGS-01646500",
+        "parameter_code": "00065",
+        "time": "2025-05-30",
+        "time_of_day": "15:43:06+00:00",
+        "month": 5,
+        "day": 30,
+        "value": "6.79",
+        "unit_of_measure": "ft",
+        "approval_status": "Approved",
+        "qualifier": null,
+        "observing_procedure": "None",
+        "measurement_rated": "Fair",
+        "control_condition": "Clear",
+        "reading_type": "MeanGageHeight",
+        "sublocation_identifier": null
+      },
+      "id": "780967cf-4c68-435f-804f-33afe9ff14ab",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "field_measurements_series_id": "69cf03cd-7795-4b55-9550-ef69dd8fe9c1",
+        "monitoring_location_id": "USGS-01646500",
+        "parameter_code": "00065",
+        "time": "2025-11-26",
+        "time_of_day": "14:19:00+00:00",
+        "month": 11,
+        "day": 26,
+        "value": "2.86",
+        "unit_of_measure": "ft",
+        "approval_status": "Approved",
+        "qualifier": null,
+        "observing_procedure": "Gage height, staff gage",
+        "measurement_rated": null,
+        "control_condition": "Debris - Light",
+        "reading_type": "ReferencePrimary",
+        "sublocation_identifier": null
+      },
+      "id": "8ca0f9f3-cbcd-44cc-a0eb-93c59672d935",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "field_measurements_series_id": "69cf03cd-7795-4b55-9550-ef69dd8fe9c1",
+        "monitoring_location_id": "USGS-01646500",
+        "parameter_code": "00065",
+        "time": "2025-11-26",
+        "time_of_day": "14:11:00+00:00",
+        "month": 11,
+        "day": 26,
+        "value": "2.86",
+        "unit_of_measure": "ft",
+        "approval_status": "Approved",
+        "qualifier": null,
+        "observing_procedure": "Gage height, staff gage",
+        "measurement_rated": null,
+        "control_condition": "Debris - Light",
+        "reading_type": "ReferencePrimary",
+        "sublocation_identifier": null
+      },
+      "id": "908a7ffc-f94a-4381-9b7a-0e40f9f08a4b",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "field_measurements_series_id": "69cf03cd-7795-4b55-9550-ef69dd8fe9c1",
+        "monitoring_location_id": "USGS-01646500",
+        "parameter_code": "00065",
+        "time": "2025-05-30",
+        "time_of_day": "13:13:00+00:00",
+        "month": 5,
+        "day": 30,
+        "value": "6.73",
+        "unit_of_measure": "ft",
+        "approval_status": "Approved",
+        "qualifier": null,
+        "observing_procedure": "Gage height, staff gage",
+        "measurement_rated": null,
+        "control_condition": "Clear",
+        "reading_type": "ReferencePrimary",
+        "sublocation_identifier": null
+      },
+      "id": "97f7fa75-b74f-43f9-8854-9d22d5850d6c",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "field_measurements_series_id": "69cf03cd-7795-4b55-9550-ef69dd8fe9c1",
+        "monitoring_location_id": "USGS-01646500",
+        "parameter_code": "00065",
+        "time": "2025-09-05",
+        "time_of_day": "13:06:00+00:00",
+        "month": 9,
+        "day": 5,
+        "value": "2.73",
+        "unit_of_measure": "ft",
+        "approval_status": "Approved",
+        "qualifier": null,
+        "observing_procedure": "Gage height, staff gage",
+        "measurement_rated": null,
+        "control_condition": "Debris - Light",
+        "reading_type": "ReferencePrimary",
+        "sublocation_identifier": null
+      },
+      "id": "a0bb3f87-7ca9-4180-9553-df6347e5c4ce",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "field_measurements_series_id": "c141575d-9f1d-42ce-aa4a-0584728735ce",
+        "monitoring_location_id": "USGS-01646500",
+        "parameter_code": "00065",
+        "time": "2025-05-15",
+        "time_of_day": "15:18:02+00:00",
+        "month": 5,
+        "day": 15,
+        "value": "10.93",
+        "unit_of_measure": "ft",
+        "approval_status": "Approved",
+        "qualifier": null,
+        "observing_procedure": "None",
+        "measurement_rated": "Poor",
+        "control_condition": "Unspecifed",
+        "reading_type": "MeanGageHeight",
+        "sublocation_identifier": null
+      },
+      "id": "ac4dc9a5-1118-4947-aaa4-fa7a2ec7016e",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "field_measurements_series_id": "69cf03cd-7795-4b55-9550-ef69dd8fe9c1",
+        "monitoring_location_id": "USGS-01646500",
+        "parameter_code": "00065",
+        "time": "2025-05-30",
+        "time_of_day": "13:05:00+00:00",
+        "month": 5,
+        "day": 30,
+        "value": "6.72",
+        "unit_of_measure": "ft",
+        "approval_status": "Approved",
+        "qualifier": null,
+        "observing_procedure": "Gage height, staff gage",
+        "measurement_rated": null,
+        "control_condition": "Clear",
+        "reading_type": "ReferencePrimary",
+        "sublocation_identifier": null
+      },
+      "id": "c8a8703b-9817-4c3e-9a83-0bd74a8f3799",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "field_measurements_series_id": "69cf03cd-7795-4b55-9550-ef69dd8fe9c1",
+        "monitoring_location_id": "USGS-01646500",
+        "parameter_code": "00065",
+        "time": "2025-01-14",
+        "time_of_day": "15:30:00+00:00",
+        "month": 1,
+        "day": 14,
+        "value": "3.09",
+        "unit_of_measure": "ft",
+        "approval_status": "Approved",
+        "qualifier": null,
+        "observing_procedure": "Gage height, staff gage",
+        "measurement_rated": null,
+        "control_condition": "Ice - Cover",
+        "reading_type": "ReferencePrimary",
+        "sublocation_identifier": null
+      },
+      "id": "ca469dd4-0670-4c03-9437-43548971ef50",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "field_measurements_series_id": "c141575d-9f1d-42ce-aa4a-0584728735ce",
+        "monitoring_location_id": "USGS-01646500",
+        "parameter_code": "00065",
+        "time": "2025-09-05",
+        "time_of_day": "14:08:14+00:00",
+        "month": 9,
+        "day": 5,
+        "value": "2.73",
+        "unit_of_measure": "ft",
+        "approval_status": "Approved",
+        "qualifier": null,
+        "observing_procedure": "None",
+        "measurement_rated": "Poor",
+        "control_condition": "Debris - Light",
+        "reading_type": "MeanGageHeight",
+        "sublocation_identifier": null
+      },
+      "id": "e3fdac41-ecdf-48d3-8abd-a1eaaab3e976",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "field_measurements_series_id": "69cf03cd-7795-4b55-9550-ef69dd8fe9c1",
+        "monitoring_location_id": "USGS-01646500",
+        "parameter_code": "00065",
+        "time": "2025-02-27",
+        "time_of_day": "13:51:00+00:00",
+        "month": 2,
+        "day": 27,
+        "value": "3.84",
+        "unit_of_measure": "ft",
+        "approval_status": "Approved",
+        "qualifier": null,
+        "observing_procedure": "Gage height, staff gage",
+        "measurement_rated": null,
+        "control_condition": "Clear",
+        "reading_type": "ReferencePrimary",
+        "sublocation_identifier": null
+      },
+      "id": "e6979115-334d-4d43-a616-5374ac55c1de",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "field_measurements_series_id": "69cf03cd-7795-4b55-9550-ef69dd8fe9c1",
+        "monitoring_location_id": "USGS-01646500",
+        "parameter_code": "00065",
+        "time": "2025-01-14",
+        "time_of_day": "15:27:00+00:00",
+        "month": 1,
+        "day": 14,
+        "value": "3.09",
+        "unit_of_measure": "ft",
+        "approval_status": "Approved",
+        "qualifier": null,
+        "observing_procedure": "Gage height, staff gage",
+        "measurement_rated": null,
+        "control_condition": "Ice - Cover",
+        "reading_type": "ReferencePrimary",
+        "sublocation_identifier": null
+      },
+      "id": "ea4ad073-b24e-4ffb-a22f-13a228be7905",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "field_measurements_series_id": "69cf03cd-7795-4b55-9550-ef69dd8fe9c1",
+        "monitoring_location_id": "USGS-01646500",
+        "parameter_code": "00065",
+        "time": "2025-07-30",
+        "time_of_day": "13:03:00+00:00",
+        "month": 7,
+        "day": 30,
+        "value": "3.46",
+        "unit_of_measure": "ft",
+        "approval_status": "Approved",
+        "qualifier": null,
+        "observing_procedure": "Gage height, staff gage",
+        "measurement_rated": null,
+        "control_condition": "Clear",
+        "reading_type": "ReferencePrimary",
+        "sublocation_identifier": null
+      },
+      "id": "f4404162-2f9f-4d58-9980-14c22c24651c",
+      "geometry": null
+    }
+  ],
+  "numberReturned": 17,
+  "links": [
+    {
+      "type": "application/geo+json",
+      "rel": "self",
+      "title": "This document as GeoJSON",
+      "href": "https://api.waterdata.usgs.gov/ogcapi/v1/collections/field-measurements/items?f=json&monitoring_location_id=USGS-01646500&parameter_code=00065&time=2024-12-31%2F2026-01-01&skipGeometry=true&limit=10000&properties=field_measurements_series_id,monitoring_location_id,parameter_code,time,time_of_day,month,day,value,unit_of_measure,approval_status,qualifier,observing_procedure,measurement_rated,control_condition,reading_type,sublocation_identifier"
+    },
+    {
+      "rel": "alternate",
+      "type": "application/ld+json",
+      "title": "This document as RDF (JSON-LD)",
+      "href": "https://api.waterdata.usgs.gov/ogcapi/v1/collections/field-measurements/items?f=jsonld&monitoring_location_id=USGS-01646500&parameter_code=00065&time=2024-12-31%2F2026-01-01&skipGeometry=true&limit=10000&properties=field_measurements_series_id,monitoring_location_id,parameter_code,time,time_of_day,month,day,value,unit_of_measure,approval_status,qualifier,observing_procedure,measurement_rated,control_condition,reading_type,sublocation_identifier"
+    },
+    {
+      "type": "text/html",
+      "rel": "alternate",
+      "title": "This document as HTML",
+      "href": "https://api.waterdata.usgs.gov/ogcapi/v1/collections/field-measurements/items?f=html&monitoring_location_id=USGS-01646500&parameter_code=00065&time=2024-12-31%2F2026-01-01&skipGeometry=true&limit=10000&properties=field_measurements_series_id,monitoring_location_id,parameter_code,time,time_of_day,month,day,value,unit_of_measure,approval_status,qualifier,observing_procedure,measurement_rated,control_condition,reading_type,sublocation_identifier"
+    },
+    {
+      "type": "text/csv; charset=utf-8",
+      "rel": "alternate",
+      "title": "This document as CSV",
+      "href": "https://api.waterdata.usgs.gov/ogcapi/v1/collections/field-measurements/items?f=csv&monitoring_location_id=USGS-01646500&parameter_code=00065&time=2024-12-31%2F2026-01-01&skipGeometry=true&limit=10000&properties=field_measurements_series_id,monitoring_location_id,parameter_code,time,time_of_day,month,day,value,unit_of_measure,approval_status,qualifier,observing_procedure,measurement_rated,control_condition,reading_type,sublocation_identifier"
+    },
+    {
+      "type": "application/json",
+      "title": "Field measurements",
+      "rel": "collection",
+      "href": "https://api.waterdata.usgs.gov/ogcapi/v1/collections/field-measurements"
+    }
+  ],
+  "timeStamp": "2026-11-23T15:43:07.972250Z"
+}

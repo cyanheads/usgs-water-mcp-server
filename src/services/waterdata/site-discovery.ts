@@ -11,6 +11,7 @@ import { z } from '@cyanheads/mcp-ts-core';
 import { validationError } from '@cyanheads/mcp-ts-core/errors';
 import type { NwisSite } from '@/services/waterdata/types.js';
 import { cqlIn, cqlString } from './cql2-text.js';
+import { measuredInstant, TimeOfDaySchema } from './observation-series.js';
 import { resolveSites } from './site-resolver.js';
 import { stateFipsCode } from './state-fips-codes.js';
 import { failFast, fetchOgcItems, type WaterDataRequest } from './water-data-client.js';
@@ -18,9 +19,10 @@ import { failFast, fetchOgcItems, type WaterDataRequest } from './water-data-cli
 /** A site from {@link findSites}: its metadata plus the newest observation among the series that matched. */
 export interface DiscoveredSite extends NwisSite {
   /**
-   * UTC instant (ISO 8601) of the newest observation among the site's matching series. A daily
-   * value, field measurement, or peak carries a date only and counts from 00:00 UTC on it. Null
-   * when the site has no matching series, or none with a recorded time.
+   * UTC instant (ISO 8601) of the newest observation among the site's matching series. A field
+   * measurement or peak counts from its time of day when the upstream records one; a daily value,
+   * and a field measurement or peak without a time of day, carries a date only and counts from
+   * 00:00 UTC on it. Null when the site has no matching series, or none with a recorded time.
    */
   lastObservedAt: string | null;
 }
@@ -47,17 +49,25 @@ export interface FindSitesParams {
 /** The series a site's observations are read from. */
 type SeriesSource = 'continuous' | 'daily' | 'fieldMeasurements' | 'groundwaterLevels' | 'peaks';
 
-const SERIES_COLLECTIONS: Record<SeriesSource, { clause?: string; collection: string }> = {
-  continuous: { collection: 'latest-continuous' },
-  daily: { collection: 'latest-daily' },
-  fieldMeasurements: { collection: 'latest-field-measurements' },
+/**
+ * Each source's collection, its extra filter clause, and whether its rows carry `time_of_day` (the
+ * UTC clock time of a measurement whose `time` is a date); only those ask for it.
+ */
+const SERIES_COLLECTIONS: Record<
+  SeriesSource,
+  { clause?: string; collection: string; timeOfDay: boolean }
+> = {
+  continuous: { collection: 'latest-continuous', timeOfDay: false },
+  daily: { collection: 'latest-daily', timeOfDay: false },
+  fieldMeasurements: { collection: 'latest-field-measurements', timeOfDay: true },
   // Every groundwater-level procedure the collection lists reads "GW level, <method>" (steel tape,
   // electric tape, logs, airline, …); discharge and gage-height measurements carry other names.
   groundwaterLevels: {
     collection: 'latest-field-measurements',
     clause: "observing_procedure LIKE 'GW level%'",
+    timeOfDay: true,
   },
-  peaks: { collection: 'peaks' },
+  peaks: { collection: 'peaks', timeOfDay: true },
 };
 
 /**
@@ -130,6 +140,7 @@ const ObservationSchema = z.object({
     monitoring_location_id: z.string().min(1),
     // Instants on latest-continuous; dates on latest-daily, latest-field-measurements, and peaks.
     time: z.union([z.iso.date(), z.iso.datetime({ offset: true })]).nullish(),
+    time_of_day: TimeOfDaySchema.nullish(),
   }),
 });
 
@@ -216,9 +227,10 @@ function buildQuery(pairs: [string, string][], clauses: string[], properties: st
   return query;
 }
 
-/** A date-only time counts from 00:00 UTC on that date. */
-function toInstant(time: string): string {
-  return new Date(time.length === 10 ? `${time}T00:00:00Z` : time).toISOString();
+/** A date-only time counts from its time of day when the row has one, else from 00:00 UTC on it. */
+function toInstant(time: string, timeOfDay: string | null | undefined): string {
+  if (time.length !== 10) return new Date(time).toISOString();
+  return timeOfDay ? measuredInstant(time, timeOfDay) : new Date(`${time}T00:00:00Z`).toISOString();
 }
 
 /**
@@ -234,7 +246,7 @@ async function newestObservations(
 ): Promise<Map<string, string | null>> {
   const pages = await Promise.all(
     sources.map((source) => {
-      const { collection, clause } = SERIES_COLLECTIONS[source];
+      const { collection, clause, timeOfDay } = SERIES_COLLECTIONS[source];
       const pairs = [...scope.pairs];
       const clauses = [...scope.clauses];
       if (clause) clauses.push(clause);
@@ -245,14 +257,15 @@ async function newestObservations(
       }
       if (observedWithin) pairs.push(['time', observedWithin]);
       pairs.push(['skipGeometry', 'true']);
-      const query = buildQuery(pairs, clauses, ['monitoring_location_id', 'time']);
+      const properties = ['monitoring_location_id', 'time', ...(timeOfDay ? ['time_of_day'] : [])];
+      const query = buildQuery(pairs, clauses, properties);
       return fetchOgcItems(collection, query, ObservationSchema, request);
     }),
   );
   const newest = new Map<string, string | null>();
   for (const { properties } of pages.flat()) {
     const id = properties.monitoring_location_id;
-    const instant = properties.time ? toInstant(properties.time) : null;
+    const instant = properties.time ? toInstant(properties.time, properties.time_of_day) : null;
     const prior = newest.get(id);
     // ISO instants in UTC compare correctly as strings.
     if (prior === undefined || (instant !== null && (prior === null || instant > prior))) {

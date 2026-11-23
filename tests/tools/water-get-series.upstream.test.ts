@@ -128,6 +128,33 @@ const answeredFrom = (collection: string, body: Collection, query: QueryMatch = 
     { query },
   );
 
+/**
+ * Two sites measured by hand, as `monitoring-locations` lists them: well 400954074302001 (live
+ * capture) and well 450250105010901, whose one 1958 record states only the year.
+ */
+const MEASURED_SITES: Feature[] = [
+  {
+    id: 'USGS-400954074302001',
+    properties: {
+      monitoring_location_number: '400954074302001',
+      monitoring_location_name: '250790-- Imlaystown MW1',
+      agency_code: 'USGS',
+      time_zone_abbreviation: 'EST',
+      uses_daylight_savings: 'Y',
+    },
+  },
+  {
+    id: 'USGS-450250105010901',
+    properties: {
+      monitoring_location_number: '450250105010901',
+      monitoring_location_name: null,
+      agency_code: 'USGS',
+      time_zone_abbreviation: 'MST',
+      uses_daylight_savings: 'Y',
+    },
+  },
+];
+
 /** `monitoring-locations` for a number list: the captured locations it names. */
 const locationsRoute = () =>
   ogcRoute('monitoring-locations', (request) => {
@@ -136,12 +163,57 @@ const locationsRoute = () =>
     );
     return jsonResponse(
       ogcPage(
-        LOCATIONS.features.filter((f) =>
+        [...LOCATIONS.features, ...MEASURED_SITES].filter((f) =>
           asked.has(String(f.properties['monitoring_location_number'])),
         ),
       ),
     );
   });
+
+/** Field measurements of well 400954074302001 (six each of 72019, 62610, 62611) and their series. */
+const WELL_FIELD = capture('field-measurements-400954074302001.json');
+const WELL_FIELD_META = capture('field-measurements-metadata-400954074302001.json');
+/** 01646500 gage height measured in 2025, two reading types, and the site's field series. */
+const GAGE_FIELD = capture('field-measurements-01646500-00065-2025.json');
+const GAGE_FIELD_META = capture('field-measurements-metadata-01646500.json');
+/** Field records dated by year or year and month alone, across sites. */
+const PARTIAL_DATES = capture('field-measurements-day-null.json');
+/** The 2025 annual peak of 01646500 discharge, and its series (live capture, trimmed). */
+const PEAKS_2025 = capture('peaks-01646500-00060-wy2025.json');
+const PEAK_META: Collection = {
+  features: [
+    {
+      id: '51a7ecee083843328f6609518990e022',
+      properties: {
+        monitoring_location_id: 'USGS-01646500',
+        parameter_code: '00060',
+        statistic_id: null,
+        begin: '1931-04-03T05:00:00+00:00',
+        sublocation_identifier: null,
+        web_description: null,
+        unit_of_measure: 'ft^3/s',
+        parameter_name: 'Discharge',
+        computation_period_identifier: 'Water Year',
+        computation_identifier: 'Max At Event Time',
+      },
+    },
+  ],
+};
+
+/** The 72019 field series of well 400954074302001 and the 01646500 gage-height field series. */
+const FIELD_IDS = {
+  wellDepth: '4270d483-4184-4046-9d76-67ee60ca7a35',
+  staffGage: '69cf03cd-7795-4b55-9550-ef69dd8fe9c1',
+  meanGage: 'c141575d-9f1d-42ce-aa4a-0584728735ce',
+} as const;
+
+/** Every route a field call reads, answering from `rows` and `metadata`. */
+const fieldUpstream = (rows: Collection, metadata: Collection) => [
+  locationsRoute(),
+  answeredFrom('field-measurements-metadata', metadata),
+  answeredFrom('field-measurements', rows),
+  catalogRoute(),
+];
 
 const catalogRoute = () =>
   ogcRoute('parameter-codes', () =>
@@ -830,6 +902,204 @@ describe('water_get_series over captured Water Data responses', () => {
         expect(text).toContain('**Statistic:** Maximum (statCd 00001)');
         expect(text).toContain('- 2024-01-01T00:00:00.000: **8930** ft3/s [A]');
       });
+    });
+  });
+
+  describe('field measurements and annual peaks (#56)', () => {
+    const WELL_DEPTH = {
+      site: '400954074302001',
+      parameterCd: '72019',
+      startDate: '2000-01-01',
+      endDate: '2026-11-22',
+      seriesType: 'field',
+    } as const;
+    const GAGE_HEIGHT_2025 = {
+      site: '01646500',
+      parameterCd: '00065',
+      startDate: '2025-01-01',
+      endDate: '2025-12-31',
+      seriesType: 'field',
+    } as const;
+
+    it('returns a well’s six depth-to-water measurements, the last timed on the site clock, the first a bare date', async () => {
+      water.route(...fieldUpstream(WELL_FIELD, WELL_FIELD_META));
+      const { result, structured, text } = await series(WELL_DEPTH);
+
+      expect(result.isError).toBeFalsy();
+      expect(structured).toMatchObject({
+        siteNumber: '400954074302001',
+        parameterCd: '72019',
+        unitCode: 'ft',
+        seriesType: 'field',
+        statCd: null,
+        statName: null,
+        methodId: FIELD_IDS.wellDepth,
+        totalRecords: 6,
+        truncated: false,
+        otherSeries: [],
+      });
+      expect(structured.values[0]).toEqual({
+        dateTime: '2000-09-08',
+        value: '3.83',
+        qualifiers: ['A', 'Static'],
+        unknownDatePart: null,
+        observingProcedure: 'GW level, electric tape',
+        measurementRated: null,
+        controlCondition: null,
+      });
+      expect(structured.values.at(-1)).toEqual({
+        dateTime: '2026-08-05T09:15:00.000-04:00',
+        value: '4.43',
+        qualifiers: ['P', 'Static'],
+        unknownDatePart: null,
+        observingProcedure: 'GW level, calib electric tape',
+        measurementRated: null,
+        controlCondition: null,
+      });
+      expect(text).toContain('**Statistic:** none (statCd null)');
+      expect(text).toContain(
+        '- 2026-08-05T09:15:00.000-04:00: **4.43** ft [P,Static] (procedure: GW level, calib electric tape)',
+      );
+      expect(text).toContain(
+        '- 2000-09-08: **3.83** ft [A,Static] (procedure: GW level, electric tape)',
+      );
+      expect(collectionsSent()).toEqual([
+        'field-measurements',
+        'field-measurements-metadata',
+        'monitoring-locations',
+        'parameter-codes',
+      ]);
+    });
+
+    it('returns one gage-height field series, listing the other reading type, and round-trips each methodId', async () => {
+      water.route(...fieldUpstream(GAGE_FIELD, GAGE_FIELD_META));
+      const { structured, text } = await series(GAGE_HEIGHT_2025);
+
+      expect(structured).toMatchObject({
+        seriesType: 'field',
+        methodId: FIELD_IDS.staffGage,
+        methodDescription: '[ReferencePrimary]',
+        totalRecords: 11,
+        otherSeries: [
+          {
+            statCd: null,
+            statName: null,
+            methodId: FIELD_IDS.meanGage,
+            methodDescription: '[MeanGageHeight]',
+            recordCount: 6,
+          },
+        ],
+      });
+      expect(text).toContain(`[MeanGageHeight] (methodId ${FIELD_IDS.meanGage}), 6 records`);
+
+      for (const [methodId, count] of [
+        [FIELD_IDS.meanGage, 6],
+        [FIELD_IDS.staffGage, 11],
+      ] as const) {
+        const again = await series({ ...GAGE_HEIGHT_2025, methodId });
+        expect(again.structured).toMatchObject({ methodId, totalRecords: count });
+      }
+      // The mean gage height of a discharge measurement carries its rating and control condition.
+      const { structured: mean } = await series({
+        ...GAGE_HEIGHT_2025,
+        methodId: FIELD_IDS.meanGage,
+      });
+      expect(mean.values[0]).toMatchObject({
+        value: '3.85',
+        measurementRated: 'Fair',
+        controlCondition: 'Clear',
+      });
+    });
+
+    it('flags a field record whose month the upstream does not know', async () => {
+      water.route(
+        ...fieldUpstream(PARTIAL_DATES, {
+          features: [
+            {
+              id: '27f2d0da-556a-417f-94f7-8ebe6d390656',
+              properties: {
+                monitoring_location_id: 'USGS-450250105010901',
+                parameter_code: '62610',
+                parameter_name: 'Elevation, GW, NGVD29',
+                begin: '1958-01-01T00:00:00+00:00',
+                end: '1958-01-01T00:00:00+00:00',
+                reading_type: 'ReferencePrimary',
+                sublocation_identifier: null,
+              },
+            },
+          ],
+        }),
+      );
+      const { structured, text } = await series({
+        site: '450250105010901',
+        parameterCd: '62610',
+        startDate: '1958-01-01',
+        endDate: '1958-12-31',
+        seriesType: 'field',
+      });
+
+      expect(structured.values).toEqual([
+        expect.objectContaining({
+          dateTime: '1958-01-01',
+          value: '3664.00',
+          unknownDatePart: 'month',
+        }),
+      ]);
+      expect(text).toContain('(procedure: GW level, logs; month unknown)');
+    });
+
+    it('returns the 2025 annual peak of 01646500 discharge at its instant on the site clock', async () => {
+      water.route(
+        locationsRoute(),
+        answeredFrom('time-series-metadata', PEAK_META, {
+          computation_identifier: 'Max At Event Time',
+        }),
+        answeredFrom('peaks', PEAKS_2025),
+        catalogRoute(),
+      );
+      const { result, structured, text } = await series({
+        site: '01646500',
+        parameterCd: '00060',
+        startDate: '2025-01-01',
+        endDate: '2025-12-31',
+        seriesType: 'peak',
+      });
+
+      expect(result.isError).toBeFalsy();
+      expect(structured).toMatchObject({
+        seriesType: 'peak',
+        statCd: null,
+        methodId: '51a7ecee083843328f6609518990e022',
+        totalRecords: 1,
+      });
+      // Upstream time 2025-05-16 with time_of_day 02:45 UTC: the evening of the 15th in Eastern time.
+      expect(structured.values).toEqual([
+        {
+          dateTime: '2025-05-15T22:45:00.000-04:00',
+          value: '156000',
+          qualifiers: [],
+          unknownDatePart: null,
+          waterYear: 2025,
+          peakSince: null,
+        },
+      ]);
+      expect(text).toContain('- 2025-05-15T22:45:00.000-04:00: **156000** ft3/s (water year 2025)');
+    });
+
+    it('answers a daily request at a well with no daily series with a recovery naming field', async () => {
+      water.route(
+        locationsRoute(),
+        ogcRoute('daily', () => jsonResponse(ogcPage([]))),
+        ogcRoute('time-series-metadata', () => jsonResponse(ogcPage([]))),
+        catalogRoute(),
+        statisticCodesRoute(),
+      );
+      const { result, text } = await series({ ...WELL_DEPTH, seriesType: 'daily' });
+
+      expect(result.structuredContent).toMatchObject({
+        error: { code: JsonRpcErrorCode.NotFound, data: { reason: 'no_data_for_range' } },
+      });
+      expect(text).toContain('seriesType="field"');
     });
   });
 

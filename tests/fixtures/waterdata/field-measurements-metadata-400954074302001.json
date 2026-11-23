@@ -1,0 +1,90 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "04259d2d-3ea6-4962-9e4d-0edc55064631",
+        "reading_type": "ReferencePrimary",
+        "monitoring_location_id": "USGS-400954074302001",
+        "parameter_code": "62611",
+        "parameter_name": "Elevation, GW, NAVD88",
+        "parameter_description": "Groundwater level above NAVD 1988, feet",
+        "begin": "2000-09-08T12:00:00+00:00",
+        "end": "2026-08-05T13:15:00+00:00",
+        "last_modified": "2026-10-29T19:30:32.907108+00:00",
+        "sublocation_identifier": null
+      },
+      "id": "04259d2d-3ea6-4962-9e4d-0edc55064631",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "4270d483-4184-4046-9d76-67ee60ca7a35",
+        "reading_type": "ReferencePrimary",
+        "monitoring_location_id": "USGS-400954074302001",
+        "parameter_code": "72019",
+        "parameter_name": "Water level, depth LSD",
+        "parameter_description": "Depth to water level, feet below land surface",
+        "begin": "2000-09-08T12:00:00+00:00",
+        "end": "2026-08-05T13:15:00+00:00",
+        "last_modified": "2026-10-29T19:30:32.907108+00:00",
+        "sublocation_identifier": null
+      },
+      "id": "4270d483-4184-4046-9d76-67ee60ca7a35",
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "de41f517-3b8d-4bc3-bb57-2de690648a6b",
+        "reading_type": "ReferencePrimary",
+        "monitoring_location_id": "USGS-400954074302001",
+        "parameter_code": "62610",
+        "parameter_name": "Elevation, GW, NGVD29",
+        "parameter_description": "Groundwater level above NGVD 1929, feet",
+        "begin": "2000-09-08T12:00:00+00:00",
+        "end": "2026-08-05T13:15:00+00:00",
+        "last_modified": "2026-10-29T19:30:32.907108+00:00",
+        "sublocation_identifier": null
+      },
+      "id": "de41f517-3b8d-4bc3-bb57-2de690648a6b",
+      "geometry": null
+    }
+  ],
+  "numberReturned": 3,
+  "links": [
+    {
+      "type": "application/geo+json",
+      "rel": "self",
+      "title": "This document as GeoJSON",
+      "href": "https://api.waterdata.usgs.gov/ogcapi/v1/collections/field-measurements-metadata/items?f=json&monitoring_location_id=USGS-400954074302001&skipGeometry=true&limit=1000"
+    },
+    {
+      "rel": "alternate",
+      "type": "application/ld+json",
+      "title": "This document as RDF (JSON-LD)",
+      "href": "https://api.waterdata.usgs.gov/ogcapi/v1/collections/field-measurements-metadata/items?f=jsonld&monitoring_location_id=USGS-400954074302001&skipGeometry=true&limit=1000"
+    },
+    {
+      "type": "text/html",
+      "rel": "alternate",
+      "title": "This document as HTML",
+      "href": "https://api.waterdata.usgs.gov/ogcapi/v1/collections/field-measurements-metadata/items?f=html&monitoring_location_id=USGS-400954074302001&skipGeometry=true&limit=1000"
+    },
+    {
+      "type": "text/csv; charset=utf-8",
+      "rel": "alternate",
+      "title": "This document as CSV",
+      "href": "https://api.waterdata.usgs.gov/ogcapi/v1/collections/field-measurements-metadata/items?f=csv&monitoring_location_id=USGS-400954074302001&skipGeometry=true&limit=1000"
+    },
+    {
+      "type": "application/json",
+      "title": "Field measurements metadata",
+      "rel": "collection",
+      "href": "https://api.waterdata.usgs.gov/ogcapi/v1/collections/field-measurements-metadata"
+    }
+  ],
+  "timeStamp": "2026-11-23T14:53:13.403687Z"
+}

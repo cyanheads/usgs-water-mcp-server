@@ -1,18 +1,38 @@
 /**
  * @fileoverview Readings and series from the USGS Water Data OGC collections (`continuous`,
- * `daily`, `time-series-metadata`), the replacement for the WaterServices IV and DV readers.
- * Each function returns one {@link NwisTimeSeries} per statistic × method series, the shape the
- * tools consumed from the WaterServices reader. Every request a call makes — site resolution,
- * metadata, each page and chunk, and the waits on shared catalog reads — runs under the call's one
- * deadline, and the first failure stops the call's other requests.
+ * `daily`, `time-series-metadata`), the replacement for the WaterServices IV and DV readers, plus
+ * field measurements (`field-measurements`, `field-measurements-metadata`) and annual peaks
+ * (`peaks`). Daily and instantaneous reads return one {@link NwisTimeSeries} per statistic × method
+ * series, the shape the tools consumed from the WaterServices reader; field reads one
+ * {@link FieldSeries} per reading type, peak reads one {@link PeakSeries}. Every request a call
+ * makes — site resolution, metadata, each page and chunk, and the waits on shared catalog reads —
+ * runs under the call's one deadline, and the first failure stops the call's other requests.
  * @module services/waterdata/observations
  */
 
 import { z } from '@cyanheads/mcp-ts-core';
 import { timeout } from '@cyanheads/mcp-ts-core/errors';
-import type { NwisTimeSeries } from '@/services/waterdata/types.js';
+import type {
+  FieldSeries,
+  NwisTimeSeries,
+  NwisValueRecord,
+  ObservedSeries,
+  PeakSeries,
+  SeriesType,
+} from '@/services/waterdata/types.js';
 import { cqlIn } from './cql2-text.js';
-import { assembleSeries, type Observation, type SeriesMetadata } from './observation-series.js';
+import {
+  assembleFieldSeries,
+  assemblePeakSeries,
+  assembleSeries,
+  type FieldMeasurement,
+  type FieldSeriesMetadata,
+  type Observation,
+  PEAK_COMPUTATION,
+  type PeakMeasurement,
+  type SeriesMetadata,
+  TimeOfDaySchema,
+} from './observation-series.js';
 import { type CatalogParameter, getParameterCatalog } from './parameter-catalog.js';
 import { type SiteTimeZone, siteLocalDate, siteLocalDayStart } from './site-local-time.js';
 import { type ResolvedSite, resolveSites } from './site-resolver.js';
@@ -20,7 +40,9 @@ import { getStatisticNames } from './statistic-codes.js';
 import { failFast, fetchOgcItems, type WaterDataRequest } from './water-data-client.js';
 
 /** True when at least one record carries a value — a record reported as no data does not. */
-export function carriesValues(series: NwisTimeSeries | undefined): boolean {
+export function carriesValues(
+  series: { readonly values: readonly NwisValueRecord[] } | undefined,
+): boolean {
   return series?.values.some((v) => v.value !== '') ?? false;
 }
 
@@ -32,12 +54,14 @@ export interface GetReadingsParams {
 }
 
 export interface GetSeriesParams {
+  /** Last site-local day, `YYYY-MM-DD`. */
   endDate: string;
   parameterCd: string;
-  seriesType: 'daily' | 'instantaneous';
+  seriesType: SeriesType;
   site: string;
+  /** First site-local day, `YYYY-MM-DD`. */
   startDate: string;
-  /** Daily statistic code to keep (e.g. "00003"); daily series only. */
+  /** Daily statistic code to keep (e.g. "00003"); daily series only, ignored for the others. */
   statCd?: string;
 }
 
@@ -61,6 +85,21 @@ const OBSERVATION_PROPERTIES =
   'time_series_id,monitoring_location_id,parameter_code,statistic_id,time,value,approval_status,qualifier';
 const METADATA_PROPERTIES =
   'monitoring_location_id,parameter_code,statistic_id,begin,sublocation_identifier,web_description,unit_of_measure,parameter_name';
+const FIELD_PROPERTIES =
+  'field_measurements_series_id,monitoring_location_id,parameter_code,time,time_of_day,month,day,value,unit_of_measure,approval_status,qualifier,observing_procedure,measurement_rated,control_condition,reading_type,sublocation_identifier';
+const FIELD_METADATA_PROPERTIES =
+  'monitoring_location_id,parameter_code,parameter_description,reading_type,begin,sublocation_identifier';
+const PEAK_PROPERTIES =
+  'time_series_id,monitoring_location_id,parameter_code,time,time_of_day,water_year,month,day,value,unit_of_measure,qualifier,peak_since';
+
+const NullableText = z.string().nullish();
+const NullableInteger = z.number().int().nullish();
+// Rows carry an array of words; the OpenAPI document describes one string.
+const QualifierSchema = z.union([z.array(z.string()), z.string()]).nullish();
+
+function qualifierWords(qualifier: z.infer<typeof QualifierSchema>): string[] {
+  return typeof qualifier === 'string' ? [qualifier] : (qualifier ?? []);
+}
 
 function observationSchema(time: z.ZodType<string>) {
   return z.object({
@@ -68,14 +107,111 @@ function observationSchema(time: z.ZodType<string>) {
       time_series_id: z.string().min(1),
       monitoring_location_id: z.string(),
       parameter_code: z.string(),
-      statistic_id: z.string().nullish(),
+      statistic_id: NullableText,
       time,
-      value: z.string().nullish(),
-      approval_status: z.string().nullish(),
-      // Rows carry an array of words; the OpenAPI document describes one string.
-      qualifier: z.union([z.array(z.string()), z.string()]).nullish(),
+      value: NullableText,
+      approval_status: NullableText,
+      qualifier: QualifierSchema,
     }),
   });
+}
+
+/** What a `field-measurements` and a `peaks` row share: a UTC date, maybe a time of day, and a value. */
+const MeasurementSchema = z.object({
+  monitoring_location_id: z.string(),
+  parameter_code: z.string(),
+  time: z.iso.date(),
+  time_of_day: TimeOfDaySchema.nullish(),
+  month: NullableInteger,
+  day: NullableInteger,
+  value: NullableText,
+  unit_of_measure: NullableText,
+  qualifier: QualifierSchema,
+});
+
+const FieldMeasurementSchema = z.object({
+  properties: MeasurementSchema.extend({
+    field_measurements_series_id: z.string().min(1),
+    approval_status: NullableText,
+    observing_procedure: NullableText,
+    measurement_rated: NullableText,
+    control_condition: NullableText,
+    reading_type: NullableText,
+    sublocation_identifier: NullableText,
+  }),
+});
+
+const PeakSchema = z.object({
+  properties: MeasurementSchema.extend({
+    time_series_id: z.string().min(1),
+    water_year: NullableInteger,
+    peak_since: NullableInteger,
+  }),
+});
+
+const FieldMetadataSchema = z.object({
+  id: z.string().min(1),
+  properties: z.object({
+    monitoring_location_id: z.string(),
+    parameter_code: z.string(),
+    parameter_description: NullableText,
+    reading_type: NullableText,
+    begin: NullableText,
+    sublocation_identifier: NullableText,
+  }),
+});
+
+function toMeasurementRow(p: z.infer<typeof MeasurementSchema>) {
+  return {
+    monitoringLocationId: p.monitoring_location_id,
+    parameterCd: p.parameter_code,
+    date: p.time,
+    timeOfDay: p.time_of_day ?? null,
+    month: p.month ?? null,
+    day: p.day ?? null,
+    value: p.value ?? null,
+    unit: p.unit_of_measure ?? null,
+    qualifiers: qualifierWords(p.qualifier),
+  };
+}
+
+function toFieldMeasurement({
+  properties: p,
+}: z.infer<typeof FieldMeasurementSchema>): FieldMeasurement {
+  return {
+    ...toMeasurementRow(p),
+    seriesId: p.field_measurements_series_id,
+    approvalStatus: p.approval_status ?? null,
+    observingProcedure: p.observing_procedure ?? null,
+    measurementRated: p.measurement_rated ?? null,
+    controlCondition: p.control_condition ?? null,
+    readingType: p.reading_type ?? null,
+    sublocation: p.sublocation_identifier ?? null,
+  };
+}
+
+function toPeakMeasurement({ properties: p }: z.infer<typeof PeakSchema>): PeakMeasurement {
+  return {
+    ...toMeasurementRow(p),
+    seriesId: p.time_series_id,
+    waterYear: p.water_year ?? null,
+    peakSince: p.peak_since ?? null,
+  };
+}
+
+function toFieldMetadata({
+  id,
+  properties: p,
+}: z.infer<typeof FieldMetadataSchema>): FieldSeriesMetadata {
+  return {
+    id,
+    monitoringLocationId: p.monitoring_location_id,
+    parameterCd: p.parameter_code,
+    parameterName: p.parameter_description ?? null,
+    readingType: p.reading_type ?? null,
+    begin: p.begin ?? null,
+    sublocation: p.sublocation_identifier ?? null,
+  };
 }
 
 const ContinuousSchema = observationSchema(
@@ -109,7 +245,7 @@ function toObservation({ properties: p }: ObservationFeature): Observation {
     time: p.time,
     value: p.value ?? null,
     approvalStatus: p.approval_status ?? null,
-    qualifiers: typeof p.qualifier === 'string' ? [p.qualifier] : (p.qualifier ?? []),
+    qualifiers: qualifierWords(p.qualifier),
   };
 }
 
@@ -127,34 +263,49 @@ function toMetadata({ id, properties: p }: z.infer<typeof MetadataSchema>): Seri
   };
 }
 
+/** Every feature of one collection matching `filters`, without geometry, `properties` only. */
+function readItems<F extends z.ZodType>(
+  collection: string,
+  filters: Record<string, string>,
+  properties: string,
+  limit: string,
+  schema: F,
+  request: WaterDataRequest,
+): Promise<z.infer<F>[]> {
+  const query = new URLSearchParams({ ...filters, skipGeometry: 'true', properties, limit });
+  return fetchOgcItems(collection, query, schema, request);
+}
+
 async function readObservations(
   collection: 'continuous' | 'daily',
   filters: Record<string, string>,
   request: WaterDataRequest,
 ): Promise<Observation[]> {
-  const query = new URLSearchParams({
-    ...filters,
-    skipGeometry: 'true',
-    properties: OBSERVATION_PROPERTIES,
-    limit: OBSERVATION_PAGE_LIMIT,
-  });
   const schema = collection === 'daily' ? DailySchema : ContinuousSchema;
-  return (await fetchOgcItems(collection, query, schema, request)).map(toObservation);
+  const rows = await readItems(
+    collection,
+    filters,
+    OBSERVATION_PROPERTIES,
+    OBSERVATION_PAGE_LIMIT,
+    schema,
+    request,
+  );
+  return rows.map(toObservation);
 }
 
 async function readMetadata(
   filters: Record<string, string>,
   request: WaterDataRequest,
 ): Promise<SeriesMetadata[]> {
-  const query = new URLSearchParams({
-    ...filters,
-    skipGeometry: 'true',
-    properties: METADATA_PROPERTIES,
-    limit: METADATA_PAGE_LIMIT,
-  });
-  return (await fetchOgcItems('time-series-metadata', query, MetadataSchema, request)).map(
-    toMetadata,
+  const entries = await readItems(
+    'time-series-metadata',
+    filters,
+    METADATA_PROPERTIES,
+    METADATA_PAGE_LIMIT,
+    MetadataSchema,
+    request,
   );
+  return entries.map(toMetadata);
 }
 
 /**
@@ -186,11 +337,8 @@ function awaitShared<T>(load: Promise<T>, request: WaterDataRequest, what: strin
       clearTimeout(timer);
       signal?.removeEventListener('abort', onAbort);
     }
-    if (signal?.aborted) {
-      onAbort();
-      return;
-    }
-    signal?.addEventListener('abort', onAbort, { once: true });
+    // Observe the shared read before any early exit: this call may have started it, and a failure
+    // no caller is waiting on would otherwise surface as an unhandled rejection.
     load.then(
       (value) => {
         settle();
@@ -201,6 +349,11 @@ function awaitShared<T>(load: Promise<T>, request: WaterDataRequest, what: strin
         reject(error);
       },
     );
+    if (signal?.aborted) {
+      onAbort();
+      return;
+    }
+    signal?.addEventListener('abort', onAbort, { once: true });
   });
 }
 
@@ -227,7 +380,7 @@ async function parameterIndex(
 }
 
 /** `task` over `items`, at most `limit` at a time, results in item order; the first failure ends it. */
-async function mapConcurrent<T, R>(
+export async function mapConcurrent<T, R>(
   items: readonly T[],
   limit: number,
   task: (item: T) => Promise<R>,
@@ -351,78 +504,189 @@ export function getReadings(
   });
 }
 
+/** The query filters every series read of one site and parameter shares. */
+function siteFilters(site: ResolvedSite, parameterCd: string) {
+  return { monitoring_location_id: site.monitoringLocationId, parameter_code: parameterCd };
+}
+
+async function readDailySeries(
+  params: GetSeriesParams,
+  site: ResolvedSite,
+  request: WaterDataRequest,
+): Promise<NwisTimeSeries[]> {
+  const filters = siteFilters(site, params.parameterCd);
+  const daily = params.statCd ? { ...filters, statistic_id: params.statCd } : filters;
+  const [metadata, rows, parameters, statisticNames] = await Promise.all([
+    readMetadata({ ...daily, computation_period_identifier: 'Daily' }, request),
+    readObservations('daily', { ...daily, time: `${params.startDate}/${params.endDate}` }, request),
+    parameterIndex(request),
+    awaitShared(getStatisticNames(request.ctx), request, 'the statistic-code names'),
+  ]);
+  return assembleSeries(metadata, rows, {
+    seriesType: 'daily',
+    sites: new Map([[site.monitoringLocationId, site]]),
+    parameters,
+    statisticNames,
+  });
+}
+
+async function readInstantaneousSeries(
+  params: GetSeriesParams,
+  site: ResolvedSite,
+  request: WaterDataRequest,
+): Promise<NwisTimeSeries[]> {
+  const filters = siteFilters(site, params.parameterCd);
+  const readContinuous = async () => {
+    const metadata = await readMetadata(
+      { ...filters, computation_period_identifier: 'Points' },
+      request,
+    );
+    const [firstDay, lastDay] = continuousDays(
+      params.startDate,
+      params.endDate,
+      site.timeZone,
+      metadata,
+      Date.now(),
+    );
+    const windows = continuousWindows(firstDay, lastDay, site.timeZone);
+    const chunks = await mapConcurrent(windows, CHUNK_CONCURRENCY, (time) =>
+      readObservations('continuous', { ...filters, time }, request),
+    );
+    return { metadata, rows: chunks.flat() };
+  };
+  const [{ metadata, rows }, parameters] = await Promise.all([
+    readContinuous(),
+    parameterIndex(request),
+  ]);
+  return assembleSeries(metadata, rows, {
+    seriesType: 'instantaneous',
+    sites: new Map([[site.monitoringLocationId, site]]),
+    parameters,
+    statisticNames: NO_STATISTIC_NAMES,
+  });
+}
+
 /**
- * A daily or instantaneous series for one site and parameter over site-local days
- * `startDate`…`endDate`, one entry per statistic × method series (a series with nothing in the
- * range included, empty). Daily values come from one `daily` query, `statCd` keeping one
- * statistic. Instantaneous values come from `continuous` in {@link CHUNK_DAYS}-day chunks run in
- * parallel, read after the site's series metadata, whose first observation trims the range; the
- * range ends at today on the site's clock, and when the metadata lists no series only its last
- * {@link CHUNK_DAYS} days are read, in one request. A site that resolves to nothing yields no series.
+ * The `time` interval of a field-measurement or peak query covering site-local days
+ * `startDate`…`endDate`. The collections date a row by its UTC date, which can fall a day either
+ * side of the site-local one, so the interval reaches a day past each end — dates are inclusive —
+ * and assembly keeps the records on the site's own days.
+ */
+function measurementWindow(startDate: string, endDate: string): string {
+  return `${addDays(startDate, -1)}/${addDays(endDate, 1)}`;
+}
+
+async function readFieldSeries(
+  params: GetSeriesParams,
+  site: ResolvedSite,
+  request: WaterDataRequest,
+): Promise<FieldSeries[]> {
+  const filters = siteFilters(site, params.parameterCd);
+  const [metadata, rows, parameters] = await Promise.all([
+    readItems(
+      'field-measurements-metadata',
+      filters,
+      FIELD_METADATA_PROPERTIES,
+      METADATA_PAGE_LIMIT,
+      FieldMetadataSchema,
+      request,
+    ),
+    readItems(
+      'field-measurements',
+      { ...filters, time: measurementWindow(params.startDate, params.endDate) },
+      FIELD_PROPERTIES,
+      METADATA_PAGE_LIMIT,
+      FieldMeasurementSchema,
+      request,
+    ),
+    parameterIndex(request),
+  ]);
+  return assembleFieldSeries(metadata.map(toFieldMetadata), rows.map(toFieldMeasurement), {
+    days: [params.startDate, params.endDate],
+    sites: new Map([[site.monitoringLocationId, site]]),
+    parameters,
+  });
+}
+
+async function readPeakSeries(
+  params: GetSeriesParams,
+  site: ResolvedSite,
+  request: WaterDataRequest,
+): Promise<PeakSeries[]> {
+  const filters = siteFilters(site, params.parameterCd);
+  const [metadata, rows, parameters] = await Promise.all([
+    readMetadata({ ...filters, computation_identifier: PEAK_COMPUTATION }, request),
+    readItems(
+      'peaks',
+      { ...filters, time: measurementWindow(params.startDate, params.endDate) },
+      PEAK_PROPERTIES,
+      METADATA_PAGE_LIMIT,
+      PeakSchema,
+      request,
+    ),
+    parameterIndex(request),
+  ]);
+  return assemblePeakSeries(metadata, rows.map(toPeakMeasurement), {
+    days: [params.startDate, params.endDate],
+    sites: new Map([[site.monitoringLocationId, site]]),
+    parameters,
+  });
+}
+
+/**
+ * One site's series of one parameter over site-local days `startDate`…`endDate`, one entry per
+ * series (a series with nothing in the range included, empty). A site that resolves to nothing
+ * yields no series.
+ *
+ * - `daily`: one entry per statistic × method from one `daily` query, `statCd` keeping one
+ *   statistic.
+ * - `instantaneous`: one entry per method from `continuous` in {@link CHUNK_DAYS}-day chunks run in
+ *   parallel, read after the site's series metadata, whose first observation trims the range; the
+ *   range ends at today on the site's clock, and when the metadata lists no series only its last
+ *   {@link CHUNK_DAYS} days are read, in one request.
+ * - `field`: one entry per reading type from one `field-measurements` query beside
+ *   `field-measurements-metadata`.
+ * - `peak`: one entry per peak series from one `peaks` query beside the `time-series-metadata`
+ *   series computed {@link PEAK_COMPUTATION}.
+ *
+ * `statCd` applies to `daily` only. Each call also reads the parameter catalog, and a daily call
+ * the statistic names, when their caches are cold.
  *
  * @throws {McpError} whatever the Water Data client raises — `RateLimited`, `ConfigurationError`,
  * `ValidationError`, `ServiceUnavailable`, `Timeout` — and the caller's cancellation.
  */
 export function getSeries(
+  params: GetSeriesParams & { seriesType: 'daily' | 'instantaneous' },
+  request: WaterDataRequest,
+): Promise<NwisTimeSeries[]>;
+export function getSeries(
+  params: GetSeriesParams & { seriesType: 'field' },
+  request: WaterDataRequest,
+): Promise<FieldSeries[]>;
+export function getSeries(
+  params: GetSeriesParams & { seriesType: 'peak' },
+  request: WaterDataRequest,
+): Promise<PeakSeries[]>;
+export function getSeries(
   params: GetSeriesParams,
   request: WaterDataRequest,
-): Promise<NwisTimeSeries[]> {
-  return failFast(request, async (scoped) => {
+): Promise<ObservedSeries[]>;
+export function getSeries(
+  params: GetSeriesParams,
+  request: WaterDataRequest,
+): Promise<ObservedSeries[]> {
+  return failFast(request, async (scoped): Promise<ObservedSeries[]> => {
     const site = (await resolveSites([params.site], scoped)).get(params.site);
     if (!site) return [];
-    const sites = new Map([[site.monitoringLocationId, site]]);
-    const filters = {
-      monitoring_location_id: site.monitoringLocationId,
-      parameter_code: params.parameterCd,
-    };
-
-    if (params.seriesType === 'daily') {
-      const daily = params.statCd ? { ...filters, statistic_id: params.statCd } : filters;
-      const [metadata, rows, parameters, statisticNames] = await Promise.all([
-        readMetadata({ ...daily, computation_period_identifier: 'Daily' }, scoped),
-        readObservations(
-          'daily',
-          { ...daily, time: `${params.startDate}/${params.endDate}` },
-          scoped,
-        ),
-        parameterIndex(scoped),
-        awaitShared(getStatisticNames(scoped.ctx), scoped, 'the statistic-code names'),
-      ]);
-      return assembleSeries(metadata, rows, {
-        seriesType: 'daily',
-        sites,
-        parameters,
-        statisticNames,
-      });
+    switch (params.seriesType) {
+      case 'daily':
+        return readDailySeries(params, site, scoped);
+      case 'instantaneous':
+        return readInstantaneousSeries(params, site, scoped);
+      case 'field':
+        return readFieldSeries(params, site, scoped);
+      case 'peak':
+        return readPeakSeries(params, site, scoped);
     }
-
-    const readContinuous = async () => {
-      const metadata = await readMetadata(
-        { ...filters, computation_period_identifier: 'Points' },
-        scoped,
-      );
-      const [firstDay, lastDay] = continuousDays(
-        params.startDate,
-        params.endDate,
-        site.timeZone,
-        metadata,
-        Date.now(),
-      );
-      const windows = continuousWindows(firstDay, lastDay, site.timeZone);
-      const chunks = await mapConcurrent(windows, CHUNK_CONCURRENCY, (time) =>
-        readObservations('continuous', { ...filters, time }, scoped),
-      );
-      return { metadata, rows: chunks.flat() };
-    };
-    const [{ metadata, rows }, parameters] = await Promise.all([
-      readContinuous(),
-      parameterIndex(scoped),
-    ]);
-    return assembleSeries(metadata, rows, {
-      seriesType: 'instantaneous',
-      sites,
-      parameters,
-      statisticNames: NO_STATISTIC_NAMES,
-    });
   });
 }

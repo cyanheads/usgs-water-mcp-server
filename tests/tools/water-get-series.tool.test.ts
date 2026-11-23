@@ -19,7 +19,14 @@ import {
 import { createMockContext, getEnrichment, runToolContract } from '@cyanheads/mcp-ts-core/testing';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { waterGetSeries } from '@/mcp-server/tools/definitions/water-get-series.tool.js';
-import type { NwisTimeSeries } from '@/services/waterdata/types.js';
+import type {
+  FieldSeries,
+  FieldValueRecord,
+  NwisTimeSeries,
+  ObservedSeries,
+  PeakSeries,
+  PeakValueRecord,
+} from '@/services/waterdata/types.js';
 import { textContent } from '../helpers/content-block.js';
 import { captureError, contractError, declaredRecovery } from '../helpers/error-contract.js';
 import { createWaterDataFake, type WaterDataFake } from '../helpers/water-data-fake.js';
@@ -45,7 +52,13 @@ vi.mock('@cyanheads/mcp-ts-core/canvas', async (importOriginal) => {
   return { ...actual, spillover: vi.fn() };
 });
 
-import { CANVAS_IDENTIFIER_REGEX, spillover } from '@cyanheads/mcp-ts-core/canvas';
+import {
+  CANVAS_IDENTIFIER_REGEX,
+  CanvasRegistry,
+  DataCanvas,
+  DuckdbProvider,
+  spillover,
+} from '@cyanheads/mcp-ts-core/canvas';
 
 const mockSpillover = vi.mocked(spillover);
 
@@ -85,6 +98,52 @@ function makeSeries(count: number, overrides: Partial<NwisTimeSeries> = {}): Nwi
       qualifiers: ['A'],
     })),
     ...overrides,
+  };
+}
+
+/** A field series of 01646500 gage height for one reading type; `count` timed records by default. */
+function fieldSeries(
+  count: number,
+  methodId: string,
+  readingType: string,
+  values: FieldValueRecord[] = makeSeries(count).values.map((v) => ({
+    ...v,
+    unknownDatePart: null,
+    observingProcedure: 'None',
+    measurementRated: 'Fair',
+    controlCondition: null,
+  })),
+): FieldSeries {
+  return {
+    siteNumber: '01646500',
+    siteName: 'POTOMAC RIVER NEAR WASH, DC LITTLE FALLS PUMP STA',
+    parameterCd: '00065',
+    parameterName: 'Gage height, feet',
+    unitCode: 'ft',
+    seriesType: 'field',
+    statCd: null,
+    statName: null,
+    methodId,
+    methodDescription: `[${readingType}]`,
+    readingType,
+    values,
+  };
+}
+
+/** The annual-peak series of 01646500 discharge, holding `values`. */
+function peakSeries(values: PeakValueRecord[]): PeakSeries {
+  return {
+    siteNumber: '01646500',
+    siteName: 'POTOMAC RIVER NEAR WASH, DC LITTLE FALLS PUMP STA',
+    parameterCd: '00060',
+    parameterName: 'Discharge, cubic feet per second',
+    unitCode: 'ft3/s',
+    seriesType: 'peak',
+    statCd: null,
+    statName: null,
+    methodId: '51a7ecee083843328f6609518990e022',
+    methodDescription: null,
+    values,
   };
 }
 
@@ -888,8 +947,293 @@ describe('waterGetSeries', () => {
 
       const rows = spilledRows();
       expect(rows[0]).toMatchObject({ value: null, qualifiers: 'P,Ice' });
-      // A measured record keeps its value string.
-      expect(rows[1]?.['value']).toBe(series.values[1]?.value);
+      // A measured record stages its value as a number (#59).
+      expect(rows[1]?.['value']).toBe(5010);
+    });
+  });
+
+  describe('staged column types on a real DuckDB canvas (#59)', () => {
+    const DAY_MS = 86_400_000;
+    let canvas: DataCanvas;
+
+    beforeEach(async () => {
+      const provider = new DuckdbProvider({
+        defaultRowLimit: 10_000,
+        exportRootPath: '.canvas-exports',
+        memoryLimitMb: 128,
+        schemaSniffRows: 100,
+      });
+      const registry = new CanvasRegistry(
+        provider,
+        { absoluteCapMs: 600_000, maxCanvasesPerTenant: 10, sweeperIntervalMs: 0, ttlMs: 60_000 },
+        () => 0,
+      );
+      canvas = new DataCanvas(provider, registry);
+      mockCanvasInstance = canvas;
+      const actual = await vi.importActual<typeof import('@cyanheads/mcp-ts-core/canvas')>(
+        '@cyanheads/mcp-ts-core/canvas',
+      );
+      mockSpillover.mockImplementation(actual.spillover);
+    });
+
+    afterEach(async () => {
+      mockSpillover.mockReset();
+      await canvas.shutdown(createMockContext());
+    });
+
+    /** Daily records on consecutive calendar days from 2020-01-01, one per value. */
+    function dailyValues(values: readonly NwisTimeSeries['values'][number]['value'][]) {
+      return values.map((value, i) => ({
+        dateTime: `${new Date(Date.UTC(2020, 0, 1) + i * DAY_MS).toISOString().slice(0, 10)}T00:00:00.000`,
+        value,
+        qualifiers: ['A'],
+      }));
+    }
+
+    /** A site-local timestamp for a UTC instant at a fixed offset in whole hours (e.g. -5). */
+    function localAt(instantMs: number, offsetHours: number): string {
+      const sign = offsetHours < 0 ? '-' : '+';
+      const hh = String(Math.abs(offsetHours)).padStart(2, '0');
+      return `${new Date(instantMs + offsetHours * 3_600_000).toISOString().slice(0, 23)}${sign}${hh}:00`;
+    }
+
+    /** Stage `series` through the handler; the staged table must exist on the returned canvas. */
+    async function stage(series: ObservedSeries, overrides: Record<string, unknown> = {}) {
+      mockGetSeries.mockResolvedValue([series]);
+      const ctx = createMockContext({ errors: waterGetSeries.errors });
+      const result = await waterGetSeries.handler(
+        waterGetSeries.input.parse({ ...SPILLING_INPUT, ...overrides }),
+        ctx,
+      );
+      if (!result.canvas_id || !result.table_name) throw new Error('The series did not stage.');
+      const instance = await canvas.acquire(result.canvas_id, ctx);
+      const query = async (sql: string) => (await instance.query(sql)).rows;
+      const [info] = await instance.describe();
+      return {
+        result,
+        table: result.table_name,
+        query,
+        columns: info?.columns.map(({ name, type }) => ({ name, type })),
+      };
+    }
+
+    const BASE_COLUMNS = [
+      { name: 'date_time', type: 'VARCHAR' },
+      { name: 'value', type: 'DOUBLE' },
+      { name: 'qualifiers', type: 'VARCHAR' },
+      { name: 'site_number', type: 'VARCHAR' },
+      { name: 'parameter_cd', type: 'VARCHAR' },
+      { name: 'unit_code', type: 'VARCHAR' },
+      { name: 'stat_cd', type: 'VARCHAR' },
+      { name: 'method_id', type: 'VARCHAR' },
+    ];
+
+    it('stages a daily value as DOUBLE, so MAX and MIN compare numbers, with no time_utc column', async () => {
+      const values = dailyValues(Array.from({ length: 800 }, (_, i) => String(5000 + i)));
+      values[10] = { ...values[10]!, value: '99900' };
+      values[20] = { ...values[20]!, value: '1000' };
+      values[30] = { ...values[30]!, value: '426000' };
+      values[40] = { ...values[40]!, value: '121' };
+      values[50] = { ...values[50]!, value: '', qualifiers: ['P', 'Eqp'] };
+      const { result, table, query, columns } = await stage(makeSeries(0, { values }));
+
+      expect(columns).toEqual(BASE_COLUMNS);
+      expect(await query(`SELECT MAX(value) AS max, MIN(value) AS min FROM ${table}`)).toEqual([
+        { max: 426000, min: 121 },
+      ]);
+      expect(await query(`SELECT value FROM ${table} WHERE qualifiers = 'P,Eqp'`)).toEqual([
+        { value: null },
+      ]);
+      // The inline records keep the upstream's value strings.
+      expect(result.values.length).toBeGreaterThan(0);
+      for (const v of result.values) expect(typeof v.value).toBe('string');
+    });
+
+    it('stages every value unchanged when the first 100 are integers and later ones fractional', async () => {
+      const raw = Array.from({ length: 800 }, (_, i) =>
+        i < 100 ? String(5000 + i) : ['3.5', '0.47', '1234.56', '0.1'][i % 4]!,
+      );
+      const { table, query } = await stage(makeSeries(0, { values: dailyValues(raw) }));
+
+      const staged = await query(`SELECT value FROM ${table} ORDER BY date_time`);
+      expect(staged.map((row) => row['value'])).toEqual(raw.map(Number));
+    });
+
+    it('adds time_utc as the last column of an instantaneous table, ordering the repeated fall-back hour', async () => {
+      // 01646500 is on Eastern time: EDT (-04:00) until 2026-11-01T06:00Z, EST (-05:00) after.
+      const fallBackMs = Date.UTC(2026, 10, 1, 6);
+      const startMs = Date.UTC(2026, 9, 31);
+      const values = Array.from({ length: 800 }, (_, i) => {
+        const at = startMs + i * 300_000;
+        return {
+          dateTime: localAt(at, at < fallBackMs ? -4 : -5),
+          value: String(3000 + i),
+          qualifiers: ['P'],
+        };
+      });
+      const noDataIndex = values.findIndex((v) => v.dateTime === '2026-11-01T01:05:00.000-05:00');
+      values[noDataIndex] = { ...values[noDataIndex]!, value: '', qualifiers: ['P', 'Eqp'] };
+      const { table, query, columns } = await stage(
+        makeSeries(0, { statCd: '00000', statName: null, values }),
+        { seriesType: 'instantaneous' },
+      );
+
+      expect(columns).toEqual([...BASE_COLUMNS, { name: 'time_utc', type: 'VARCHAR' }]);
+      const window = await query(
+        `SELECT date_time FROM ${table} WHERE substr(date_time, 1, 10) = '2026-11-01' AND substr(date_time, 12, 5) BETWEEN '01:00' AND '01:10' ORDER BY time_utc`,
+      );
+      expect(window.map((row) => row['date_time'])).toEqual([
+        '2026-11-01T01:00:00.000-04:00',
+        '2026-11-01T01:05:00.000-04:00',
+        '2026-11-01T01:10:00.000-04:00',
+        '2026-11-01T01:00:00.000-05:00',
+        '2026-11-01T01:05:00.000-05:00',
+        '2026-11-01T01:10:00.000-05:00',
+      ]);
+      // A no-data record still carries its UTC instant.
+      expect(await query(`SELECT value, time_utc FROM ${table} WHERE value IS NULL`)).toEqual([
+        { value: null, time_utc: '2026-11-01T06:05:00.000Z' },
+      ]);
+    });
+
+    it('answers a now()-relative window through CAST(time_utc AS TIMESTAMPTZ) whatever the session zone', async () => {
+      const nowMs = Date.now();
+      const minuteMs = 60_000;
+      // One reading a minute, the newest a minute old and the oldest 800 minutes old.
+      const values = Array.from({ length: 800 }, (_, i) => ({
+        dateTime: localAt(nowMs - (800 - i) * minuteMs, -5),
+        value: String(100 + i),
+        qualifiers: ['P'],
+      }));
+      const tenHoursOld = values[800 - 600]!.dateTime;
+      const sixHoursOld = values[800 - 360]!.dateTime;
+      const { table, query } = await stage(
+        makeSeries(0, { statCd: '00000', statName: null, values }),
+        { seriesType: 'instantaneous' },
+      );
+
+      const inWindow = (column: string) =>
+        query(
+          `SELECT CAST(COUNT(*) AS INTEGER) AS n, CAST(COUNT(*) FILTER (WHERE date_time = '${tenHoursOld}') AS INTEGER) AS ten, CAST(COUNT(*) FILTER (WHERE date_time = '${sixHoursOld}') AS INTEGER) AS six FROM ${table} WHERE ${column} > now() - INTERVAL 8 HOUR`,
+        );
+      const [utc] = await inWindow('CAST(time_utc AS TIMESTAMPTZ)');
+      expect(utc).toMatchObject({ ten: 0, six: 1 });
+
+      // On a canvas whose session zone is not UTC, the same window read as a zone-less TIMESTAMP is
+      // shifted by the zone's offset — the error the text column with its trailing Z rules out.
+      const [zone] = await query(
+        "SELECT CAST(TIMESTAMPTZ '2026-01-15 12:00:00+00' AS VARCHAR) AS rendered",
+      );
+      if (!String(zone?.['rendered']).endsWith('+00')) {
+        const [naive] = await inWindow('CAST(time_utc AS TIMESTAMP)');
+        expect(naive?.['n']).not.toBe(utc?.['n']);
+      }
+    });
+
+    it('stages a field series with its record columns, time_utc NULL for a date-only record (#56)', async () => {
+      const values: FieldValueRecord[] = dailyValues(
+        Array.from({ length: 800 }, (_, i) => String(100 + i / 4)),
+      ).map((v, i) => ({
+        ...v,
+        // Every other record carries a time of day; the rest are bare dates.
+        dateTime:
+          i % 2 === 0 ? `${v.dateTime.slice(0, 10)}T09:15:00.000-04:00` : v.dateTime.slice(0, 10),
+        unknownDatePart: i === 1 ? 'month' : null,
+        observingProcedure: i === 1 ? null : 'GW level, calib electric tape',
+        measurementRated: i === 2 ? 'Good' : null,
+        controlCondition: i % 2 === 0 ? 'Clear' : null,
+      }));
+      const { table, query, columns } = await stage(
+        fieldSeries(0, 'c141575d-9f1d-42ce-aa4a-0584728735ce', 'MeanGageHeight', values),
+        { seriesType: 'field' },
+      );
+
+      expect(columns).toEqual([
+        ...BASE_COLUMNS,
+        { name: 'observing_procedure', type: 'VARCHAR' },
+        { name: 'measurement_rated', type: 'VARCHAR' },
+        { name: 'control_condition', type: 'VARCHAR' },
+        { name: 'unknown_date_part', type: 'VARCHAR' },
+        { name: 'time_utc', type: 'VARCHAR' },
+      ]);
+      expect(
+        await query(
+          `SELECT date_time, value, stat_cd, observing_procedure, measurement_rated, control_condition, unknown_date_part, time_utc FROM ${table} ORDER BY date_time LIMIT 3`,
+        ),
+      ).toEqual([
+        {
+          date_time: '2020-01-01T09:15:00.000-04:00',
+          value: 100,
+          stat_cd: null,
+          observing_procedure: 'GW level, calib electric tape',
+          measurement_rated: null,
+          control_condition: 'Clear',
+          unknown_date_part: null,
+          time_utc: '2020-01-01T13:15:00.000Z',
+        },
+        {
+          date_time: '2020-01-02',
+          value: 100.25,
+          stat_cd: null,
+          observing_procedure: null,
+          measurement_rated: null,
+          control_condition: null,
+          unknown_date_part: 'month',
+          time_utc: null,
+        },
+        {
+          date_time: '2020-01-03T09:15:00.000-04:00',
+          value: 100.5,
+          stat_cd: null,
+          observing_procedure: 'GW level, calib electric tape',
+          measurement_rated: 'Good',
+          control_condition: 'Clear',
+          unknown_date_part: null,
+          time_utc: '2020-01-03T13:15:00.000Z',
+        },
+      ]);
+    });
+
+    it('stages a peak series with water_year and peak_since as integers (#56)', async () => {
+      const values: PeakValueRecord[] = Array.from({ length: 800 }, (_, i) => ({
+        dateTime: i === 0 ? '1226-01-01' : `${1226 + i}-05-15T22:45:00.000-04:00`,
+        value: String(40000 + i),
+        qualifiers: i === 0 ? ['MONTHUNKNOWN'] : [],
+        unknownDatePart: i === 0 ? 'month' : null,
+        waterYear: 1226 + i,
+        peakSince: i === 1 ? 1100 : null,
+      }));
+      const { table, query, columns } = await stage(peakSeries(values), { seriesType: 'peak' });
+
+      expect(columns).toEqual([
+        ...BASE_COLUMNS,
+        { name: 'water_year', type: 'INTEGER' },
+        { name: 'peak_since', type: 'INTEGER' },
+        { name: 'unknown_date_part', type: 'VARCHAR' },
+        { name: 'time_utc', type: 'VARCHAR' },
+      ]);
+      expect(
+        await query(
+          `SELECT value, qualifiers, water_year, peak_since, unknown_date_part, time_utc FROM ${table} ORDER BY water_year LIMIT 2`,
+        ),
+      ).toEqual([
+        {
+          value: 40000,
+          qualifiers: 'MONTHUNKNOWN',
+          water_year: 1226,
+          peak_since: null,
+          unknown_date_part: 'month',
+          time_utc: null,
+        },
+        {
+          value: 40001,
+          qualifiers: '',
+          water_year: 1227,
+          peak_since: 1100,
+          unknown_date_part: null,
+          time_utc: '1227-05-16T02:45:00.000Z',
+        },
+      ]);
     });
   });
 
@@ -1230,6 +1574,358 @@ describe('waterGetSeries', () => {
 
       expect(error.data?.['reason']).toBeUndefined();
       expect(error.message).toContain('canvas provider is down');
+    });
+  });
+
+  describe('field measurements and annual peaks (#56)', () => {
+    /** Field series of 01646500 gage height: one per reading type. */
+    const MEAN_GAGE_ID = 'c141575d-9f1d-42ce-aa4a-0584728735ce';
+    const STAFF_GAGE_ID = '69cf03cd-7795-4b55-9550-ef69dd8fe9c1';
+    const FIELD_INPUT = {
+      site: '01646500',
+      parameterCd: '00065',
+      startDate: '2000-01-01',
+      endDate: '2026-11-22',
+      seriesType: 'field',
+    } as const;
+    const offered = () => [
+      fieldSeries(12, MEAN_GAGE_ID, 'MeanGageHeight'),
+      fieldSeries(5, STAFF_GAGE_ID, 'ReferencePrimary'),
+    ];
+
+    it.each(['field', 'peak'] as const)(
+      'refuses statCd on a %s series before any upstream request, on both surfaces',
+      async (seriesType) => {
+        const result = await runToolContract(waterGetSeries, {
+          ...FIELD_INPUT,
+          seriesType,
+          statCd: '00003',
+        });
+        expect(result.structuredContent).toMatchObject({
+          error: {
+            code: JsonRpcErrorCode.ValidationError,
+            data: {
+              reason: 'stat_cd_for_field_or_peak',
+              recovery: recovery('stat_cd_for_field_or_peak'),
+            },
+          },
+        });
+        expect(textContent(result.content[0])).toContain(
+          recovery('stat_cd_for_field_or_peak').hint,
+        );
+        expect(mockGetSeries).not.toHaveBeenCalled();
+        expect(water.requests).toHaveLength(0);
+      },
+    );
+
+    it('refuses a malformed statCd on a field series with the field reason, not invalid_stat_cd', async () => {
+      await expect(
+        contractError(waterGetSeries, { ...FIELD_INPUT, statCd: 'mean' }),
+      ).resolves.toMatchObject({ data: { reason: 'stat_cd_for_field_or_peak' } });
+      expect(mockGetSeries).not.toHaveBeenCalled();
+    });
+
+    it('reads an empty statCd on a field series as omitted, sending the type to the service', async () => {
+      mockGetSeries.mockResolvedValue(offered());
+      const ctx = createMockContext({ errors: waterGetSeries.errors });
+      await waterGetSeries.handler(waterGetSeries.input.parse({ ...FIELD_INPUT, statCd: '' }), ctx);
+      expect(mockGetSeries).toHaveBeenCalledTimes(1);
+      const { seriesType, ...rest } = FIELD_INPUT;
+      expect(mockGetSeries.mock.calls[0]?.[0]).toEqual({ ...rest, seriesType });
+    });
+
+    it('returns the field series with the most records, statCd and statName null, on both surfaces', async () => {
+      mockGetSeries.mockResolvedValue(offered());
+      const result = await runToolContract(waterGetSeries, FIELD_INPUT);
+
+      expect(result.isError).toBeFalsy();
+      expect(result.structuredContent).toMatchObject({
+        seriesType: 'field',
+        statCd: null,
+        statName: null,
+        methodId: MEAN_GAGE_ID,
+        totalRecords: 12,
+        otherSeries: [
+          {
+            statCd: null,
+            statName: null,
+            methodId: STAFF_GAGE_ID,
+            methodDescription: '[ReferencePrimary]',
+            recordCount: 5,
+          },
+        ],
+      });
+      const text = textContent(result.content[0]);
+      expect(text).toContain('**Series type:** field');
+      expect(text).toContain(
+        `**Statistic:** none (statCd null) | **Method:** [MeanGageHeight] | **Method ID:** ${MEAN_GAGE_ID}`,
+      );
+      expect(text).toContain(
+        `none (statCd null), [ReferencePrimary] (methodId ${STAFF_GAGE_ID}), 5 records`,
+      );
+    });
+
+    it('carries each field record’s procedure, ratings, and unknown date part on both surfaces', async () => {
+      const values: FieldValueRecord[] = [
+        {
+          dateTime: '1958-01-01',
+          value: '3664.00',
+          qualifiers: ['A', 'Static'],
+          unknownDatePart: 'month',
+          observingProcedure: 'GW level, logs',
+          measurementRated: null,
+          controlCondition: null,
+        },
+        {
+          dateTime: '2018-05-21T12:04:30.000-04:00',
+          value: '8.88',
+          qualifiers: ['A'],
+          unknownDatePart: null,
+          observingProcedure: 'None',
+          measurementRated: 'Poor',
+          controlCondition: 'Debris - Light',
+        },
+        {
+          dateTime: '2026-08-05T09:15:00.000-04:00',
+          value: '4.43',
+          qualifiers: ['P', 'Static'],
+          unknownDatePart: null,
+          observingProcedure: 'GW level, calib electric tape',
+          measurementRated: null,
+          controlCondition: null,
+        },
+      ];
+      mockGetSeries.mockResolvedValue([fieldSeries(3, MEAN_GAGE_ID, 'MeanGageHeight', values)]);
+      const result = await runToolContract(waterGetSeries, FIELD_INPUT);
+
+      expect((result.structuredContent as { values: unknown }).values).toEqual(values);
+      const lines = textContent(result.content[0]).split('\n');
+      expect(lines).toContain(
+        '- 1958-01-01: **3664.00** ft [A,Static] (procedure: GW level, logs; month unknown)',
+      );
+      expect(lines).toContain(
+        '- 2018-05-21T12:04:30.000-04:00: **8.88** ft [A] (procedure: None; measurement rated Poor; control: Debris - Light)',
+      );
+      expect(lines).toContain(
+        '- 2026-08-05T09:15:00.000-04:00: **4.43** ft [P,Static] (procedure: GW level, calib electric tape)',
+      );
+    });
+
+    it('carries each peak’s water year, peak-since year, and unknown date part on both surfaces', async () => {
+      const values: PeakValueRecord[] = [
+        {
+          dateTime: '1990-01-01',
+          value: '25.0',
+          qualifiers: ['<', 'MONTHUNKNOWN'],
+          unknownDatePart: 'month',
+          waterYear: 1990,
+          peakSince: null,
+        },
+        {
+          dateTime: '1936-03-19',
+          value: '484000',
+          qualifiers: [],
+          unknownDatePart: null,
+          waterYear: 1936,
+          peakSince: 1889,
+        },
+        {
+          dateTime: '2025-05-15T22:45:00.000-04:00',
+          value: '156000',
+          qualifiers: [],
+          unknownDatePart: null,
+          waterYear: 2025,
+          peakSince: null,
+        },
+      ];
+      mockGetSeries.mockResolvedValue([peakSeries(values)]);
+      const result = await runToolContract(waterGetSeries, {
+        ...FIELD_INPUT,
+        parameterCd: '00060',
+        seriesType: 'peak',
+      });
+
+      expect(result.structuredContent).toMatchObject({ seriesType: 'peak', statCd: null, values });
+      const lines = textContent(result.content[0]).split('\n');
+      expect(lines).toContain(
+        '- 1990-01-01: **25.0** ft3/s [<,MONTHUNKNOWN] (water year 1990; month unknown)',
+      );
+      expect(lines).toContain(
+        '- 1936-03-19: **484000** ft3/s (water year 1936; highest since 1889)',
+      );
+      expect(lines).toContain(
+        '- 2025-05-15T22:45:00.000-04:00: **156000** ft3/s (water year 2025)',
+      );
+    });
+
+    it('round-trips each field methodId', async () => {
+      for (const [methodId, count] of [
+        [MEAN_GAGE_ID, 12],
+        [STAFF_GAGE_ID, 5],
+      ] as const) {
+        mockGetSeries.mockResolvedValue(offered());
+        const result = await runToolContract(waterGetSeries, { ...FIELD_INPUT, methodId });
+        expect(result.structuredContent).toMatchObject({ methodId, totalRecords: count });
+      }
+    });
+
+    it('lists field series by methodId alone when methodId matches none', async () => {
+      mockGetSeries.mockResolvedValue(offered());
+      const result = await runToolContract(waterGetSeries, { ...FIELD_INPUT, methodId: '68478' });
+      const error = (
+        result.structuredContent as {
+          error: { message: string; data: { reason: string; recovery: { hint: string } } };
+        }
+      ).error;
+
+      expect(error.data.reason).toBe('method_not_found');
+      expect(error.message).toContain(
+        'methodId takes a field-measurement series ID (a hyphenated UUID), such as the ones this error lists.',
+      );
+      expect(error.data.recovery.hint).toBe(
+        `Re-request with one of these (pass its methodId), or omit methodId to get the method with the most records: methodId ${MEAN_GAGE_ID} ([MeanGageHeight]); methodId ${STAFF_GAGE_ID} ([ReferencePrimary]).`,
+      );
+      // content[] carries the same hint, its brackets Markdown-escaped by the framework.
+      const text = textContent(result.content[0]);
+      expect(text).toContain('Re-request with one of these (pass its methodId)');
+      for (const id of [MEAN_GAGE_ID, STAFF_GAGE_ID]) expect(text).toContain(`methodId ${id}`);
+    });
+
+    it('names field and peak beside instantaneous in the no_data_for_range recovery, on both surfaces', async () => {
+      mockGetSeries.mockResolvedValue([]);
+      const result = await runToolContract(waterGetSeries, {
+        ...FIELD_INPUT,
+        site: '400954074302001',
+        parameterCd: '72019',
+        seriesType: 'daily',
+      });
+      const { hint } = recovery('no_data_for_range');
+      for (const type of ['instantaneous', 'field', 'peak']) {
+        expect(hint).toContain(`seriesType="${type}"`);
+      }
+      expect(textContent(result.content[0])).toContain(hint);
+    });
+
+    it.each([
+      ['field', 'fm'],
+      ['peak', 'pk'],
+    ] as const)('stages a %s series under the %s token', async (seriesType, token) => {
+      const records = makeSeries(600).values;
+      mockGetSeries.mockResolvedValue([
+        seriesType === 'field'
+          ? fieldSeries(600, MEAN_GAGE_ID, 'MeanGageHeight')
+          : peakSeries(
+              records.map((v) => ({
+                ...v,
+                unknownDatePart: null,
+                waterYear: 2000,
+                peakSince: null,
+              })),
+            ),
+      ]);
+      stageCanvas();
+      mockSpill(5);
+      const ctx = createMockContext({ errors: waterGetSeries.errors });
+      await waterGetSeries.handler(
+        waterGetSeries.input.parse({ ...SPILLING_INPUT, seriesType }),
+        ctx,
+      );
+      expect(spilledTableName()).toBe(`water_series_01646500_00060_${token}_20230101_20241231`);
+    });
+
+    it('stays a legal identifier at the 15-digit-site worst case with a selection suffix', async () => {
+      mockGetSeries.mockResolvedValue(
+        [
+          fieldSeries(600, MEAN_GAGE_ID, 'MeanGageHeight'),
+          fieldSeries(600, STAFF_GAGE_ID, 'ReferencePrimary'),
+        ].map((s) => ({ ...s, siteNumber: '123456789012345' })),
+      );
+      stageCanvas();
+      mockSpill(5);
+      const ctx = createMockContext({ errors: waterGetSeries.errors });
+      await waterGetSeries.handler(
+        waterGetSeries.input.parse({
+          ...FIELD_INPUT,
+          site: '123456789012345',
+          methodId: STAFF_GAGE_ID,
+        }),
+        ctx,
+      );
+      const name = spilledTableName();
+      expect(name).toMatch(/^water_series_123456789012345_00065_fm_20000101_20261122_[0-9a-f]{7}$/);
+      expect(name.length).toBeLessThanOrEqual(63);
+      expect(name).toMatch(CANVAS_IDENTIFIER_REGEX);
+    });
+
+    describe('the inputs content[] names for re-requesting another series', () => {
+      const otherSeriesLine = (text: string) =>
+        text.split('\n').find((line) => line.startsWith('**Other series for this query**'));
+
+      it('names statCd and methodId for a daily response', async () => {
+        const maxId = '7f2a9c1e5b3d4a6f8e0c2b4d6f8a0c2e';
+        mockGetSeries.mockResolvedValue([
+          makeSeries(5),
+          makeSeries(5, { statCd: '00001', statName: 'Maximum', methodId: maxId }),
+        ]);
+        const result = await runToolContract(waterGetSeries, {
+          site: '01646500',
+          parameterCd: '00060',
+          startDate: '2024-01-01',
+          endDate: '2024-01-05',
+        });
+
+        expect(result.structuredContent).toMatchObject({
+          seriesType: 'daily',
+          statCd: '00003',
+          otherSeries: [{ statCd: '00001', methodId: maxId }],
+        });
+        expect(otherSeriesLine(textContent(result.content[0]))).toBe(
+          `**Other series for this query** (re-request with statCd and methodId): Maximum (statCd 00001), (no description) (methodId ${maxId}), 5 records`,
+        );
+      });
+
+      it('names methodId alone for a field response, whose series carry no statistic', async () => {
+        mockGetSeries.mockResolvedValue(offered());
+        const result = await runToolContract(waterGetSeries, FIELD_INPUT);
+
+        expect(otherSeriesLine(textContent(result.content[0]))).toBe(
+          `**Other series for this query** (re-request with methodId): none (statCd null), [ReferencePrimary] (methodId ${STAFF_GAGE_ID}), 5 records`,
+        );
+      });
+
+      it('names methodId alone for a peak response, whose series carry no statistic', async () => {
+        const otherPeakId = '0d4b6c8e1f3a5b7c9d0e2f4a6b8c0d1e';
+        const peak: PeakValueRecord = {
+          dateTime: '1936-03-19',
+          value: '484000',
+          qualifiers: [],
+          unknownDatePart: null,
+          waterYear: 1936,
+          peakSince: 1889,
+        };
+        mockGetSeries.mockResolvedValue([
+          peakSeries([peak, { ...peak, dateTime: '1937-04-26', waterYear: 1937 }]),
+          { ...peakSeries([peak]), methodId: otherPeakId },
+        ]);
+        const result = await runToolContract(waterGetSeries, {
+          ...FIELD_INPUT,
+          parameterCd: '00060',
+          seriesType: 'peak',
+        });
+
+        expect(otherSeriesLine(textContent(result.content[0]))).toBe(
+          `**Other series for this query** (re-request with methodId): none (statCd null), (no description) (methodId ${otherPeakId}), 1 records`,
+        );
+      });
+
+      it('names methodId alone for field and peak series in the tool and otherSeries descriptions', () => {
+        expect(waterGetSeries.description).toContain(
+          're-requested with the statCd and methodId inputs (methodId alone for a field or peak series)',
+        );
+        expect(waterGetSeries.output.shape.otherSeries.description).toContain(
+          're-request one with its statCd and methodId (methodId alone for a field or peak series)',
+        );
+      });
     });
   });
 

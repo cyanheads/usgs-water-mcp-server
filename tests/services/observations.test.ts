@@ -97,7 +97,12 @@ function counts(): Record<string, number> {
   return out;
 }
 
-const FILTER_KEYS = ['monitoring_location_id', 'parameter_code', 'statistic_id'];
+const FILTER_KEYS = [
+  'monitoring_location_id',
+  'parameter_code',
+  'statistic_id',
+  'computation_identifier',
+];
 
 /**
  * A captured table served the way the collection answers a plain-parameter query: only the
@@ -802,6 +807,33 @@ describe('getReadings failures', () => {
       reason,
     );
     expect(water.requests).toHaveLength(0);
+  });
+
+  it('observes a shared catalog read that a cancelled call started, so its failure is never unhandled', async () => {
+    const unhandled: unknown[] = [];
+    const onUnhandled = (reason: unknown) => unhandled.push(reason);
+    process.on('unhandledRejection', onUnhandled);
+    try {
+      routes({ catalog: () => new Response('<html>maintenance</html>', { status: 200 }) });
+      // A first call resolves both sites into the cache, then fails on the unreadable catalog.
+      await expect(obs.getReadings(params, request('getReadings'))).rejects.toMatchObject({
+        code: JsonRpcErrorCode.ServiceUnavailable,
+      });
+      const controller = new AbortController();
+      const reason = new DOMException('Caller cancelled the request', 'AbortError');
+      controller.abort(reason);
+      // Resolution answers from the cache, so the cancelled call reaches the catalog wait and
+      // starts a fresh shared read before giving up.
+      await expect(obs.getReadings(params, request('getReadings', controller.signal))).rejects.toBe(
+        reason,
+      );
+      await vi.waitFor(() => expect(sent('parameter-codes')).toHaveLength(2));
+      await new Promise((resolve) => setImmediate(resolve));
+      await new Promise((resolve) => setImmediate(resolve));
+      expect(unhandled).toEqual([]);
+    } finally {
+      process.off('unhandledRejection', onUnhandled);
+    }
   });
 
   it('keeps the shared catalog read going for a concurrent caller when one caller cancels', async () => {
@@ -1629,5 +1661,368 @@ describe('getSeries — instantaneous', () => {
         ],
       ]);
     });
+  });
+});
+
+/** Resolver records for sites the readings capture lacks, as `monitoring-locations` writes them. */
+function location(number: string, timeZone: string, name: string) {
+  return {
+    type: 'Feature',
+    id: `USGS-${number}`,
+    geometry: null,
+    properties: {
+      monitoring_location_number: number,
+      monitoring_location_name: name,
+      agency_code: 'USGS',
+      time_zone_abbreviation: timeZone,
+      uses_daylight_savings: 'Y',
+    },
+  };
+}
+
+/** The readings capture's sites plus the Monmouth County well and two partial-date sites. */
+const measurementResolverRoute = () =>
+  ogcRoute('monitoring-locations', () =>
+    jsonResponse(
+      ogcPage([
+        ...features('observations-resolver-readings.json'),
+        location('400954074302001', 'EST', '250790-- Imlaystown MW1'),
+        location('450250105010901', 'MST', 'partial-date well'),
+        location('05482800', 'CST', 'partial-date gage'),
+      ]),
+    ),
+  );
+
+const FIELD_PROPERTIES =
+  'field_measurements_series_id,monitoring_location_id,parameter_code,time,time_of_day,month,day,value,unit_of_measure,approval_status,qualifier,observing_procedure,measurement_rated,control_condition,reading_type,sublocation_identifier';
+const FIELD_METADATA_PROPERTIES =
+  'monitoring_location_id,parameter_code,parameter_description,reading_type,begin,sublocation_identifier';
+const PEAK_PROPERTIES =
+  'time_series_id,monitoring_location_id,parameter_code,time,time_of_day,water_year,month,day,value,unit_of_measure,qualifier,peak_since';
+
+describe('getSeries — field', () => {
+  const WELL_DEPTH = '4270d483-4184-4046-9d76-67ee60ca7a35';
+  const well = {
+    site: '400954074302001',
+    parameterCd: '72019',
+    seriesType: 'field' as const,
+    startDate: '2000-01-01',
+    endDate: '2026-11-22',
+  };
+
+  /** The well's resolver, metadata, and catalog, with `rows` answering field-measurements. */
+  function wellRoutes(rows: FetchMockResponder) {
+    water.route(
+      measurementResolverRoute(),
+      filteredRoute(
+        'field-measurements-metadata',
+        'field-measurements-metadata-400954074302001.json',
+      ),
+      ogcRoute('field-measurements', rows),
+      catalogRoute(),
+    );
+  }
+
+  it('returns the well’s six depth-to-water measurements: the newest on the site clock, a bare date where no time is recorded', async () => {
+    water.route(
+      measurementResolverRoute(),
+      filteredRoute(
+        'field-measurements-metadata',
+        'field-measurements-metadata-400954074302001.json',
+      ),
+      filteredRoute('field-measurements', 'field-measurements-400954074302001.json'),
+      catalogRoute(),
+    );
+    const series = await obs.getSeries(well, request('getSeries'));
+    expect(series).toHaveLength(1);
+    const [depth] = series;
+    expect(depth).toMatchObject({
+      siteNumber: '400954074302001',
+      siteName: '250790-- Imlaystown MW1',
+      parameterCd: '72019',
+      parameterName: 'Depth to water level, feet below land surface',
+      unitCode: 'ft',
+      seriesType: 'field',
+      statCd: null,
+      statName: null,
+      methodId: WELL_DEPTH,
+      methodDescription: '[ReferencePrimary]',
+      readingType: 'ReferencePrimary',
+    });
+    expect(depth?.values.map((v) => [v.dateTime, v.value, v.qualifiers])).toEqual([
+      ['2000-09-08', '3.83', ['A', 'Static']],
+      ['2000-09-28T09:50:00.000-04:00', '10.80', ['A', 'Static']],
+      ['2005-07-19T09:20:00.000-04:00', '3.60', ['A', 'Static']],
+      ['2010-05-12T09:45:00.000-04:00', '3.00', ['A', 'Static']],
+      ['2024-06-03T08:40:00.000-04:00', '3.76', ['A', 'Static']],
+      ['2026-08-05T09:15:00.000-04:00', '4.43', ['P', 'Static']],
+    ]);
+    expect(depth?.values.at(-1)).toEqual({
+      dateTime: '2026-08-05T09:15:00.000-04:00',
+      value: '4.43',
+      qualifiers: ['P', 'Static'],
+      unknownDatePart: null,
+      observingProcedure: 'GW level, calib electric tape',
+      measurementRated: null,
+      controlCondition: null,
+    });
+  });
+
+  it('reads one field-measurements query reaching a day past each end beside the metadata — four requests cold, two warm', async () => {
+    wellRoutes(fixtureResponse('field-measurements-400954074302001.json'));
+    // A statistic code applies to daily series only; a field read sends none.
+    await obs.getSeries({ ...well, statCd: '00003' }, request('getSeries'));
+    expect(counts()).toEqual({
+      'monitoring-locations': 1,
+      'field-measurements-metadata': 1,
+      'field-measurements': 1,
+      'parameter-codes': 1,
+    });
+    expect(Object.fromEntries(sent('field-measurements')[0]!.url.searchParams)).toEqual({
+      monitoring_location_id: 'USGS-400954074302001',
+      parameter_code: '72019',
+      time: '1999-12-31/2026-11-23',
+      skipGeometry: 'true',
+      properties: FIELD_PROPERTIES,
+      limit: '10000',
+      f: 'json',
+    });
+    expect(Object.fromEntries(sent('field-measurements-metadata')[0]!.url.searchParams)).toEqual({
+      monitoring_location_id: 'USGS-400954074302001',
+      parameter_code: '72019',
+      skipGeometry: 'true',
+      properties: FIELD_METADATA_PROPERTIES,
+      limit: '10000',
+      f: 'json',
+    });
+    await obs.getSeries(well, request('getSeries'));
+    expect(
+      water.requests
+        .slice(4)
+        .map((r) => r.url.pathname.split('/')[4])
+        .sort(),
+    ).toEqual(['field-measurements', 'field-measurements-metadata']);
+  });
+
+  it('lists one series per reading type of 01646500 gage height, each methodId the metadata’s series ID', async () => {
+    water.route(
+      resolverRoute(),
+      filteredRoute('field-measurements-metadata', 'field-measurements-metadata-01646500.json'),
+      filteredRoute('field-measurements', 'field-measurements-01646500-00065-2025.json'),
+      catalogRoute(),
+    );
+    const series = await obs.getSeries(
+      {
+        ...well,
+        site: '01646500',
+        parameterCd: '00065',
+        startDate: '2025-01-01',
+        endDate: '2025-12-31',
+      },
+      request('getSeries'),
+    );
+    // Ordered by first measurement: mean gage heights of discharge measurements since 1930,
+    // staff-gage readings since 2020.
+    expect(series.map((s) => [s.methodId, s.readingType, s.values.length])).toEqual([
+      ['c141575d-9f1d-42ce-aa4a-0584728735ce', 'MeanGageHeight', 6],
+      ['69cf03cd-7795-4b55-9550-ef69dd8fe9c1', 'ReferencePrimary', 11],
+    ]);
+    expect(series[0]?.values[0]).toEqual({
+      dateTime: '2025-02-27T11:05:38.000-05:00',
+      value: expect.any(String),
+      qualifiers: ['A'],
+      unknownDatePart: null,
+      observingProcedure: 'None',
+      measurementRated: expect.any(String),
+      controlCondition: expect.any(String),
+    });
+    expect(series[1]?.values[0]).toMatchObject({
+      dateTime: '2025-01-14T10:27:00.000-05:00',
+      observingProcedure: 'Gage height, staff gage',
+      measurementRated: null,
+    });
+  });
+
+  it('follows a next link and reads every page', async () => {
+    const all = features('field-measurements-400954074302001.json');
+    const next =
+      'https://api.waterdata.usgs.gov/ogcapi/v1/collections/field-measurements/items?cursor=page2&f=json';
+    wellRoutes((req) => {
+      const page2 = new URL(req.url).searchParams.get('cursor') === 'page2';
+      return jsonResponse(page2 ? ogcPage(all.slice(9)) : ogcPage(all.slice(0, 9), next));
+    });
+    const [depth] = await obs.getSeries(well, request('getSeries'));
+    expect(sent('field-measurements')).toHaveLength(2);
+    // The capture holds every parameter's rows; the 72019 ones span both pages.
+    expect(depth?.values).toHaveLength(6);
+  });
+
+  it('returns each listed reading type empty when the range holds no measurements', async () => {
+    wellRoutes(() => jsonResponse(ogcPage([])));
+    const series = await obs.getSeries(
+      { ...well, startDate: '2011-01-01', endDate: '2011-12-31' },
+      request('getSeries'),
+    );
+    expect(series.map((s) => [s.methodId, s.values])).toEqual([[WELL_DEPTH, []]]);
+  });
+
+  it('flags a measurement whose month and day the upstream does not know', async () => {
+    water.route(
+      measurementResolverRoute(),
+      ogcRoute('field-measurements-metadata', () => jsonResponse(ogcPage([]))),
+      filteredRoute('field-measurements', 'field-measurements-day-null.json'),
+      catalogRoute(),
+    );
+    const [series] = await obs.getSeries(
+      { ...well, site: '450250105010901', parameterCd: '62610', startDate: '1900-01-01' },
+      request('getSeries'),
+    );
+    expect(series?.values).toEqual([
+      expect.objectContaining({
+        dateTime: '1958-01-01',
+        value: '3664.00',
+        unknownDatePart: 'month',
+      }),
+    ]);
+  });
+
+  it('returns nothing and asks nothing more when the site does not resolve', async () => {
+    water.route(ogcRoute('monitoring-locations', () => jsonResponse(ogcPage([]))));
+    expect(await obs.getSeries({ ...well, site: '99999999' }, request('getSeries'))).toEqual([]);
+    expect(counts()).toEqual({ 'monitoring-locations': 1 });
+  });
+
+  it('fails a row whose time of day is not a clock time at once, as an unreadable response', async () => {
+    const [first] = features('field-measurements-400954074302001.json');
+    wellRoutes(() =>
+      jsonResponse(
+        ogcPage([{ ...first, properties: { ...first!.properties, time_of_day: '13:15:00' } }]),
+      ),
+    );
+    const error = await obs.getSeries(well, request('getSeries')).catch((e: unknown) => e);
+    expect(error).toBeInstanceOf(McpError);
+    expect(error).toMatchObject({
+      code: JsonRpcErrorCode.ServiceUnavailable,
+      data: { reason: 'upstream_error', retryable: false },
+    });
+    expect(sent('field-measurements')).toHaveLength(1);
+  });
+});
+
+describe('getSeries — peak', () => {
+  const PEAK_SERIES = '51a7ecee083843328f6609518990e022';
+  const peaks = {
+    site: '01646500',
+    parameterCd: '00060',
+    seriesType: 'peak' as const,
+    startDate: '2025-01-01',
+    endDate: '2025-12-31',
+  };
+
+  function peakRoutes() {
+    water.route(
+      resolverRoute(),
+      filteredRoute('time-series-metadata', 'time-series-metadata-01646500-00060.json', {
+        computation_identifier: 'Max At Event Time',
+      }),
+      ogcRoute('peaks', fixtureResponse('peaks-01646500-00060-wy2025.json')),
+      catalogRoute(),
+    );
+  }
+
+  it('returns 156,000 ft³/s at 22:45 EDT on 2025-05-15 for 01646500 over 2025', async () => {
+    peakRoutes();
+    expect(await obs.getSeries(peaks, request('getSeries'))).toEqual([
+      {
+        siteNumber: '01646500',
+        siteName: 'POTOMAC RIVER NEAR WASH, DC LITTLE FALLS PUMP STA',
+        parameterCd: '00060',
+        parameterName: 'Discharge, cubic feet per second',
+        unitCode: 'ft3/s',
+        seriesType: 'peak',
+        statCd: null,
+        statName: null,
+        methodId: PEAK_SERIES,
+        methodDescription: null,
+        values: [
+          {
+            dateTime: '2025-05-15T22:45:00.000-04:00',
+            value: '156000',
+            qualifiers: [],
+            unknownDatePart: null,
+            waterYear: 2025,
+            peakSince: null,
+          },
+        ],
+      },
+    ]);
+  });
+
+  it('reads one peaks query beside the series computed Max At Event Time — four requests', async () => {
+    peakRoutes();
+    await obs.getSeries(peaks, request('getSeries'));
+    expect(counts()).toEqual({
+      'monitoring-locations': 1,
+      'time-series-metadata': 1,
+      peaks: 1,
+      'parameter-codes': 1,
+    });
+    expect(Object.fromEntries(sent('peaks')[0]!.url.searchParams)).toEqual({
+      monitoring_location_id: 'USGS-01646500',
+      parameter_code: '00060',
+      time: '2024-12-31/2026-01-01',
+      skipGeometry: 'true',
+      properties: PEAK_PROPERTIES,
+      limit: '10000',
+      f: 'json',
+    });
+    expect(Object.fromEntries(sent('time-series-metadata')[0]!.url.searchParams)).toEqual({
+      monitoring_location_id: 'USGS-01646500',
+      parameter_code: '00060',
+      computation_identifier: 'Max At Event Time',
+      skipGeometry: 'true',
+      properties: METADATA_PROPERTIES,
+      limit: '10000',
+      f: 'json',
+    });
+  });
+
+  it.each([
+    ['2025-05-15', 1],
+    ['2025-05-16', 0],
+  ])('dates the crest by the site’s day: asked for %s alone, returns %i', async (day, count) => {
+    peakRoutes();
+    const [series] = await obs.getSeries(
+      { ...peaks, startDate: day, endDate: day },
+      request('getSeries'),
+    );
+    expect(sent('peaks')[0]?.url.searchParams.get('time')).toBe(
+      day === '2025-05-15' ? '2025-05-14/2025-05-16' : '2025-05-15/2025-05-17',
+    );
+    expect(series?.methodId).toBe(PEAK_SERIES);
+    expect(series?.values).toHaveLength(count);
+  });
+
+  it('flags a peak whose month is unknown, its qualifiers coded', async () => {
+    water.route(
+      measurementResolverRoute(),
+      ogcRoute('time-series-metadata', () => jsonResponse(ogcPage([]))),
+      filteredRoute('peaks', 'peaks-month-null.json'),
+      catalogRoute(),
+    );
+    const [series] = await obs.getSeries(
+      { ...peaks, site: '05482800', startDate: '1900-01-01', endDate: '2026-11-22' },
+      request('getSeries'),
+    );
+    expect(series?.values).toEqual([
+      {
+        dateTime: '1980-01-01',
+        value: '25.0',
+        qualifiers: ['<', 'MONTHUNKNOWN'],
+        unknownDatePart: 'month',
+        waterYear: 1980,
+        peakSince: null,
+      },
+    ]);
   });
 });

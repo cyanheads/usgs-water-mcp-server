@@ -1,12 +1,18 @@
 /**
  * @fileoverview Tests for the water_find_sites tool's own logic — the major-filter rule, paging,
- * canvas staging, notices, and rendering — with the site-discovery service mocked. The service's
+ * canvas staging, notices, and rendering — with the site-discovery service mocked; the staged
+ * table's column types are read back from a real DuckDB canvas. The service's
  * translation onto the OGC collections, and the tool's error wiring through it, run at the fetch
  * seam in tests/services/site-discovery.test.ts.
  * @module tests/tools/water-find-sites.tool.test
  */
 
-import { CANVAS_IDENTIFIER_REGEX } from '@cyanheads/mcp-ts-core/canvas';
+import {
+  CANVAS_IDENTIFIER_REGEX,
+  CanvasRegistry,
+  DataCanvas,
+  DuckdbProvider,
+} from '@cyanheads/mcp-ts-core/canvas';
 import {
   JsonRpcErrorCode,
   McpError,
@@ -126,7 +132,7 @@ describe('waterFindSites', () => {
   it('caps at 500 and returns truncated=true + upstreamTotal when over cap', async () => {
     mockFindSites.mockResolvedValue(makeSites(800));
     const ctx = createMockContext({ errors: waterFindSites.errors });
-    const input = waterFindSites.input.parse({ stateCd: 'KS', siteType: 'GW' });
+    const input = waterFindSites.input.parse({ stateCd: 'KS', siteType: 'GW', limit: 500 });
     const result = await waterFindSites.handler(input, ctx);
     expect(result.truncated).toBe(true);
     expect(result.total).toBe(500);
@@ -139,7 +145,7 @@ describe('waterFindSites', () => {
     const { registerTable } = stageCanvas();
 
     const ctx = createMockContext({ errors: waterFindSites.errors });
-    const input = waterFindSites.input.parse({ stateCd: 'KS', siteType: 'GW' });
+    const input = waterFindSites.input.parse({ stateCd: 'KS', siteType: 'GW', limit: 500 });
     const result = await waterFindSites.handler(input, ctx);
 
     // Inline stays count-capped; the canvas carries the full, uncapped set.
@@ -177,8 +183,8 @@ describe('waterFindSites', () => {
   });
 
   it('stages huc_cd as null for sites USGS assigned no HUC (regression: #22)', async () => {
-    // Every staged site lacks hucCd. The canvas row must carry huc_cd: null, not undefined — the
-    // first row seeds DuckDB column types, so a bare undefined would leave the column untyped.
+    // Every staged site lacks hucCd. The canvas row must carry huc_cd: null, not undefined, so the
+    // staged column holds SQL NULL for it.
     mockFindSites.mockResolvedValue(makeSites(600, false));
     const { registerTable } = stageCanvas('canvasnohu');
 
@@ -195,7 +201,7 @@ describe('waterFindSites', () => {
     const { acquire, registerTable } = stageCanvas('canvassit02');
 
     const ctx = createMockContext({ errors: waterFindSites.errors });
-    const input = waterFindSites.input.parse({ stateCd: 'RI', siteType: 'GW' });
+    const input = waterFindSites.input.parse({ stateCd: 'RI', siteType: 'GW', limit: 500 });
     const result = await waterFindSites.handler(input, ctx);
 
     expect(result.truncated).toBe(false);
@@ -210,7 +216,7 @@ describe('waterFindSites', () => {
     // mockCanvasInstance stays undefined (default) — getCanvas() returns undefined.
     mockFindSites.mockResolvedValue(makeSites(800));
     const ctx = createMockContext({ errors: waterFindSites.errors });
-    const input = waterFindSites.input.parse({ stateCd: 'VA', siteType: 'GW' });
+    const input = waterFindSites.input.parse({ stateCd: 'VA', siteType: 'GW', limit: 500 });
     const result = await waterFindSites.handler(input, ctx);
 
     expect(result.truncated).toBe(true);
@@ -596,17 +602,64 @@ describe('waterFindSites', () => {
       expect(result.truncated).toBe(true);
     });
 
-    it('defaults to the first 500 — byte-for-byte the pre-paging behavior', async () => {
+    it('defaults to the first 25 sites, with the full count and a window notice (#57)', async () => {
       mockFindSites.mockResolvedValue(makeSites(800));
       const ctx = createMockContext({ errors: waterFindSites.errors });
       const input = waterFindSites.input.parse({ stateCd: 'KS' });
 
-      expect(input.limit).toBe(500);
+      expect(input.limit).toBe(25);
       expect(input.offset).toBe(0);
       const result = await waterFindSites.handler(input, ctx);
+      expect(result.total).toBe(25);
+      expect(result.truncated).toBe(true);
+      expect(result.upstreamTotal).toBe(800);
+      expect(result.sites.map((s) => s.siteNumber)).toEqual(makeSites(25).map((s) => s.siteNumber));
+      expect((getEnrichment(ctx) as { notice: string }).notice).toBe(
+        'Showing sites 1 to 25 of 800 matches. Advance offset by limit for the next page. Add bbox, countyCd, huc, siteType, parameterCd, hasDataTypeCd, or observedWithin filters to narrow the query.',
+      );
+    });
+
+    it('returns the first 25 of a 26–500 match set with the window notice and no narrowing advice (#57)', async () => {
+      mockFindSites.mockResolvedValue(makeSites(74));
+      const result = await runToolContract(waterFindSites, { stateCd: 'RI' });
+
+      const structured = result.structuredContent as {
+        notice?: string;
+        total: number;
+        truncated: boolean;
+        upstreamTotal: number;
+      };
+      expect(structured).toMatchObject({ total: 25, truncated: true, upstreamTotal: 74 });
+      expect(structured.notice).toBe(
+        'Showing sites 1 to 25 of 74 matches. Advance offset by limit for the next page.',
+      );
+      const rendered = result.content.map((b) => ('text' in b ? b.text : '')).join('\n');
+      expect(rendered).toContain('**25 site(s) shown** (truncated; 74 total matched)');
+      expect(rendered.split('\n')).toContain(`> ${structured.notice}`);
+    });
+
+    it('serves the former 500-site first page when limit: 500 is passed (#57)', async () => {
+      mockFindSites.mockResolvedValue(makeSites(800));
+      const ctx = createMockContext({ errors: waterFindSites.errors });
+      const result = await waterFindSites.handler(
+        waterFindSites.input.parse({ stateCd: 'KS', limit: 500 }),
+        ctx,
+      );
       expect(result.total).toBe(500);
       expect(result.truncated).toBe(true);
       expect(result.sites[0]?.siteNumber).toBe('10000000');
+      expect(result.sites[499]?.siteNumber).toBe('10000499');
+    });
+
+    it('states the default and the maximum in the limit, tool, sites, and truncated descriptions (#57)', () => {
+      const limit = waterFindSites.input.shape.limit.description ?? '';
+      const sites = waterFindSites.output.shape.sites.description ?? '';
+      const truncated = waterFindSites.output.shape.truncated.description ?? '';
+      for (const description of [limit, sites, truncated, waterFindSites.description]) {
+        expect(description).toMatch(/defaults? (to )?25/i);
+        expect(description).toContain('500');
+      }
+      expect(limit).not.toContain('Default 500');
     });
 
     it('sets truncated from the window, not the cap alone', async () => {
@@ -732,11 +785,11 @@ describe('waterFindSites', () => {
     });
 
     it('names the window rather than the cap once the caller has paged past the first page', async () => {
-      // Default limit, non-zero offset: "Result capped at 500 of 4220" is true of the first page
-      // and says nothing about which 500 of 4220 this one holds.
+      // limit 500, non-zero offset: "Result capped at 500 of 4220" is true of the first page and
+      // says nothing about which 500 of 4220 this one holds.
       mockFindSites.mockResolvedValue(makeSites(4220));
       const ctx = createMockContext({ errors: waterFindSites.errors });
-      const input = waterFindSites.input.parse({ stateCd: 'RI', offset: 600 });
+      const input = waterFindSites.input.parse({ stateCd: 'RI', limit: 500, offset: 600 });
       await waterFindSites.handler(input, ctx);
 
       const { notice } = getEnrichment(ctx) as { notice: string };
@@ -747,7 +800,11 @@ describe('waterFindSites', () => {
 
     it('omits CANVAS_PROVIDER_TYPE from the no-canvas notice on both surfaces', async () => {
       mockFindSites.mockResolvedValue(makeSites(3231));
-      const result = await runToolContract(waterFindSites, { stateCd: 'TX', siteType: 'ST' });
+      const result = await runToolContract(waterFindSites, {
+        stateCd: 'TX',
+        siteType: 'ST',
+        limit: 500,
+      });
 
       const notice = (result.structuredContent as { notice?: string }).notice ?? '';
       expect(notice).toBe(
@@ -868,6 +925,154 @@ describe('waterFindSites', () => {
       expect(rendered).toContain('water_dataframe_describe');
       expect(rendered).toContain(tableName);
     });
+
+    it('names the window returned and the 500 per-page maximum, never an inline cap of 500 (#57)', async () => {
+      mockFindSites.mockResolvedValue(makeSites(800));
+      const { registerTable } = stageCanvas();
+      const result = await runToolContract(waterFindSites, { stateCd: 'KS', siteType: 'GW' });
+      const tableName = stagedTableName(registerTable);
+
+      const notice = (result.structuredContent as { notice?: string }).notice ?? '';
+      expect(notice).toBe(
+        `The full 800-site match set is staged on DataCanvas as table "${tableName}" — use water_dataframe_describe to inspect its columns, then water_dataframe_query to retrieve every match with SQL (canvas_id "cnvsites01"). Showing sites 1 to 25 of 800 inline, at most 500 per page. Advance offset by limit for the next page.`,
+      );
+      const rendered = result.content.map((b) => ('text' in b ? b.text : '')).join('\n');
+      expect(rendered.split('\n')).toContain(`> ${notice}`);
+    });
+
+    it('names a later window, and no next page on the last one (#57)', async () => {
+      mockFindSites.mockResolvedValue(makeSites(800));
+      stageCanvas();
+      const ctx = createMockContext({ errors: waterFindSites.errors });
+      await waterFindSites.handler(
+        waterFindSites.input.parse({ stateCd: 'KS', limit: 500, offset: 500 }),
+        ctx,
+      );
+      const { notice } = getEnrichment(ctx) as { notice: string };
+      expect(notice).toContain('Showing sites 501 to 800 of 800 inline, at most 500 per page.');
+      expect(notice).not.toContain('next page');
+    });
+
+    it('names no window for an offset past the end, only the valid range and the maximum (#57)', async () => {
+      mockFindSites.mockResolvedValue(makeSites(800));
+      stageCanvas();
+      const ctx = createMockContext({ errors: waterFindSites.errors });
+      await waterFindSites.handler(waterFindSites.input.parse({ stateCd: 'KS', offset: 900 }), ctx);
+      const { notice } = getEnrichment(ctx) as { notice: string };
+      expect(notice).toContain('Valid offset range is 0 to 799.');
+      expect(notice).toContain('A page holds at most 500 sites.');
+      expect(notice).not.toContain('Showing sites');
+    });
+  });
+
+  describe('staged site table on a real DuckDB canvas (#59)', () => {
+    let canvas: DataCanvas;
+
+    beforeEach(() => {
+      const provider = new DuckdbProvider({
+        defaultRowLimit: 10_000,
+        exportRootPath: '.canvas-exports',
+        memoryLimitMb: 128,
+        schemaSniffRows: 100,
+      });
+      const registry = new CanvasRegistry(
+        provider,
+        { absoluteCapMs: 600_000, maxCanvasesPerTenant: 10, sweeperIntervalMs: 0, ttlMs: 60_000 },
+        () => 0,
+      );
+      canvas = new DataCanvas(provider, registry);
+      mockCanvasInstance = canvas;
+    });
+
+    afterEach(async () => {
+      await canvas.shutdown(createMockContext());
+    });
+
+    /**
+     * Expanded-mode sites whose numeric fields are whole numbers through the first 100 rows — the
+     * canvas's type-sniffing window — and fractional after it.
+     */
+    function expandedSites(count: number): DiscoveredSite[] {
+      return makeSites(count).map((site, i) => ({
+        ...site,
+        stateCd: '24',
+        countyCd: '031',
+        latitude: i < 100 ? 38 : 38.5,
+        longitude: -77,
+        drainageArea: i < 100 ? 100 + i : 100.25 + i,
+        altitude: i < 100 ? 10 : 10.5,
+        contributingArea: i < 100 ? 90 + i : 90.75 + i,
+      }));
+    }
+
+    async function stage(sites: DiscoveredSite[], input: Record<string, unknown>) {
+      mockFindSites.mockResolvedValue(sites);
+      const result = await runToolContract(waterFindSites, input);
+      const { canvas_id, table_name } = result.structuredContent as {
+        canvas_id: string;
+        table_name: string;
+      };
+      const instance = await canvas.acquire(canvas_id, createMockContext());
+      const [table] = await instance.describe({ tableName: table_name });
+      return { instance, table_name, columns: table?.columns.map((c) => [c.name, c.type]) };
+    }
+
+    const SITE_COLUMNS = [
+      ['site_number', 'VARCHAR'],
+      ['site_name', 'VARCHAR'],
+      ['site_type', 'VARCHAR'],
+      ['latitude', 'DOUBLE'],
+      ['longitude', 'DOUBLE'],
+      ['huc_cd', 'VARCHAR'],
+      ['state_cd', 'VARCHAR'],
+      ['county_cd', 'VARCHAR'],
+      ['drainage_area', 'DOUBLE'],
+      ['altitude', 'DOUBLE'],
+      ['contributing_area', 'DOUBLE'],
+      ['last_observed_at', 'VARCHAR'],
+    ];
+
+    it('types every numeric column DOUBLE however the first 100 rows read, keeping later fractions', async () => {
+      const { instance, table_name, columns } = await stage(expandedSites(600), {
+        stateCd: 'MD',
+        siteOutput: 'expanded',
+      });
+      expect(columns).toEqual(SITE_COLUMNS);
+
+      const { rows } = await instance.query(
+        `SELECT latitude, drainage_area, altitude, contributing_area, last_observed_at FROM ${table_name} WHERE site_number IN ('10000000', '10000101') ORDER BY site_number`,
+      );
+      expect(rows).toEqual([
+        {
+          latitude: 38,
+          drainage_area: 100,
+          altitude: 10,
+          contributing_area: 90,
+          last_observed_at: '2026-10-01T00:00:00.000Z',
+        },
+        {
+          latitude: 38.5,
+          drainage_area: 201.25,
+          altitude: 10.5,
+          contributing_area: 191.75,
+          last_observed_at: null,
+        },
+      ]);
+      // Numeric comparison, not string order: '99' > '689.75' as text.
+      const { rows: max } = await instance.query(
+        `SELECT MAX(contributing_area) AS m FROM ${table_name}`,
+      );
+      expect(max).toEqual([{ m: 689.75 }]);
+    });
+
+    it('types the expanded-only columns DOUBLE when basic mode leaves every value null', async () => {
+      const { instance, table_name, columns } = await stage(makeSites(600), { stateCd: 'KS' });
+      expect(columns).toEqual(SITE_COLUMNS);
+      const { rows } = await instance.query(
+        `SELECT COUNT(*) AS n FROM ${table_name} WHERE drainage_area IS NULL AND contributing_area IS NULL AND state_cd IS NULL`,
+      );
+      expect(rows).toEqual([{ n: '600' }]);
+    });
   });
 
   describe('canvas error contract (#39)', () => {
@@ -968,7 +1173,7 @@ describe('waterFindSites', () => {
       expect(result.canvas_id).toBe('cnvsites01');
     });
 
-    it('says on both surfaces that nothing was staged when the result fits inline', async () => {
+    it('says on both surfaces that nothing was staged when the match set is within 500 sites', async () => {
       mockFindSites.mockResolvedValue(makeSites(74));
       stageCanvas();
       const result = await runToolContract(waterFindSites, {
@@ -981,6 +1186,11 @@ describe('waterFindSites', () => {
       expect(structured.notice).toContain('cnvsites01');
       expect(structured.notice).toMatch(/nothing was staged|inline/i);
       expect(structured.canvas_id).toBeUndefined();
+      // The default page holds 25 of the 74, so the set was not all "returned inline" (#57).
+      expect(structured.notice).not.toContain('returned inline');
+      expect(structured.notice).toContain(
+        'Only a match set over 500 sites stages to DataCanvas, so nothing was staged on canvas "cnvsites01" for these 74 matches; page through them with limit and offset.',
+      );
 
       const rendered = result.content.map((b) => ('text' in b ? b.text : '')).join('\n');
       expect(rendered).toContain('cnvsites01');
@@ -1008,7 +1218,7 @@ describe('waterFindSites', () => {
       mockFindSites.mockResolvedValue(makeSites(74));
       stageCanvas();
       const ctx = createMockContext({ errors: waterFindSites.errors });
-      await waterFindSites.handler(waterFindSites.input.parse({ stateCd: 'RI' }), ctx);
+      await waterFindSites.handler(waterFindSites.input.parse({ stateCd: 'RI', limit: 500 }), ctx);
       expect(getEnrichment(ctx)).not.toHaveProperty('notice');
     });
   });

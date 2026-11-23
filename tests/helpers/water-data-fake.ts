@@ -86,8 +86,11 @@ export function createWaterDataFake(): WaterDataFake {
   return fake;
 }
 
-/** Query pairs a route requires: a string must equal the URL's value, `null` must be absent. */
-export type QueryMatch = Readonly<Record<string, string | null>>;
+/**
+ * Query pairs a route requires: a string must equal the URL's value, `null` must be absent, and
+ * `true` must be present at least once, with any value.
+ */
+export type QueryMatch = Readonly<Record<string, string | null | true>>;
 
 interface RouteOptions {
   once?: boolean;
@@ -96,9 +99,11 @@ interface RouteOptions {
 
 function matchesQuery(url: URL, query: QueryMatch | undefined): boolean {
   if (!query) return true;
-  return Object.entries(query).every(([key, value]) =>
-    value === null ? !url.searchParams.has(key) : url.searchParams.get(key) === value,
-  );
+  return Object.entries(query).every(([key, value]) => {
+    if (value === null) return !url.searchParams.has(key);
+    if (value === true) return url.searchParams.has(key);
+    return url.searchParams.get(key) === value;
+  });
 }
 
 function getRoute(
@@ -231,4 +236,102 @@ export function failingCatalogRoute(status: number, body = ''): FetchMockRoute {
   return ogcRoute('parameter-codes', () => new Response(body, { status }), {
     query: { f: 'json', offset: null },
   });
+}
+
+/** An OGC feature as the captures hold it. */
+export interface OgcFeature {
+  id?: string;
+  properties: Record<string, unknown>;
+}
+
+/** The values of each `property IN ('a','b',…)` clause of a cql2-text `filter`, by property. */
+export function cqlInValues(filter: string | null): Map<string, string[]> {
+  const clauses = new Map<string, string[]>();
+  for (const [, property = '', list = ''] of (filter ?? '').matchAll(/(\w+) IN \(([^)]*)\)/g)) {
+    clauses.set(
+      property,
+      list.split(',').map((value) => value.slice(1, -1).replaceAll("''", "'")),
+    );
+  }
+  return clauses;
+}
+
+/**
+ * An OGC responder serving the `features` whose `monitoring_location_id` the request's cql2-text
+ * `monitoring_location_id IN (…)` clause names, as one page — how a batched read by location is
+ * answered.
+ */
+export function locationFilteredResponder(
+  features: readonly OgcFeature[],
+): (request: Request) => Response {
+  return (request) => {
+    const filter = new URL(request.url).searchParams.get('filter');
+    const named = new Set(cqlInValues(filter).get('monitoring_location_id'));
+    return jsonResponse(
+      ogcPage(features.filter((f) => named.has(String(f.properties.monitoring_location_id)))),
+    );
+  };
+}
+
+/**
+ * The rows of a per-site daily-mean metadata capture
+ * (`time-series-metadata-daily-mean-<site>-<parameterCd>.json`), each stamped with the site's
+ * `monitoring_location_id` — the property the live collection adds when `properties` names it.
+ * Captured one site at a time, every row is that site's.
+ */
+export function dailyMeanCapture(
+  site: string,
+  parameterCd: string,
+  monitoringLocationId = `USGS-${site}`,
+): OgcFeature[] {
+  const body = JSON.parse(
+    waterDataFixture(`time-series-metadata-daily-mean-${site}-${parameterCd}.json`),
+  ) as { features: OgcFeature[] };
+  return body.features.map((feature) => ({
+    ...feature,
+    properties: { monitoring_location_id: monitoringLocationId, ...feature.properties },
+  }));
+}
+
+/** A Statistics API body: one feature per location, its series under `data`. */
+export interface StatisticsBody {
+  features: {
+    properties: {
+      data: { parent_time_series_id: string }[];
+      monitoring_location_id: string;
+    };
+  }[];
+}
+
+/**
+ * A Statistics API responder answering a batched read from captured bodies — fixture names or
+ * parsed bodies, each already for one parameter (and, for normals, one calendar day) — the way the
+ * live API does: the features of the locations the request repeats under `monitoring_location_id`
+ * (every feature when it names none), each keeping only the series it repeats under
+ * `parent_time_series_id` (every series when it names none). A feature that series filter leaves
+ * empty is dropped, as is a location the captures lack. One page, `next: null`.
+ */
+export function statisticsBatchResponder(
+  captures: readonly (string | StatisticsBody)[],
+): (request: Request) => Response {
+  const features = captures.flatMap(
+    (capture) =>
+      (typeof capture === 'string'
+        ? (JSON.parse(waterDataFixture(capture)) as StatisticsBody)
+        : capture
+      ).features,
+  );
+  return (request) => {
+    const params = new URL(request.url).searchParams;
+    const locations = new Set(params.getAll('monitoring_location_id'));
+    const series = new Set(params.getAll('parent_time_series_id'));
+    const answered = features.flatMap((feature) => {
+      const { properties } = feature;
+      if (locations.size > 0 && !locations.has(properties.monitoring_location_id)) return [];
+      if (series.size === 0) return [feature];
+      const data = properties.data.filter((s) => series.has(s.parent_time_series_id));
+      return data.length > 0 ? [{ ...feature, properties: { ...properties, data } }] : [];
+    });
+    return jsonResponse({ type: 'FeatureCollection', features: answered, next: null });
+  };
 }
